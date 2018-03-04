@@ -1837,17 +1837,14 @@ void yyfree (void * ptr )
 
 
 
-main( argc, argv )
-int argc;
-char **argv;
-    {
-    ++argv, --argc;  /* skip over program name */
-    if ( argc > 0 )
-            yyin = fopen( argv[0], "r" );
-    else
-            yyin = stdin;
+int main( int argc, char **argv ) {
+	++argv, --argc;  /* skip over program name */
+	if ( argc > 0 )
+	        yyin = fopen( argv[0], "r" );
+	else
+	        yyin = stdin;
 
-    yylex();
-    }
+	yylex();
+}
 
 
