@@ -1,16 +1,46 @@
 %{
-#include<stdio.h>
-
-int num_lines = 0, num_chars = 0;
+/* need this for the call to atof() below */
+#include <math.h>
 %}
 
+DIGIT    [0-9]
+ID       [a-z][a-z0-9]*
+
 %%
 
-\n     {  ++num_lines; ++num_chars; }
-.      {  ++num_chars; }
- 
+{DIGIT}+    {
+            printf( "An integer: %s (%d)\n", yytext,
+                    atoi( yytext ) );
+            }
+
+{DIGIT}+"."{DIGIT}*        {
+            printf( "A Real: %s (%g)\n", yytext,
+                    atof( yytext ) );
+            }
+
+if|then|begin|end|procedure|function|program {
+            printf( "A keyword: %s\n", yytext );
+            }
+
+{ID}        printf( "An identifier: %s\n", yytext );
+
+"+"|"-"|"*"|"/"   printf( "An operator: %s\n", yytext );
+
+"{"[^}\n]*"}"     /* eat up one-line comments */
+
+[ \t\n]+          /* eat up whitespace */
+
+.           printf( "Unrecognized character: %s\n", yytext );
+
 %%
-int main() {
-    yylex();
-    printf("# of lines = %d, # of chars = %d\n", num_lines, num_chars);
+
+int main( int argc, char **argv ) {
+	++argv, --argc;  /* skip over program name */
+	if ( argc > 0 )
+	        yyin = fopen( argv[0], "r" );
+	else
+	        yyin = stdin;
+
+	yylex();
 }
+
