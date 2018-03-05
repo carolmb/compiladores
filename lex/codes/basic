@@ -1,0 +1,8 @@
+prog basic;
+
+(* This is a basic program *)
+
+inicio
+  escreva('Hello, world!,\n');
+fim
+

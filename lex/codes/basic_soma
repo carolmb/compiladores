@@ -1,0 +1,10 @@
+prog basic_soma;
+
+var x, y, soma : inteiro;
+
+inicio
+	x := 5;
+	y := 10;
+	soma := x + y;
+	escreva(soma);
+fim
