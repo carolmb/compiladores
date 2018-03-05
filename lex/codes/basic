@@ -1,9 +1,56 @@
-prog basic;
+prog meu_programa;
 
-(* This is a basic program *)
+(* CONST DECLARATION *)
+const bla : real;
+const bla,blu : inteiro;
 
-inicio
-  escreva('Hello, world!,\n');
-  var bla := verdadeiro;
+(* VAR DECLARATION *)
+var ble : logico;
+var bli, blu : texto;
+var blo : texto = 'oi';
+var blu : inteiro = 4 + 20;
+var nome_negocio : vetor[tamanho] de texto = ('aaa', 'bbb', 'ccc'); 
+
+(* STRUCT DECLARATION*)
+tipo TDU = estrutura 
+        nome : texto; 
+        idade : inteiro;
+    fim  
+
+(* ENUM DECLARATION*)
+
+
+(* JUMP DECLARATION *)
+rotulo jump;
+rotulo pirueta, salto;
+
+(* EMPTY PROC *)
+proc procedimento() inicio 
 fim
 
+(* TEST PROC *)
+proc procedimento2( ref ple : texto, pla : inteiro ) 
+  var bla : inteiro;
+inicio 
+	bla := 5;
+	escreva(bla + ple);
+	escreva(ple);
+fim
+
+(* EMPTY FUNCTION *)
+func funcao() : inteiro inicio 
+fim 
+
+(* TEST FUNCTION *)
+func funcao2( ref ple : texto, pla : inteiro ) : inteiro 
+  var ble : inteiro;
+inicio 
+    return ble;
+fim 
+
+
+** main
+inicio
+    ** temos nada no main
+    ler
+fim
