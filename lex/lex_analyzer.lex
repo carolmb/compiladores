@@ -1,20 +1,31 @@
 %{
-/* need this for the call to atof() below */
-#include <math.h>
+    /* need this for the call to atof() below */
+    #include <math.h>
+    
+    int lines = 1;
+    int column = 1;
 %}
 
-INT             [0-9]+
-REAL            [0-9]+"."[0-9]+
-BOOL            verdadeiro|falso  
-STRING          "'"[^']*"'"
+LINE            \n
+
+INT_VALUE       [0-9]+
+REAL_VALUE      [0-9]+"."[0-9]+
+BOOL_VALUE      verdadeiro|falso  
+STRING_VALUE    "'"[^']*"'"
 
 ID              ([_a-zA-Z]+[_a-zA-Z0-9]*)+
+
+/*PRIMITIVE TYPES*/
+INT             inteiro
+REAL            real
+BOOL            logico
+STRING          texto
+VECTOR          vetor
 
 /*KEYWORDS*/
 PROG            prog                
 BEGIN           inicio              
 END             fim
-VECTOR          vetor
 OF              de 
 VAR             var
 LABEL           rotulo
@@ -35,6 +46,9 @@ CASE            caso
 BE              seja 
 FUNC            func
 PROC            proc
+BREAK           parar
+CONTINUE        continue
+REF             ref
 
 /*ARITHMETIC OPERATOR*/
 SUM             "+"
@@ -58,8 +72,10 @@ NOTEQ           "!="
 SEMICOMMA       ";"
 COMMA           ","
 COLON           ":"
-LBRACKET         "("
-RBRACKET         ")"
+LPARENT         "("
+RPARENT         ")"
+LBRACKET        "["
+RBRACKET        "]"
 DOUBLEDOT       ".."
 QUOTE           "\'"
 
@@ -68,8 +84,14 @@ CASSIGN         ":="
 
 
 COMMENT         \(\*[^\(]*\*\)
+SCOMMENT        \*\*.*\n 
 
 %%
+
+{LINE}      {
+                ++lines;
+                column = 1;
+            }
 
 %{
     //======================================
@@ -79,7 +101,9 @@ COMMENT         \(\*[^\(]*\*\)
     //======================================
 %}
 
-{COMMENT}   /* eat up one-line comments */
+{COMMENT}   /* eat up mult-line comments */
+
+{SCOMMENT}  /* eat up one-line comments */
 
 
 %{
@@ -91,21 +115,58 @@ COMMENT         \(\*[^\(]*\*\)
 %}
 
 {INT}       {
-                printf( "( INT, %s )\n", yytext);
+                printf( "( INT, %s, %d, %d )\n", yytext, lines, column);
+                column += yyleng;
             }
 
 {REAL}      {
-                printf( "( REAL, %s )\n", yytext);
+                printf( "( REAL, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
             }
-
+            
 {BOOL}      {
-                printf( "( BOOL, %s )\n", yytext);
+                printf( "( BOOL, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
             }
 
 {STRING}    {
-                printf( "( STRING, %s )\n", yytext );
-            }
+                printf( "( STRING, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+            }		
 
+{VECTOR}	{
+				printf("( VECTOR, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+			}            
+
+%{
+    //======================================
+    
+    //VALUE
+    
+    //======================================
+%}
+
+{INT_VALUE}		{
+                	printf( "( INT_VALUE, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+            	}
+
+{REAL_VALUE}	{
+                	printf( "( REAL_VALUE, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+            	}
+
+{BOOL_VALUE}	{
+                	printf( "( BOOL_VALUE, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+            	}
+
+{STRING_VALUE}	{
+                	printf( "( STRING_VALUE, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+            	}
+            
 %{
     //======================================
     
@@ -115,91 +176,134 @@ COMMENT         \(\*[^\(]*\*\)
 %}
 
 {PROG}      {
-                printf( "( PROG, %s )\n", yytext );
+                printf( "( PROG, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
             }
-
 {BEGIN}		{
-				printf("( BEGIN, %s )\n",yytext);
+				printf("( BEGIN, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {END}		{
-				printf("( END, %s )\n",yytext);
+				printf("( END, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
-			
-{VECTOR}	{
-				printf("( VECTOR, %s )\n",yytext);
-			}
-			
+
 {OF}		{
-				printf("( OF, %s )\n",yytext);
+				printf("( OF, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {VAR}		{
-				printf("( VAR, %s )\n",yytext);
+				printf("( VAR, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {LABEL}		{
-				printf("( LABEL, %s )\n",yytext);
+				printf("( LABEL, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {STRUCT}	{
-				printf("( STRUCT, %s )\n",yytext);
+				printf("( STRUCT, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {TYPE}		{
-				printf("( TYPE, %s )\n",yytext);
+				printf("( TYPE, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {CONST}		{
-				printf("( CONST, %s )\n",yytext);
+				printf("( CONST, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+			}
+
+{REF}	    {
+				printf("( REF, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
-{RETURN}	{
-				printf("( RETURN, %s )\n",yytext);
-			}
+%{
+    //======================================
+    
+    //REPEAT STRUCTURE
+    
+    //======================================
+%}
 			
 {JUMP}		{
-				printf("( JUMP, %s )\n",yytext);
+				printf("( JUMP, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {FOR}		{
-				printf("( FOR, %s )\n",yytext);
+				printf("( FOR, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {WHILE}		{
-				printf("( WHILE, %s )\n",yytext);
+				printf("( WHILE, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {DO}		{
-				printf("( DO, %s )\n",yytext);
+				printf("( DO, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {REPEAT}	{
-				printf("( REPEAT, %s )\n",yytext);
+				printf("( REPEAT, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {UNTIL}		{
-				printf("( UNTIL, %s )\n",yytext);
+				printf("( UNTIL, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
+{BREAK}		{
+				printf("( BREAK, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+			}
+			
+{CONTINUE}	{
+				printf("( CONTINUE, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+			}
+
+%{
+    //======================================
+    
+    //CONDITIONAL STRUCTURE
+    
+    //======================================
+%}
+	
+			
 {IF}		{
-				printf("( IF, %s )\n",yytext);
+				printf("( IF, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {THEN}		{
-				printf("( THEN, %s )\n",yytext);
+				printf("( THEN, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {ELSE}		{
-				printf("( ELSE, %s )\n",yytext);
+				printf("( ELSE, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {CASE}		{
-				printf("( CASE, %s )\n",yytext);
+				printf("( CASE, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {BE}		{
-				printf("( BE, %s )\n",yytext);
+				printf("( BE, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 
 %{
@@ -211,39 +315,51 @@ COMMENT         \(\*[^\(]*\*\)
 %}
 			
 {FUNC}		{
-				printf("( FUNC, %s )\n",yytext);
+				printf("( FUNC, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 {PROC}		{
-				printf("( PROC, %s )\n",yytext);
+				printf("( PROC, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+			}
+
+{RETURN}	{
+				printf("( RETURN, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 
 %{
     //======================================
     
-    //OPERATOR
+    //ARITHMETIC OPERATOR 
     
     //======================================
 %}
 
 {SUM}		{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {MINOR}		{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {MULT}		{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {DIVSION}	{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {MOD}		{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 
 %{
@@ -255,35 +371,43 @@ COMMENT         \(\*[^\(]*\*\)
 %}
  
 {AND}		{
-				printf("(  AND, %s )\n",yytext);
+				printf("(  AND, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {OR}		{
-				printf("(  OR, %s )\n",yytext);
+				printf("(  OR, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {LESS}		{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {GREATER}	{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {LESSEQ}	{
-				printf("(  LESSEQ, %s )\n",yytext);
+				printf("(  LESSEQ, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {GREATEQ}	{
-				printf("(  GREATEQ, %s )\n",yytext);
+				printf("(  GREATEQ, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {EQUAL}		{
-				printf("(  EQUAL, %s )\n",yytext);
+				printf("(  EQUAL, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {NOTEQ}		{
-				printf("(  NOTEQ, %s )\n",yytext);
+				printf("(  NOTEQ, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 			
 %{
@@ -295,47 +419,69 @@ COMMENT         \(\*[^\(]*\*\)
 %}
  
 {SEMICOMMA}	{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {COMMA}		{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {COLON}		{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
+{LPARENT}	{
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+			}
+ 
+{RPARENT}	{
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
+			}
+
 {LBRACKET}	{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {RBRACKET}	{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {DOUBLEDOT}	{
-				printf("(  DOUBLEDOT, %s )\n",yytext);
+				printf("(  DOUBLEDOT, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {QUOTE}		{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {ASSIGN}	{
-				printf("( %s )\n",yytext);
+				printf("( %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
  
 {CASSIGN}	{
-				printf("( CASSIGN, %s )\n",yytext);
+				printf("( CASSIGN, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
 			}
 
 {ID}        { 
-                printf( "( ID, %s )\n", yytext );
+                printf( "( ID, %s,  %d, %d )\n", yytext, lines, column);
+                column += yyleng;
             }
 
-
-[ \t\n]+    /* eat up whitespace */
+[ \t]+      {
+                /* eat up whitespace */
+                column += yyleng;
+            }
 
 .           printf( "Unrecognized character: %s\n", yytext );
 
