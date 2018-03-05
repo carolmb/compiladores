@@ -4,5 +4,6 @@ prog basic;
 
 inicio
   escreva('Hello, world!,\n');
+  var bla := verdadeiro;
 fim
 
