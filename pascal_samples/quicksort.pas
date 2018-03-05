@@ -1,57 +1,59 @@
 program quicksort;
-uses SysUtils;
 
-type
-  Vetor = array of integer;
+type Vetor = array of integer;
 
-function quicksort(
-        minha_lista : Vetor; n, ini_vet, fim_vet : integer) :
-        Vetor ;
-    
-    var i, j, pivo, aux, id : integer;
-    
+procedure troca(var c1, c2 : integer);
+var c:integer; 
 begin
-   i := ini_vet;
-   j := fim_vet;
-   
-   id := Trunc((ini_vet + fim_vet) / 2);
-   pivo := minha_lista[id];
-        while i < j do begin
-            while minha_lista[i] < pivo do begin
-                i := i + 1;
-            end;
-            while minha_lista[j] > pivo do begin
-                j := j - 1;
-            end;
-            if i < j then begin
-                aux := minha_lista[i];
-                minha_lista[i] := minha_lista[j];
-                minha_lista[j] := aux;
-                i := i + 1;
-                j := j - 1;
-            end;
-        end;
-        
-        if ini_vet < j then begin
-            quicksort := quicksort(minha_lista, n, ini_vet, j);
-        end;
-        
-        if i < fim_vet then begin
-            quicksort := quicksort(minha_lista, n, i, fim_vet);
-        end;
+	c := c1;
+	c1 := c2;
+	c2 := c;
 end;
 
-var i : integer;
+function particiona(var minha_lista : Vetor; ini_vet, fim_vet : integer) : integer ;
+var i, j, pivo : integer;
+begin
+	pivo := minha_lista[fim_vet];
+	i := ini_vet-1;
+	for j := ini_vet to fim_vet-1 do begin
+		if minha_lista[j] < pivo then begin
+			i := i+1;
+			troca(minha_lista[i], minha_lista[j]);
+		end;
+	end;
+	if minha_lista[fim_vet] < minha_lista[i+1] then begin
+		troca(minha_lista[fim_vet], minha_lista[i+1]);
+	end;
+
+	particiona := i+1;
+end;
+
+
+procedure quicksort(var minha_lista : Vetor; ini_vet, fim_vet : integer) ;
+var pivo : integer;
+begin
+	if ini_vet < fim_vet then begin
+		pivo := particiona(minha_lista, ini_vet, fim_vet);
+		quicksort(minha_lista, ini_vet, pivo-1);
+		quicksort(minha_lista, pivo+1, fim_vet);		
+	end;
+end;
+
+var i, len : integer;
 var lista_ord : Vetor;
 begin
-    SetLength(lista_ord, 6);
-    for i := 0 to 5 do begin
-        lista_ord[i] := random(10);
-        writeln(lista_ord[i]);
+	writeln('Insina tamanho do vetor');
+	read(len);
+	SetLength(lista_ord, len);
+	for i := 0 to len-1 do begin
+        read(lista_ord[i]);
     end;
-    lista_ord := quicksort(lista_ord, 6, 0, 5);
-    
-    for i := 0 to 6 do begin
-        writeln(lista_ord[i]);
+
+    quicksort(lista_ord, 0, len-1);
+
+    {WRITE}
+    writeln('Lista ordenada:');
+    for i := 0 to len-1 do begin
+        write(lista_ord[i], ' ');
     end;
 end.
