@@ -1,56 +1,75 @@
 prog meu_programa;
 
-(* CONST DECLARATION *)
-const bla : real;
-const bla,blu : inteiro;
+** ERROR TEST
+@@@@@@@
 
-(* VAR DECLARATION *)
-var ble : logico;
-var bli, blu : texto;
-var blo : texto = 'oi';
-var blu : inteiro = 4 + 20;
+** CONST DECLARATION 
+const bla : real;
+const ble,bli : inteiro;
+
+** VAR DECLARATION 
+var blo : logico;
+var blu, pla : texto;
+var ple : texto = 'oi';
+var pli : inteiro = 4 + 20;
 var nome_negocio : vetor[tamanho] de texto = ('aaa', 'bbb', 'ccc'); 
 
-(* STRUCT DECLARATION*)
-tipo TDU = estrutura 
+** STRUCT DECLARATION
+tipo TDU = registro 
         nome : texto; 
         idade : inteiro;
     fim  
 
-(* ENUM DECLARATION*)
+** ARRAY DECLARATION
+tipo arr1 = vetor [4 .. 10] de texto;
+tipo arr2 = vetor [1 .. 5] de real = ( 1, 2, 3, 4, 5 );
 
+** ENUM DECLARATION
+tipo enum = (jan, fev, mar);
 
-(* JUMP DECLARATION *)
+** RANGE DECLARATION
+tipo range = jan .. mar;
+
+** JUMP DECLARATION 
 rotulo jump;
 rotulo pirueta, salto;
 
-(* EMPTY PROC *)
-proc procedimento() inicio 
+** EMPTY PROC 
+proc procedimento() 
+inicio 
 fim
 
-(* TEST PROC *)
-proc procedimento2( ref ple : texto, pla : inteiro ) 
-  var bla : inteiro;
+** TEST PROC 
+proc procedimento2( ref t1 : texto, i1 : inteiro ) 
+  var p1 : inteiro;
 inicio 
-	bla := 5;
-	escreva(bla + ple);
-	escreva(ple);
+	p1 := 5;
+	t1 := t1 + '!';
+	escreva(i1 + p1);
+	escreva(t1);
 fim
 
-(* EMPTY FUNCTION *)
-func funcao() : inteiro inicio 
-fim 
-
-(* TEST FUNCTION *)
-func funcao2( ref ple : texto, pla : inteiro ) : inteiro 
-  var ble : inteiro;
+** EMPTY FUNCTION 
+func funcao() : inteiro 
 inicio 
-    return ble;
 fim 
 
+** TEST FUNCTION 
+func funcao2( ref t1 : texto, i1 : inteiro  ) : inteiro 
+  var f1 : inteiro;
+inicio 
+	f1 := 5;
+	t1 := t1 + '!';
+	escreva(i1 + f1);
+	escreva(t1);
+fim
 
-** main
+
+(*
+    MAIN CODE
+*)
+
 inicio
-    ** temos nada no main
+    
     ler
 fim

@@ -1,10 +1,29 @@
 %{
-    /* need this for the call to atof() below */
-    #include <math.h>
-    
+	//VARIABLES
+
     int lines = 1;
     int column = 1;
 %}
+
+%{
+	//FUNCTIONS AND PROCEDURES
+	
+	void baseBlock ( const char* token_id ) {
+	    printf( "( %s, %s, %d, %d )\n",token_id, yytext, lines, column);
+        column += yyleng;
+	}
+	
+	void simpleBaseBlock () {
+	    printf( "( %s, %d, %d )\n", yytext, lines, column);
+        column += yyleng;
+	}
+	
+	void error () {
+	    printf( "( (ERROR) Unrecognized character: %s, %d, %d )\n", yytext, lines, column);
+        column += yyleng;
+	}
+%}
+
 
 LINE            \n
 
@@ -114,30 +133,15 @@ SCOMMENT        \*\*.*\n
     //======================================
 %}
 
-{INT}       {
-                printf( "( INT, %s, %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-            }
+{INT}       { baseBlock ( "INT" );}
 
-{REAL}      {
-                printf( "( REAL, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-            }
+{REAL}      { baseBlock ( "REAL" );}
             
-{BOOL}      {
-                printf( "( BOOL, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-            }
+{BOOL}      { baseBlock ( "BOOL" );}
 
-{STRING}    {
-                printf( "( STRING, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-            }		
+{STRING}    { baseBlock ( "STRING" );}	
 
-{VECTOR}	{
-				printf("( VECTOR, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}            
+{VECTOR}	{ baseBlock ( "VECTOR" );}         
 
 %{
     //======================================
@@ -147,25 +151,13 @@ SCOMMENT        \*\*.*\n
     //======================================
 %}
 
-{INT_VALUE}		{
-                	printf( "( INT_VALUE, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-            	}
+{INT_VALUE}		{ baseBlock ( "INT_VALUE" );}    
 
-{REAL_VALUE}	{
-                	printf( "( REAL_VALUE, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-            	}
+{REAL_VALUE}	{ baseBlock ( "REAL_VALUE" );}    
 
-{BOOL_VALUE}	{
-                	printf( "( BOOL_VALUE, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-            	}
+{BOOL_VALUE}	{ baseBlock ( "BOOL_VALUE" );}    
 
-{STRING_VALUE}	{
-                	printf( "( STRING_VALUE, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-            	}
+{STRING_VALUE}	{ baseBlock ( "STRING_VALUE" );}    
             
 %{
     //======================================
@@ -175,54 +167,25 @@ SCOMMENT        \*\*.*\n
     //======================================
 %}
 
-{PROG}      {
-                printf( "( PROG, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-            }
-{BEGIN}		{
-				printf("( BEGIN, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
-			
-{END}		{
-				printf("( END, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{PROG}      { baseBlock ( "PROG" );}    
 
-{OF}		{
-				printf("( OF, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{BEGIN}		{ baseBlock ( "BEGIN" );}    
 			
-{VAR}		{
-				printf("( VAR, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
-			
-{LABEL}		{
-				printf("( LABEL, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
-			
-{STRUCT}	{
-				printf("( STRUCT, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
-			
-{TYPE}		{
-				printf("( TYPE, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
-			
-{CONST}		{
-				printf("( CONST, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{END}	    { baseBlock ( "END" );}    
 
-{REF}	    {
-				printf("( REF, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{OF}		{ baseBlock ( "OF" );}    
+			
+{VAR}		{ baseBlock ( "VAR" );}    
+			
+{LABEL}		{ baseBlock ( "LABEL" );}    
+			
+{STRUCT}	{ baseBlock ( "STRUCT" );}    
+			
+{TYPE}		{ baseBlock ( "TYPE" );}    
+			
+{CONST}		{ baseBlock ( "CONST" );}    
+
+{REF}	    { baseBlock ( "REF" );}    
 			
 %{
     //======================================
@@ -232,45 +195,21 @@ SCOMMENT        \*\*.*\n
     //======================================
 %}
 			
-{JUMP}		{
-				printf("( JUMP, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{JUMP}		{ baseBlock ( "JUMP" );}    
 			
-{FOR}		{
-				printf("( FOR, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{FOR}		{ baseBlock ( "FOR" );}    
 			
-{WHILE}		{
-				printf("( WHILE, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{WHILE}		{ baseBlock ( "WHILE" );}    
 			
-{DO}		{
-				printf("( DO, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{DO}		{ baseBlock ( "DO" );}    
 			
-{REPEAT}	{
-				printf("( REPEAT, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{REPEAT}	{ baseBlock ( "REPEAT" );}    
 			
-{UNTIL}		{
-				printf("( UNTIL, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{UNTIL}		{ baseBlock ( "UNTIL" );}    
 			
-{BREAK}		{
-				printf("( BREAK, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{BREAK}		{ baseBlock ( "BREAK" );}    
 			
-{CONTINUE}	{
-				printf("( CONTINUE, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{CONTINUE}	{ baseBlock ( "CONTINUE" );}    
 
 %{
     //======================================
@@ -281,30 +220,15 @@ SCOMMENT        \*\*.*\n
 %}
 	
 			
-{IF}		{
-				printf("( IF, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{IF}		{ baseBlock ( "IF" );} 
 			
-{THEN}		{
-				printf("( THEN, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{THEN}		{ baseBlock ( "THEN" );} 
 			
-{ELSE}		{
-				printf("( ELSE, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{ELSE}		{ baseBlock ( "ELSE" );} 
 			
-{CASE}		{
-				printf("( CASE, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{CASE}		{ baseBlock ( "CASE" );} 
 			
-{BE}		{
-				printf("( BE, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{BE}		{ baseBlock ( "BE" );} 
 
 %{
     //======================================
@@ -314,20 +238,11 @@ SCOMMENT        \*\*.*\n
     //======================================
 %}
 			
-{FUNC}		{
-				printf("( FUNC, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{FUNC}		{ baseBlock ( "FUNC" );} 
 			
-{PROC}		{
-				printf("( PROC, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{PROC}		{ baseBlock ( "PROC" );} 
 
-{RETURN}	{
-				printf("( RETURN, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{RETURN}	{ baseBlock ( "RETURN" );} 
 
 %{
     //======================================
@@ -337,30 +252,15 @@ SCOMMENT        \*\*.*\n
     //======================================
 %}
 
-{SUM}		{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{SUM}		{ simpleBaseBlock ();}
  
-{MINOR}		{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{MINOR}		{ simpleBaseBlock ();}
  
-{MULT}		{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{MULT}		{ simpleBaseBlock ();}
  
-{DIVSION}	{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{DIVSION}	{ simpleBaseBlock ();}
  
-{MOD}		{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{MOD}		{ simpleBaseBlock ();}
 
 %{
     //======================================
@@ -370,45 +270,21 @@ SCOMMENT        \*\*.*\n
     //======================================
 %}
  
-{AND}		{
-				printf("(  AND, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{AND}		{ baseBlock ( "AND" );} 
  
-{OR}		{
-				printf("(  OR, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{OR}	    { baseBlock ( "OR" );} 
  
-{LESS}		{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{LESS}		{ baseBlock ( "LESS" );} 
  
-{GREATER}	{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{GREATER}	{ baseBlock ( "GREATER" );} 
  
-{LESSEQ}	{
-				printf("(  LESSEQ, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{LESSEQ}	{ baseBlock ( "LESSEQ" );} 
  
-{GREATEQ}	{
-				printf("(  GREATEQ, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{GREATEQ}	{ baseBlock ( "GREATEQ" );} 
  
-{EQUAL}		{
-				printf("(  EQUAL, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{EQUAL}		{ baseBlock ( "EQUAL" );} 
  
-{NOTEQ}		{
-				printf("(  NOTEQ, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{NOTEQ}		{ baseBlock ( "NOTEQ" );} 
 			
 %{
     //======================================
@@ -418,72 +294,36 @@ SCOMMENT        \*\*.*\n
     //======================================
 %}
  
-{SEMICOMMA}	{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{SEMICOMMA}	{ simpleBaseBlock ();}
  
-{COMMA}		{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{COMMA}		{ simpleBaseBlock ();}
  
-{COLON}		{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{COLON}		{ simpleBaseBlock ();}
  
-{LPARENT}	{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{LPARENT}	{ simpleBaseBlock ();}
  
-{RPARENT}	{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{RPARENT}	{ simpleBaseBlock ();}
 
-{LBRACKET}	{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{LBRACKET}	{ simpleBaseBlock ();}
  
-{RBRACKET}	{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{RBRACKET}	{ simpleBaseBlock ();}
  
-{DOUBLEDOT}	{
-				printf("(  DOUBLEDOT, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{DOUBLEDOT}	{ baseBlock ( "DOUBLEDOT");}
  
-{QUOTE}		{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{QUOTE}		{ simpleBaseBlock ();}
  
-{ASSIGN}	{
-				printf("( %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{ASSIGN}	{ simpleBaseBlock ();}
  
-{CASSIGN}	{
-				printf("( CASSIGN, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-			}
+{CASSIGN}	{ baseBlock ( "CASSIGN" );}
 
-{ID}        { 
-                printf( "( ID, %s,  %d, %d )\n", yytext, lines, column);
-                column += yyleng;
-            }
+{ID}        { baseBlock ( "ID" );}
 
 [ \t]+      {
                 /* eat up whitespace */
                 column += yyleng;
             }
 
-.           printf( "Unrecognized character: %s\n", yytext );
+.           {error();}
 
 %%
 

@@ -1,29 +1,54 @@
-func quicksort(vetor de inteiro minha_lista, inteiro n, inteiro ini, inteiro fimVet)
-var
-   i, j, pivo, aux
-início
-   i <- IniVet
-   j <- FimVet
-   pivo <- X[(IniVet + FimVet) div 2]
-      enquanto(i < j)
-       |      enquanto (X[i] < pivo) faça
-       |        |   i <- i + 1
-       |      fimEnquanto
-       |      enquanto (X[j] > pivo) faça
-       |        |   j <- j - 1
-       |      fimEnquanto
-       |      se (i < j) então
-       |        |   aux  <- X[i]
-       |        |   X[i] <- X[j]
-       |        |   X[j] <- aux
-       |        |   i <- i + 1
-       |        |   j <- j - 1
-       |      fimSe
-       fimEnquanto
-       se (IniVet < j) então
-       |  QuickSort(X, IniVet, j)
-       fimSe
-       se (i < FimVet) então
-       |  QuickSort(X, i, FimVet)
-       fimse
-fimprocedimento
+prog quicksort;
+
+func quicksort(
+        minha_lista : vetor de inteiro, n : inteiro, ini_vet : inteiro, fim_vet : inteiro) : 
+        vetor de inteiro ;
+    
+    var i, j, pivo, aux : inteiro;
+    
+inicio
+   i = ini_vet;
+   j = fim_vet;
+   
+   pivo = minha_lista[(ini_vet + fim_vet) / 2];
+        enquanto(i < j) inicio
+            enquanto (minha_lista[i] < pivo) fazer inicio
+                i = i + 1;
+            fim;
+            enquanto (minha_lista[j] > pivo) fazer inicio
+                j = j - 1;
+            fim;
+            se (i < j) entao inicio
+                aux  = minha_lista[i];
+                minha_lista[i] = minha_lista[j];
+                minha_lista[j] = aux;
+                i = i + 1;
+                j = j - 1;
+            fim;
+        fim;
+        
+        se (ini_vet < j) entao inicio
+            quicksort(minha_lista, ini_vet, j);
+        fim;
+        
+        se (i < fim_vet) entao inicio
+            quicksort(minha_lista, i, fim_vet);
+        fim;
+fim
+
+var i : inteiro;
+
+inicio
+    lista_ord = quicksort([3, 2, 6, 1, 9, 0], 6, 0, 5);
+    
+    para (i = 0; i < 6; i++) fazer inicio
+        escrever(lista_ord[i]);
+    fim
+fim
+
+(*
+CÓDIGO EM PASCAL:
+
+
+
+*)
