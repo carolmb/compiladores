@@ -1,54 +1,58 @@
 prog quicksort;
 
-func quicksort(
-        minha_lista : vetor de inteiro, n : inteiro, ini_vet : inteiro, fim_vet : inteiro) : 
-        vetor de inteiro ;
-    
-    var i, j, pivo, aux : inteiro;
-    
+tipo Vetor = vetor de inteiro;
+
+proc troca(var c1, c2 : inteiro);
+var c : inteiro; 
 inicio
-   i = ini_vet;
-   j = fim_vet;
-   
-   pivo = minha_lista[(ini_vet + fim_vet) / 2];
-        enquanto(i < j) inicio
-            enquanto (minha_lista[i] < pivo) fazer inicio
-                i = i + 1;
-            fim;
-            enquanto (minha_lista[j] > pivo) fazer inicio
-                j = j - 1;
-            fim;
-            se (i < j) entao inicio
-                aux  = minha_lista[i];
-                minha_lista[i] = minha_lista[j];
-                minha_lista[j] = aux;
-                i = i + 1;
-                j = j - 1;
-            fim;
-        fim;
-        
-        se (ini_vet < j) entao inicio
-            quicksort(minha_lista, ini_vet, j);
-        fim;
-        
-        se (i < fim_vet) entao inicio
-            quicksort(minha_lista, i, fim_vet);
-        fim;
-fim
+    c := c1;
+    c1 := c2;
+    c2 := c;
+fim;
 
-var i : inteiro;
-
+function particiona(ref minha_lista : Vetor; ini_vet, fim_vet : inteiro) : inteiro ;
+var i, j, pivo : inteiro;
 inicio
-    lista_ord = quicksort([3, 2, 6, 1, 9, 0], 6, 0, 5);
-    
-    para (i = 0; i < 6; i++) fazer inicio
-        escrever(lista_ord[i]);
-    fim
+    pivo := minha_lista[fim_vet];
+    i := ini_vet-1;
+    para (j := ini_vet; j <= fim_vet-1; j := j+1) fazer inicio
+        se (minha_lista[j] < pivo) entao inicio
+            i := i+1;
+            troca(minha_lista[i], minha_lista[j]);
+        fim;
+    fim;
+    se (minha_lista[fim_vet] < minha_lista[i+1]) entao inicio
+        troca(minha_lista[fim_vet], minha_lista[i+1]);
+    fim;
+
+    retorne i+1;
+fim;
+
+
+procedure quicksort(var minha_lista : Vetor; ini_vet, fim_vet : inteiro) ;
+var pivo : inteiro;
+inicio
+    se (ini_vet < fim_vet) entao inicio
+        pivo := particiona(minha_lista, ini_vet, fim_vet);
+        quicksort(minha_lista, ini_vet, pivo-1);
+        quicksort(minha_lista, pivo+1, fim_vet);        
+    fim;
+fim;
+
+var i, len : inteiro;
+var lista_ord : Vetor;
+inicio
+    escrever('Insina tamanho do vetor');
+    ler(len);
+    InicializarTamanho(lista_ord, len);
+    para (i := 0; i <= len-1; i := i + 1) fazer inicio
+        ler(lista_ord[i]);
+    fim;
+
+    quicksort(lista_ord, 0, len-1);
+
+    escrever('Lista ordenada:');
+    para (i := 0; i <= len-1; i := i + 1) fazer inicio
+        escrever(lista_ord[i], ' ');
+    fim;
 fim
-
-(*
-CÓDIGO EM PASCAL:
-
-
-
-*)
