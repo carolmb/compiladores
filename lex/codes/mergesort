@@ -1,0 +1,75 @@
+prog mergesort;
+
+tipo Vetor = array of inteiro;
+
+proc merge(ref minha_lista : Vetor; ini_vet, pivo, fim_vet : inteiro) ;
+var n1, n2, i, j, k : inteiro;
+var esquerda, direita : Vetor;
+inicio
+	n1 := pivo - ini_vet + 1;
+	n2 := fim_vet - pivo;
+
+	InicializarTamanho(esquerda, n1);
+	InicializarTamanho(direita, n2);
+	para (i := 0; i <= n1-1; i := i+1) fazer inicio
+		esquerda[i] := minha_lista[ini_vet+i];
+	fim;
+
+	para (i := 0; i <= n2-1; i := i+1) fazer inicio
+		direita[i] := minha_lista[pivo+i+1];
+	fim;
+
+	i := 0;
+	j := 0;
+
+	para (k := ini_vet; k <= fim_vet; k := k+1) fazer inicio
+		se (i >= n1) entao inicio
+			minha_lista[k] := direita[j];
+			j := j+1;
+			continuar;
+		fim;
+
+		se (j >= n2) entao inicio
+			minha_lista[k] := esquerda[i];
+			i := i+1;
+			continuar;
+		fim;
+
+		se (esquerda[i] <= direita[j]) && (i < n1) && (j < n2) entao inicio
+			minha_lista[k] := esquerda[i];
+			i := i+1;
+		fim senao inicio
+			minha_lista[k] := direita[j];
+			j := j+1;
+		fim;
+	fim;
+fim;
+
+proc mergesort(ref minha_lista : Vetor; ini_vet, fim_vet : inteiro) ;
+var pivo : inteiro;
+inicio
+	se (ini_vet < fim_vet then) entao inicio
+		pivo := Trunc((ini_vet + fim_vet)/2);
+		mergesort(minha_lista, ini_vet, pivo);
+		mergesort(minha_lista, pivo+1, fim_vet);
+		merge(minha_lista, ini_vet, pivo, fim_vet);		
+	fim;
+fim;
+
+var i, len : inteiro;
+var lista_ord : Vetor;
+inicio
+    escrever('Insira tamanho do vetor:');
+    ler(len);
+    InicializarTamanho(lista_ord, len);
+    para (i := 0; i <= len-1; i := i + 1) fazer inicio
+        ler(lista_ord[i]);
+    fim;
+
+    mergesort(lista_ord, 0, len-1);
+
+    escrever('Lista ordenada:');
+    para (i := 0; i <= len-1; i := i + 1) fazer inicio
+        escrever(lista_ord[i], ' ');
+    fim;
+fim

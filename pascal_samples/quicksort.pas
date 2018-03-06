@@ -42,7 +42,7 @@ end;
 var i, len : integer;
 var lista_ord : Vetor;
 begin
-	writeln('Insina tamanho do vetor');
+	writeln('Insira tamanho do vetor:');
 	read(len);
 	SetLength(lista_ord, len);
 	for i := 0 to len-1 do begin
