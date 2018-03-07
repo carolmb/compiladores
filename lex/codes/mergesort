@@ -1,8 +1,8 @@
 prog mergesort;
 
-tipo Vetor = array of inteiro;
+tipo Vetor = vetor de inteiro;
 
-proc merge(ref minha_lista : Vetor; ini_vet, pivo, fim_vet : inteiro) ;
+proc merge(ref minha_lista : Vetor, ini_vet : inteiro, pivo : inteiro, fim_vet : inteiro) ;
 var n1, n2, i, j, k : inteiro;
 var esquerda, direita : Vetor;
 inicio
@@ -45,7 +45,7 @@ inicio
 	fim;
 fim;
 
-proc mergesort(ref minha_lista : Vetor; ini_vet, fim_vet : inteiro) ;
+proc mergesort(ref minha_lista : Vetor, ini_vet : inteiro, fim_vet : inteiro) ;
 var pivo : inteiro;
 inicio
 	se (ini_vet < fim_vet then) entao inicio

@@ -10,7 +10,7 @@ inicio
     c2 := c;
 fim;
 
-function particiona(ref minha_lista : Vetor; ini_vet, fim_vet : inteiro) : inteiro ;
+func particiona(ref minha_lista : Vetor, ini_vet : inteiro, fim_vet : inteiro) : inteiro ;
 var i, j, pivo : inteiro;
 inicio
     pivo := minha_lista[fim_vet];
@@ -29,7 +29,7 @@ inicio
 fim;
 
 
-procedure quicksort(var minha_lista : Vetor; ini_vet, fim_vet : inteiro) ;
+proc quicksort(var minha_lista : Vetor; ini_vet : inteiro, fim_vet : inteiro) ;
 var pivo : inteiro;
 inicio
     se (ini_vet < fim_vet) entao inicio

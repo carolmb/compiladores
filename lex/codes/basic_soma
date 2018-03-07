@@ -2,7 +2,6 @@ prog basic_soma;
 
 var x, y, soma : inteiro;
 
-
 inicio
 	x := 5;
 	y := 10;
