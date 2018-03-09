@@ -12,6 +12,7 @@ var blo : logico;
 var blu, pla : texto;
 var ple : texto = 'oi';
 var pli : inteiro = 4 + 20;
+var plu : inteiro = 0x0001;
 var nome_negocio : vetor[tamanho] de texto = ('aaa', 'bbb', 'ccc'); 
 
 ** STRUCT DECLARATION

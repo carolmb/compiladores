@@ -27,6 +27,7 @@
 
 LINE            \n
 
+HEXA_VALUE		0x[0-9]+
 INT_VALUE       [0-9]+
 REAL_VALUE      [0-9]+"."[0-9]+
 BOOL_VALUE      verdadeiro|falso  
@@ -150,6 +151,8 @@ SCOMMENT        \*\*.*
     
     //======================================
 %}
+
+{HEXA_VALUE}	{ baseBlock ( "HEXA_VALUE" );} 
 
 {INT_VALUE}		{ baseBlock ( "INT_VALUE" );}    
 
