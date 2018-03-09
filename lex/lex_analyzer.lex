@@ -103,7 +103,7 @@ CASSIGN         ":="
 
 
 COMMENT         \(\*[^\(]*\*\)
-SCOMMENT        \*\*.*\n 
+SCOMMENT        \*\*.* 
 
 %%
 
