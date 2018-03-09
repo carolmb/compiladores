@@ -27,7 +27,7 @@
 
 LINE            \n
 
-HEXA_VALUE		0x[0-9]+
+HEXA_VALUE		0x[0-9A-F]+
 INT_VALUE       [0-9]+
 REAL_VALUE      [0-9]+"."[0-9]+
 BOOL_VALUE      verdadeiro|falso  
