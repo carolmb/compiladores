@@ -1,0 +1,14 @@
+prog basic_pointer;
+
+var
+   x : inteiro;
+   p, q : ^inteiro;
+ 
+inicio
+   x := 10;
+   p := @x;
+ 
+   q := p;
+   q^ := p^ + 10;
+   escreva('Resultado: ', p^, '\n');
+fim
