@@ -78,6 +78,7 @@ DIVSION         "/"
 MOD             "%"
 
 /*LOGIC OPERATOR*/
+NOT             "~"
 AND             "&&"
 OR              "||"
 LESS            "<"
@@ -278,6 +279,8 @@ SCOMMENT        \*\*.*
 {OR}	    { baseBlock ( "OR" );} 
  
 {LESS}		{ baseBlock ( "LESS" );} 
+
+{NOT}	    { baseBlock ( "NOT" );} 
  
 {GREATER}	{ baseBlock ( "GREATER" );} 
  
