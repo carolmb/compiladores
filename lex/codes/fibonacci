@@ -1,0 +1,22 @@
+prog Fibonacci;
+
+func fibonacciPos(var n: inteiro): inteiro;
+inicio
+
+	se (n > 1) entao inicio
+		fibonacciPos := (fibonacciPos(n-1) + fibonacciPos(n-2))
+	fim senao se (n = 0) entao inicio
+		fibonacciPos := 0
+	fim senao inicio
+		fibonacciPos := 1;
+	fim;
+	
+fim;
+
+var in_number : inteiro;
+
+inicio
+    escreva('Informe a posição da sequência de Fibonacci: \n');
+    leia(in_number);
+	escreva('Resultado: ', fibonacciPos(in_number), '\n');
+fim
