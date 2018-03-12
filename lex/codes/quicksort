@@ -2,7 +2,7 @@ prog quicksort;
 
 tipo Vetor = vetor de inteiro;
 
-proc troca(var c1, c2 : inteiro);
+proc troca(ref c1 : inteiro, ref c2 : inteiro);
 var c : inteiro; 
 inicio
     c := c1;
@@ -29,7 +29,7 @@ inicio
 fim;
 
 
-proc quicksort(var minha_lista : Vetor; ini_vet : inteiro, fim_vet : inteiro) ;
+proc quicksort(ref minha_lista : Vetor, ini_vet : inteiro, fim_vet : inteiro) ;
 var pivo : inteiro;
 inicio
     se (ini_vet < fim_vet) entao inicio
