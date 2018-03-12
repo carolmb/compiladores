@@ -1,8 +1,8 @@
 # PasC
 
+PasC is a compiled language, still under construction, aimed to teach structured programming for programmers immersed in the Portuguese language. It was developed based on the Pascal language, because it is a more robust language oriented to teaching, and C, due to the presence of structures of repetition better modeled.
 
-
-## Dependencies
+### Dependencies
 
 ```bash
 sudo apt install make
@@ -27,9 +27,14 @@ cd lex
 ./lex_analyzer.o < codes/test
 ```
 
-## Running Pascal codes
+## Pascal codes
 
-Running helloworld.pas
+### Dependencies
+
+```bash
+sudo apt-get install fp-compiler
+```
+### Running helloworld.pas
 
 ```bash
 # Building
