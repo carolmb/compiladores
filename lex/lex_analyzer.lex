@@ -42,10 +42,6 @@ BOOL            logico
 STRING          texto
 VECTOR          vetor
 
-/*POINTERS*/
-POINTER         "^"
-REFV            "@"
-
 /*KEYWORDS*/
 PROG            prog                
 BEGIN           inicio              
@@ -166,20 +162,7 @@ SCOMMENT        \*\*.*
 {BOOL_VALUE}	{ baseBlock ( "BOOL_VALUE" );}    
 
 {STRING_VALUE}	{ baseBlock ( "STRING_VALUE" );}
-
-
-%{
-    //======================================
     
-    //POINTERS
-    
-    //======================================
-%}
-
-{POINTER}	{ simpleBaseBlock ();}
-
-{REFV}		{ simpleBaseBlock ();}
-            
 %{
     //======================================
     
