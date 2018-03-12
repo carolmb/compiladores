@@ -53,11 +53,11 @@ STRUCT          registro
 TYPE            tipo
 CONST           const
 RETURN          retorne
-JUMP            pular
+JUMP            pule
 FOR             para
 WHILE           enquanto
-DO              fazer
-REPEAT          repetir
+DO              faca
+REPEAT          repita
 UNTIL           ate 
 IF              se 
 THEN            entao 
@@ -66,7 +66,7 @@ CASE            caso
 BE              seja 
 FUNC            func
 PROC            proc
-BREAK           parar
+BREAK           pare
 CONTINUE        continue
 REF             ref
 
