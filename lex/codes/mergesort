@@ -11,18 +11,18 @@ inicio
 
 	InicializarTamanho(esquerda, n1);
 	InicializarTamanho(direita, n2);
-	para (i := 0; i <= n1-1; i := i+1) fazer inicio
+	para (i := 0; i <= n1-1; i := i+1) faca inicio
 		esquerda[i] := minha_lista[ini_vet+i];
 	fim;
 
-	para (i := 0; i <= n2-1; i := i+1) fazer inicio
+	para (i := 0; i <= n2-1; i := i+1) faca inicio
 		direita[i] := minha_lista[pivo+i+1];
 	fim;
 
 	i := 0;
 	j := 0;
 
-	para (k := ini_vet; k <= fim_vet; k := k+1) fazer inicio
+	para (k := ini_vet; k <= fim_vet; k := k+1) faca inicio
 		se (i >= n1) entao inicio
 			minha_lista[k] := direita[j];
 			j := j+1;
@@ -59,17 +59,17 @@ fim;
 var i, len : inteiro;
 var lista_ord : Vetor;
 inicio
-    escrever('Insira tamanho do vetor:');
-    ler(len);
+    escreva('Insira tamanho do vetor:');
+    leia(len);
     InicializarTamanho(lista_ord, len);
-    para (i := 0; i <= len-1; i := i + 1) fazer inicio
-        ler(lista_ord[i]);
+    para (i := 0; i <= len-1; i := i + 1) faca inicio
+        leia(lista_ord[i]);
     fim;
 
     mergesort(lista_ord, 0, len-1);
 
-    escrever('Lista ordenada:');
-    para (i := 0; i <= len-1; i := i + 1) fazer inicio
-        escrever(lista_ord[i], ' ');
+    escreva('Lista ordenada:');
+    para (i := 0; i <= len-1; i := i + 1) faca inicio
+        escreva(lista_ord[i], ' ');
     fim;
 fim

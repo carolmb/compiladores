@@ -15,7 +15,7 @@ var i, j, pivo : inteiro;
 inicio
     pivo := minha_lista[fim_vet];
     i := ini_vet-1;
-    para (j := ini_vet; j <= fim_vet-1; j := j+1) fazer inicio
+    para (j := ini_vet; j <= fim_vet-1; j := j+1) faca inicio
         se (minha_lista[j] < pivo) entao inicio
             i := i+1;
             troca(minha_lista[i], minha_lista[j]);
@@ -42,17 +42,17 @@ fim;
 var i, len : inteiro;
 var lista_ord : Vetor;
 inicio
-    escrever('Insira tamanho do vetor:');
-    ler(len);
+    escreva('Insira tamanho do vetor:');
+    leia(len);
     InicializarTamanho(lista_ord, len);
-    para (i := 0; i <= len-1; i := i + 1) fazer inicio
-        ler(lista_ord[i]);
+    para (i := 0; i <= len-1; i := i + 1) faca inicio
+        leia(lista_ord[i]);
     fim;
 
     quicksort(lista_ord, 0, len-1);
 
-    escrever('Lista ordenada:');
-    para (i := 0; i <= len-1; i := i + 1) fazer inicio
-        escrever(lista_ord[i], ' ');
+    escreva('Lista ordenada:');
+    para (i := 0; i <= len-1; i := i + 1) faca inicio
+        escreva(lista_ord[i], ' ');
     fim;
 fim
