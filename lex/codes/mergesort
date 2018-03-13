@@ -1,6 +1,6 @@
 prog mergesort;
 
-tipo Vetor = vetor de inteiro;
+tipo Vetor = vetor [0..5] de inteiro;
 
 proc merge(ref minha_lista : Vetor, ini_vet : inteiro, pivo : inteiro, fim_vet : inteiro) ;
 var n1, n2, i, j, k : inteiro;

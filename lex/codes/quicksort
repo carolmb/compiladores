@@ -1,6 +1,6 @@
 prog quicksort;
 
-tipo Vetor = vetor de inteiro;
+tipo Vetor = vetor [0..5] de inteiro;
 
 proc troca(ref c1 : inteiro, ref c2 : inteiro);
 var c : inteiro; 
