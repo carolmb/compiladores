@@ -9,8 +9,6 @@ inicio
 	n1 := pivo - ini_vet + 1;
 	n2 := fim_vet - pivo;
 
-	InicializarTamanho(esquerda, n1);
-	InicializarTamanho(direita, n2);
 	para (i := 0; i <= n1-1; i := i+1) faca inicio
 		esquerda[i] := minha_lista[ini_vet+i];
 	fim;
@@ -59,9 +57,8 @@ fim;
 var i, len : inteiro;
 var lista_ord : Vetor;
 inicio
-    escreva('Insira tamanho do vetor:');
-    leia(len);
-    InicializarTamanho(lista_ord, len);
+    len := 6;
+    escreva('Insira 6 valores de inteiros:')
     para (i := 0; i <= len-1; i := i + 1) faca inicio
         leia(lista_ord[i]);
     fim;
