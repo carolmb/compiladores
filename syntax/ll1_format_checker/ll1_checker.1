@@ -1,0 +1,99 @@
+program -> "prog" "id" ";" prevdec block 
+block -> "inicio" prevcommand "fim" 
+prevdec -> declaration ";" prevdec | LAMBDA
+
+declaration -> vardec | usertype | labeldec | constdec | abstractiondec 
+
+arraydec -> "vetor" "[" rangelist "]" "de" type arraydecaux 
+arraydecaux -> "=" "(" expressionlist ")" | LAMBDA
+rangelist -> range rangelistaux 
+rangelistaux -> "," range rangelistaux |  LAMBDA   
+range -> atomic ".." atomic 
+vardec -> "var" idlist ":" varconstruction
+varconstruction ->  type decwithassign | arraydec
+ 
+decwithassign -> "=" expression | LAMBDA
+usertype -> "tipo" "id" typedec
+typedec -> arraydec | ":=" typedecaux
+typedecaux -> "registro" vardeclist "fim" | "value" | "(" idlist ")" | range
+
+vardeclist -> vardec vardeclistaux 
+vardeclistaux -> ";" vardec vardeclistaux | LAMBDA
+labeldec -> "rotulo" idlist
+constdec -> "const" "id" "=" expression
+abstractiondec -> procdec | funcdec
+procdec -> "proc" "id" "(" parameters ")" prevdec ";" block
+funcdec -> "func" "id" "(" parameters ")" ":" type ";" prevdec block
+parameters -> paramsaux | LAMBDA
+paramsaux -> "id" ":" type paramslist   | "ref" "id" ":" type paramslist 
+paramslist -> "," paramslist | LAMBDA
+prevcommand -> commands | LAMBDA
+
+commands -> callcommand commandsaux
+
+commandsaux -> ";"  commands | LAMBDA
+
+
+
+callidbegin  -> ":" <call-command>  | ":=" expression | LAMBDA
+
+calllabel -> "pule" "id"
+write -> "escreva" "(" expressionlist ")"
+read -> "leia" "(" expressionlist ")"
+return -> "retorne" expression
+loop -> forloop | whileloop | repeatloop
+forloop -> "para" "(" forstruct ")" "faca" callcommand
+forstruct -> prevfor ";" expression ";" posfor
+prevfor -> varassignlist | 
+varassignlist -> assign varassignlistaux
+  
+varassignlistaux -> "," assign varassignlistaux | LAMBDA
+posfor -> posforaux | LAMBDA
+posforaux ->  commands posforaux2
+posforaux2 -> "," commands posforaux2 | LAMBDA
+whileloop -> "enquanto" "(" expression ")" "faca" callcommand
+repeatloop -> "repita" commands "ate" expression
+
+callcommand -> ifcond | callcommand_nif
+callcommand_nif ->  "pare" | write | read  | loop | block | return |  "continue" | id callidbegin | calllabel | casecond | block
+
+ifcond  ->  "se" "(" expression ")" "entao" m opt | callcommand_nif
+m       ->  "se" "(" expression ")" m "senao" m | callcommand_nif
+opt     ->  "senao" tail | LAMBDA
+tail    ->  "se" "(" expression ")" "entao" tail | callcommand_nif
+
+
+casecond -> "caso" "(" expression ")" "seja" caselist casecondaux
+casecondaux -> "fim"| "senao" commands "fim"
+caselist -> caseclause caselistaux
+caselistaux -> ";" caselistaux2   | LAMBDA
+caselistaux2 ->  caseclause caselistaux | LAMBDA
+caseclause -> atomiclist ":" callcommand 
+
+expressionlist -> expression expressionlistaux
+expressionlistaux -> "," expression expressionlistaux
+expression -> logicexpr | numericexpr  | atomic ".." atomic
+logicexpr -> logicexprinter exprand
+exprand -> "\&\&" logicexprinter exprand  | "||" logicexprinter exprand  | "==" logicexprinter exprand | "!=" logicexprinter exprand | LAMBDA
+   
+exprleq -> ">" atomic exprleq  | "<" atomic exprleq  | ">=" atomic exprleq | "<=" atomic exprleq    | LAMBDA
+logicexprinter -> atomic exprleq |  "~" atomic exprleq  | "(" logicexpr ")"
+numericexpr -> numericexprinter exprsum
+exprsum -> "+" numericexprinter exprsum  | "-" numericexprinter exprsum | LAMBDA
+  
+exprmul -> "*" atomic exprmul | "/" atomic exprmul  | LAMBDA
+numericexprinter -> atomic exprmul | "-" atomic exprmul | "(" numericexpr ")"
+idlist -> "id" idlistaux 
+
+idlistaux -> "," "id" idlistaux |LAMBDA
+type -> "inteiro" | "real" | "logico" | "texto" | "id" 
+literal -> "literalint" | "literalreal" | "literallogico" | "literaltexto"  
+atomic -> literal | id
+   
+id -> "id" idaux
+   
+idaux -> "[" expressionlist "]" |  "." id |  "(" expressionlist ")" | LAMBDA
+   
+
+atomiclist -> atomic atomiclistaux
+atomiclistaux ->  "," atomic atomiclistaux | LAMBDA
