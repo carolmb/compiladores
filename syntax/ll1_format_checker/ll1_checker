@@ -68,21 +68,20 @@ caseclause -> atomiclist ":" callcommand
 
 expressionlist -> expression expressionlistaux
 expressionlistaux -> "," expression expressionlistaux
-expression -> logicexpr 
-logicexpr -> logicexprinter exprand
-exprand -> "and" logicexprinter exprand  | "or" logicexprinter exprand  | "==" logicexprinter exprand | "!=" logicexprinter exprand | LAMBDA
-   
-exprleq -> ">" logicexprinter   | "<" logicexprinter   | ">=" logicexprinter  | "<=" logicexprinter   | LAMBDA
-logicexprinter -> numericexpr exprleq |  "~" numericexpr exprleq 
 
-numericexpr -> numericexprinter exprsum
-exprsum -> "+" numericexprinter exprsum  | "-" numericexprinter exprsum | LAMBDA
+expression -> logic | expression "and" logic | expression "or" logic | expression "==" logic | expression "!=" logic
 
-numericexprinter -> simpleexpr exprmul
-exprmul -> "*" simpleexpr exprmul | "/" simpleexpr exprmul  | LAMBDA
-simpleexpr -> atomic optrange | optminus "(" logicexpr ")"
-optrange -> ".." atomic | LAMBDA
-optminus -> "-" | LAMBDA
+expression -> logic expressionprime
+expressionprime -> "and" logic expressionprime | "or" logic expressionprime | "==" logic expressionprime | "!=" logic expressionprime | LAMBDA
+
+
+logic -> logicprime | logic "<" logicprime | logic ">" logicprime | logic "<=" logicprime | logic ">=" logicprime 
+logicprime -> numeric | "~" "(" expression ")" | "~" atomic
+numeric -> numeric "+" numericprime | numeric "-" numericprime
+numericprime -> numericprimeprime "*" numericprime | numericprimeprime "/" numericprime
+numericprimeprime -> atomic | "-" atomic | "-" "(" expression ")" | "(" "expression" ")"
+
+
 idlist -> "id" idlistaux 
 
 idlistaux -> "," "id" idlistaux |LAMBDA
