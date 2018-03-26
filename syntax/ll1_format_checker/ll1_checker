@@ -35,7 +35,7 @@ commandsaux -> ";"  commands | LAMBDA
 
 
 
-callidbegin  -> ":" <call-command>  | ":=" expression | LAMBDA
+callidbegin  -> ":" callcommand  | ":=" expression | LAMBDA
 
 calllabel -> "pule" "id"
 write -> "escreva" "(" expressionlist ")"
@@ -72,7 +72,7 @@ expression -> logicexpr
 logicexpr -> logicexprinter exprand
 exprand -> "and" logicexprinter exprand  | "or" logicexprinter exprand  | "==" logicexprinter exprand | "!=" logicexprinter exprand | LAMBDA
    
-exprleq -> ">" logicexprinter exprleq  | "<" logicexprinter exprleq  | ">=" logicexprinter exprleq | "<=" logicexprinter exprleq  | LAMBDA
+exprleq -> ">" logicexprinter   | "<" logicexprinter   | ">=" logicexprinter  | "<=" logicexprinter   | LAMBDA
 logicexprinter -> numericexpr exprleq |  "~" numericexpr exprleq 
 
 numericexpr -> numericexprinter exprsum

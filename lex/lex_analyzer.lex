@@ -1,27 +1,44 @@
 %{
-	//VARIABLES
+	//LIBRARY
+	#include "constants.c"
 
+	//STRUCTS
+	struct Token {
+	    LEXEMA key;
+	    const char* name;
+	    const char* value;
+	    int line;
+	    int column;
+	};
+    
+    //DEFINE
+    #define YY_DECL Token* yylex(void)
+    
+	//VARIABLES
+    
     int lines = 1;
     int column = 1;
 %}
 
 %{
 	//FUNCTIONS AND PROCEDURES
-	
-	void baseBlock ( const char* token_id ) {
-	    printf( "( %s, %s, %d, %d )\n",token_id, yytext, lines, column);
-        column += yyleng;
+    
+	Token* baseBlock ( LEXEMA token_id, const char* name) {
+	    
+	    Token *t = new Token;
+	    
+	    t->key = token_id;
+	    t->name = name;
+	    t->value = yytext;
+	    t->line = lines;
+	    t->column = column;
+	    
+	    column += yyleng;
+	    
+	    return t;
+        
 	}
 	
-	void simpleBaseBlock () {
-	    printf( "( %s, %d, %d )\n", yytext, lines, column);
-        column += yyleng;
-	}
-	
-	void error () {
-	    printf( "( (ERROR) Unrecognized character: %s, %d, %d )\n", yytext, lines, column);
-        column += yyleng;
-	}
 %}
 
 
@@ -44,7 +61,7 @@ VECTOR          vetor
 
 /*KEYWORDS*/
 PROG            prog                
-BEGIN           inicio              
+INIT           inicio              
 END             fim
 OF              de 
 VAR             var
@@ -74,7 +91,7 @@ REF             ref
 SUM             "+"
 MINOR           "-"
 MULT            "*"
-DIVSION         "/"
+DIVISION        "/"
 MOD             "%"
 
 /*LOGIC OPERATOR*/
@@ -135,15 +152,15 @@ SCOMMENT        \*\*.*
     //======================================
 %}
 
-{INT}       { baseBlock ( "INT" );}
+{INT}       { return baseBlock ( LEXEMA::INT, "INT" ); }
 
-{REAL}      { baseBlock ( "REAL" );}
+{REAL}      { return baseBlock ( LEXEMA::REAL, "REAL" ); }
             
-{BOOL}      { baseBlock ( "BOOL" );}
+{BOOL}      { return baseBlock ( LEXEMA::BOOL, "BOOL" ); }
 
-{STRING}    { baseBlock ( "STRING" );}	
+{STRING}    { return baseBlock ( LEXEMA::STRING, "STRING" ); }	
 
-{VECTOR}	{ baseBlock ( "VECTOR" );}         
+{VECTOR}	{ return baseBlock ( LEXEMA::VECTOR, "VECTOR" ); }    
 
 %{
     //======================================
@@ -153,15 +170,15 @@ SCOMMENT        \*\*.*
     //======================================
 %}
 
-{HEXA_VALUE}	{ baseBlock ( "HEXA_VALUE" );} 
+{HEXA_VALUE}	{ return baseBlock ( LEXEMA::HEXA_VALUE, "HEXA_VALUE" ); } 
 
-{INT_VALUE}		{ baseBlock ( "INT_VALUE" );}    
+{INT_VALUE}		{ return baseBlock ( LEXEMA::INT_VALUE, "INT_VALUE" ); }    
 
-{REAL_VALUE}	{ baseBlock ( "REAL_VALUE" );}    
+{REAL_VALUE}	{ return baseBlock ( LEXEMA::REAL_VALUE, "REAL_VALUE" ); }    
 
-{BOOL_VALUE}	{ baseBlock ( "BOOL_VALUE" );}    
+{BOOL_VALUE}	{ return baseBlock ( LEXEMA::BOOL_VALUE, "BOOL_VALUE" ); }    
 
-{STRING_VALUE}	{ baseBlock ( "STRING_VALUE" );}
+{STRING_VALUE}	{ return baseBlock ( LEXEMA::STRING_VALUE, "STRING_VALUE" ); }
     
 %{
     //======================================
@@ -171,25 +188,25 @@ SCOMMENT        \*\*.*
     //======================================
 %}
 
-{PROG}      { baseBlock ( "PROG" );}    
+{PROG}      { return baseBlock ( LEXEMA::PROG, "PROG" ); }    
 
-{BEGIN}		{ baseBlock ( "BEGIN" );}    
+{INIT}		{ return baseBlock ( LEXEMA::INIT, "INIT"); }    
 			
-{END}	    { baseBlock ( "END" );}    
+{END}	    { return baseBlock ( LEXEMA::END, "END" ); }    
 
-{OF}		{ baseBlock ( "OF" );}    
+{OF}		{ return baseBlock ( LEXEMA::OF, "OF" ); }    
 			
-{VAR}		{ baseBlock ( "VAR" );}    
+{VAR}		{ return baseBlock ( LEXEMA::VAR, "VAR" ); }    
 			
-{LABEL}		{ baseBlock ( "LABEL" );}    
+{LABEL}		{ return baseBlock ( LEXEMA::LABEL, "LABEL" ); }    
 			
-{STRUCT}	{ baseBlock ( "STRUCT" );}    
+{STRUCT}	{ return baseBlock ( LEXEMA::STRUCT, "STRUCT" ); }    
 			
-{TYPE}		{ baseBlock ( "TYPE" );}    
+{TYPE}		{ return baseBlock ( LEXEMA::TYPE, "TYPE" ); }    
 			
-{CONST}		{ baseBlock ( "CONST" );}    
+{CONST}		{ return baseBlock ( LEXEMA::CONST, "CONST" ); }    
 
-{REF}	    { baseBlock ( "REF" );}    
+{REF}	    { return baseBlock ( LEXEMA::REF, "REF" ); }    
 			
 %{
     //======================================
@@ -199,21 +216,21 @@ SCOMMENT        \*\*.*
     //======================================
 %}
 			
-{JUMP}		{ baseBlock ( "JUMP" );}    
+{JUMP}		{ return baseBlock ( LEXEMA::JUMP, "JUMP" ); }    
 			
-{FOR}		{ baseBlock ( "FOR" );}    
+{FOR}		{ return baseBlock ( LEXEMA::FOR, "FOR" ); }    
 			
-{WHILE}		{ baseBlock ( "WHILE" );}    
+{WHILE}		{ return baseBlock ( LEXEMA::WHILE, "WHILE" ); }    
 			
-{DO}		{ baseBlock ( "DO" );}    
+{DO}		{ return baseBlock ( LEXEMA::DO, "DO" ); }    
 			
-{REPEAT}	{ baseBlock ( "REPEAT" );}    
+{REPEAT}	{ return baseBlock ( LEXEMA::REPEAT, "REPEAT" ); }    
 			
-{UNTIL}		{ baseBlock ( "UNTIL" );}    
+{UNTIL}		{ return baseBlock ( LEXEMA::UNTIL, "ULTIL" ); }    
 			
-{BREAK}		{ baseBlock ( "BREAK" );}    
+{BREAK}		{ return baseBlock ( LEXEMA::BREAK, "BREAK" ); }    
 			
-{CONTINUE}	{ baseBlock ( "CONTINUE" );}    
+{CONTINUE}	{ return baseBlock ( LEXEMA::CONTINUE, "CONTINUE" ); }    
 
 %{
     //======================================
@@ -224,15 +241,15 @@ SCOMMENT        \*\*.*
 %}
 	
 			
-{IF}		{ baseBlock ( "IF" );} 
+{IF}		{ return baseBlock ( LEXEMA::IF, "IF" ); } 
 			
-{THEN}		{ baseBlock ( "THEN" );} 
+{THEN}		{ return baseBlock ( LEXEMA::THEN, "THEN" ); } 
 			
-{ELSE}		{ baseBlock ( "ELSE" );} 
+{ELSE}		{ return baseBlock ( LEXEMA::ELSE, "ELSE" ); } 
 			
-{CASE}		{ baseBlock ( "CASE" );} 
+{CASE}		{ return baseBlock ( LEXEMA::CASE, "CASE" ); } 
 			
-{BE}		{ baseBlock ( "BE" );} 
+{BE}		{ return baseBlock ( LEXEMA::BE, "BE" ); } 
 
 %{
     //======================================
@@ -242,11 +259,11 @@ SCOMMENT        \*\*.*
     //======================================
 %}
 			
-{FUNC}		{ baseBlock ( "FUNC" );} 
+{FUNC}		{ return baseBlock ( LEXEMA::FUNC, "FUNC" ); } 
 			
-{PROC}		{ baseBlock ( "PROC" );} 
+{PROC}		{ return baseBlock ( LEXEMA::PROC, "PROC" ); } 
 
-{RETURN}	{ baseBlock ( "RETURN" );} 
+{RETURN}	{ return baseBlock ( LEXEMA::RETURN, "RETURN" ); } 
 
 %{
     //======================================
@@ -256,15 +273,15 @@ SCOMMENT        \*\*.*
     //======================================
 %}
 
-{SUM}		{ simpleBaseBlock ();}
+{SUM}		{ return baseBlock ( LEXEMA::SUM, "SUM" ); } 
  
-{MINOR}		{ simpleBaseBlock ();}
+{MINOR}		{ return baseBlock ( LEXEMA::MINOR, "MINOR" ); } 
  
-{MULT}		{ simpleBaseBlock ();}
+{MULT}		{ return baseBlock ( LEXEMA::MULT, "MULT" ); } 
  
-{DIVSION}	{ simpleBaseBlock ();}
+{DIVISION}	{ return baseBlock ( LEXEMA::DIVISION, "DIVISION" ); } 
  
-{MOD}		{ simpleBaseBlock ();}
+{MOD}		{ return baseBlock ( LEXEMA::MOD, "MOD" ); } 
 
 %{
     //======================================
@@ -274,23 +291,23 @@ SCOMMENT        \*\*.*
     //======================================
 %}
  
-{AND}		{ baseBlock ( "AND" );} 
+{AND}		{ return baseBlock ( LEXEMA::AND, "AND" ); } 
  
-{OR}	    { baseBlock ( "OR" );} 
+{OR}	    { return baseBlock ( LEXEMA::OR, "OR" ); } 
  
-{LESS}		{ baseBlock ( "LESS" );} 
+{LESS}		{ return baseBlock ( LEXEMA::LESS, "LESS" ); } 
 
-{NOT}	    { baseBlock ( "NOT" );} 
+{NOT}	    { return baseBlock ( LEXEMA::NOT, "NOT" ); } 
  
-{GREATER}	{ baseBlock ( "GREATER" );} 
+{GREATER}	{ return baseBlock ( LEXEMA::GREATER, "GREATER" ); } 
  
-{LESSEQ}	{ baseBlock ( "LESSEQ" );} 
+{LESSEQ}	{ return baseBlock ( LEXEMA::LESSEQ, "LESSEQ" ); } 
  
-{GREATEQ}	{ baseBlock ( "GREATEQ" );} 
+{GREATEQ}	{ return baseBlock ( LEXEMA::GREATEQ, "GREATEQ" ); } 
  
-{EQUAL}		{ baseBlock ( "EQUAL" );} 
+{EQUAL}		{ return baseBlock ( LEXEMA::EQUAL, "EQUAL" ); } 
  
-{NOTEQ}		{ baseBlock ( "NOTEQ" );} 
+{NOTEQ}		{ return baseBlock ( LEXEMA::NOTEQ, "NOTEQ" ); } 
 			
 %{
     //======================================
@@ -300,46 +317,83 @@ SCOMMENT        \*\*.*
     //======================================
 %}
  
-{SEMICOMMA}	{ simpleBaseBlock ();}
+{SEMICOMMA}	{ return baseBlock ( LEXEMA::SEMICOMMA, "SEMICOMMA" ); } 
  
-{COMMA}		{ simpleBaseBlock ();}
+{COMMA}		{ return baseBlock ( LEXEMA::COMMA, "COMMA" ); } 
  
-{COLON}		{ simpleBaseBlock ();}
+{COLON}		{ return baseBlock ( LEXEMA::COLON,"COLON" ); } 
  
-{LPARENT}	{ simpleBaseBlock ();}
+{LPARENT}	{ return baseBlock ( LEXEMA::LPARENT, "LPARENT" ); } 
  
-{RPARENT}	{ simpleBaseBlock ();}
+{RPARENT}	{ return baseBlock ( LEXEMA::RPARENT, "RPARENT" ); } 
 
-{LBRACKET}	{ simpleBaseBlock ();}
+{LBRACKET}	{ return baseBlock ( LEXEMA::LBRACKET, "LBRACKET" ); } 
  
-{RBRACKET}	{ simpleBaseBlock ();}
+{RBRACKET}	{ return baseBlock ( LEXEMA::RBRACKET, "RBRACKET" ); } 
  
-{DOUBLEDOT}	{ baseBlock ( "DOUBLEDOT");}
+{DOUBLEDOT}	{ return baseBlock ( LEXEMA::DOUBLEDOT, "DOUBLEDOT" ); } 
  
-{QUOTE}		{ simpleBaseBlock ();}
+{QUOTE}		{ return baseBlock ( LEXEMA::QUOTE, "QUOTE" ); } 
  
-{ASSIGN}	{ simpleBaseBlock ();}
+{ASSIGN}	{ return baseBlock ( LEXEMA::ASSIGN, "ASSIGN" ); } 
  
-{CASSIGN}	{ baseBlock ( "CASSIGN" );}
+{CASSIGN}	{ return baseBlock ( LEXEMA::CASSIGN, "CASSIGN" ); } 
 
-{ID}        { baseBlock ( "ID" );}
+{ID}        { return baseBlock ( LEXEMA::ID, "ID" ); }
 
 [ \t]+      {
                 /* eat up whitespace */
                 column += yyleng;
             }
 
-.           {error();}
+<<EOF>>     { return baseBlock ( LEXEMA::FINAL, "FINAL" ); }   
+
+.           { return baseBlock ( LEXEMA::ERROR, "ERROR" ); }
 
 %%
 
 int main( int argc, char **argv ) {
 	++argv, --argc;  /* skip over program name */
-	if ( argc > 0 )
+	
+	if ( argc > 0 ){
 	        yyin = fopen( argv[0], "r" );
-	else
+	}else{
 	        yyin = stdin;
-
-	yylex();
+    }
+    
+    Token* t = yylex();
+    
+    while(t->key!=LEXEMA::FINAL){
+        
+        switch(t->key){
+            case LEXEMA::ERROR:
+                printf( "( (ERROR) Unrecognized character: %s, %d, %d )\n", t->value, lines, column);
+            break;
+            case LEXEMA::SUM:
+            case LEXEMA::MINOR:
+            case LEXEMA::MULT:
+            case LEXEMA::DIVISION:
+            case LEXEMA::MOD:
+            case LEXEMA::SEMICOMMA:
+            case LEXEMA::COMMA:
+            case LEXEMA::COLON:
+            case LEXEMA::LPARENT:
+            case LEXEMA::RPARENT:
+            case LEXEMA::LBRACKET:
+            case LEXEMA::RBRACKET:
+            case LEXEMA::DOUBLEDOT:
+            case LEXEMA::QUOTE:
+                 printf("( %s, %d, %d ) \n", t->value, t->line, t->column );   
+            break;  
+            default:
+                printf("( %s, %s, %d, %d ) \n", t->name, t->value, t->line, t->column ); 
+        }
+        
+        delete t;
+        
+        t = yylex();
+        
+    }
+    
 }
 
