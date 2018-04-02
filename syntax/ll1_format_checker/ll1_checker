@@ -69,8 +69,10 @@ caseclause -> atomiclist ":" callcommand
 expressionlist -> expression expressionlistaux
 expressionlistaux -> "," expression expressionlistaux
 expression -> logicexpr 
-logicexpr -> logicexprinter exprand
-exprand -> "and" logicexprinter exprand  | "or" logicexprinter exprand  | "==" logicexprinter exprand | "!=" logicexprinter exprand | LAMBDA
+logicexpr -> logicexprinter bla
+bla -> exprand | expreq 
+exprand -> "and" expreq exprand  | "or" expreq exprand  | LAMBDA
+expreq -> "==" logicexprinter expreq | "!=" logicexprinter expreq | LAMBDA
    
 exprleq -> ">" logicexprinter   | "<" logicexprinter   | ">=" logicexprinter  | "<=" logicexprinter   | LAMBDA
 logicexprinter -> numericexpr exprleq |  "~" numericexpr exprleq 
@@ -80,9 +82,11 @@ exprsum -> "+" numericexprinter exprsum  | "-" numericexprinter exprsum | LAMBDA
 
 numericexprinter -> simpleexpr exprmul
 exprmul -> "*" simpleexpr exprmul | "/" simpleexpr exprmul  | LAMBDA
-simpleexpr -> atomic optrange | optminus "(" logicexpr ")"
+simpleexpr -> atomic optrange | optminus optbracket |  "(" logicexpr ")"
 optrange -> ".." atomic | LAMBDA
-optminus -> "-" | LAMBDA
+optminus -> "-" | "+"
+optbracket -> "(" logicexpr ")" | atomic
+
 idlist -> "id" idlistaux 
 
 idlistaux -> "," "id" idlistaux |LAMBDA
