@@ -1,7 +1,7 @@
 #ifndef _CONSTANTS_
 #define _CONSTANTS_
 
-enum class LEXEMA {
+typedef enum  {
     HEXA_VALUE,		
     INT_VALUE,       
     REAL_VALUE,      
@@ -46,41 +46,41 @@ enum class LEXEMA {
     REF,             
     
     /*ARITHMETIC OPERATOR*/
-    SUM,             
-    MINOR,           
-    MULT,            
-    DIVISION,         
-    MOD,             
+    SUM = '+',             
+    MINOR = '-',           
+    MULT = '*',            
+    DIVISION = '/',         
+    MOD = '%',             
     
     /*LOGIC OPERATOR*/
-    NOT,             
+    NOT = '!',             
     AND,             
     OR,              
-    LESS,            
-    GREATER,         
+    LESS = '<',            
+    GREATER = '>',         
     LESSEQ,          
     GREATEQ,         
     EQUAL,           
     NOTEQ,           
     
     /*OTHER OPERATOR*/
-    SEMICOMMA,       
-    COMMA,           
-    COLON,           
-    LPARENT,         
-    RPARENT,         
-    LBRACKET,        
-    RBRACKET,        
+    SEMICOMMA = ';',        
+    COMMA = ',',           
+    COLON = ':',           
+    LPARENT = '(',         
+    RPARENT = ')',         
+    LBRACKET = '[',        
+    RBRACKET = ']',        
     DOUBLEDOT,      
-    QUOTE,           
+    QUOTE = '\'',           
     
-    ASSIGN,          
+    ASSIGN = '=',          
     CASSIGN,
     
     /*ADDITIONS*/
     FINAL,
     ERROR
     
-};
+}KEYWORD;
 
 #endif
