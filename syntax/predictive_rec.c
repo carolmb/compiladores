@@ -1,3 +1,26 @@
+#ifndef _PREDETIVE_REC_
+#define _PREDETIVE_REC_
+
+void eat(KEYWORD key){
+     //if (t)
+}
+
+void program(Token* t){
+    
+    switch (t->key){
+        case PROG:
+            eat(PROG);
+            eat(ID);
+            eat(';');
+            //prevdec();
+            //block();
+        break;
+        default:
+            printf("expected id, num, or left-paren");
+    }
+}
+    
+/*
 program -> "prog" "id" ";" prevdec block 
 block -> "inicio" prevcommand "fim" 
 prevdec -> declaration ";" prevdec | LAMBDA
@@ -101,3 +124,8 @@ idaux -> "[" expressionlist "]" |  "." id |  "(" expressionlist ")" | LAMBDA
 
 atomiclist -> atomic atomiclistaux
 atomiclistaux ->  "," atomic atomiclistaux | LAMBDA
+
+
+*/
+
+#endif 

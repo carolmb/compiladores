@@ -1,6 +1,5 @@
 %{
 	//LIBRARY
-	#include "../syntax/rules.c"
     #include "../token.c"
     
     //DEFINE
@@ -342,45 +341,18 @@ SCOMMENT        \*\*.*
 
 %%
 
-int main( int argc, char **argv ) {
-	++argv, --argc;  /* skip over program name */
+Token* getToken(){
+    return yylex();
+}
+
+void openFile(int argc, char **argv){
+    ++argv, --argc;  /* skip over program name */
 	
 	if ( argc > 0 ){
 	        yyin = fopen( argv[0], "r" );
 	}else{
 	        yyin = stdin;
     }
-    
-    Token* t = yylex();
-    
-    while(t->key!=FINAL){
-        
-        switch(t->key){
-            case ERROR:
-                printf( "( (ERROR) Unrecognized character: %s, %d, %d )\n", t->value, lines, column);
-            break;
-            case '+':
-            case '-':
-            case '*':
-            case '/':
-            case '%':
-            case ';':
-            case ',':
-            case ':':
-            case '(':
-            case ')':
-            case '[':
-            case ']':
-            case '\'':
-                 printf("( %s, %d, %d ) \n", t->value, t->line, t->column );   
-            break;  
-            default:
-                printf("( %s, %s, %d, %d ) \n", t->name, t->value, t->line, t->column ); 
-        }
-        
-        free(t);
-        
-        t = yylex();
-    }
 }
+
 
