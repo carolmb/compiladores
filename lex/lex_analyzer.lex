@@ -15,7 +15,9 @@
     
 	Token* baseBlock ( KEYWORD token_id, const char* name) {
 	    
-	    Token *t = malloc(sizeof(Token));
+	    //Token *t = malloc(sizeof(Token));
+	    
+	    Token *t = new Token;
 	    
 	    t->key = token_id;
 	    t->name = name;

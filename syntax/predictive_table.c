@@ -1,6 +1,8 @@
 #ifndef _PREDITIVE_TABLE_
 #define _PREDITIVE_TABLE_
 
+void runTable(){}
+
 // void eat(KEYWORD key){
 //      //if (t)
 // }

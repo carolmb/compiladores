@@ -6,9 +6,17 @@
 int main( int argc, char **argv ) {
     
     openFile(argc, argv);
-     
-    Token *t = getToken();
-
-    printf("( %s, %d, %d ) \n", t->value, t->line, t->column );  
-                 
-}
+    
+    ++argv, --argc;  /* skip over program name */
+    // chose which syntax to use
+    if(strcmp(argv[1], "-rec") == 0){
+        PredictiveRecursive comp;
+        comp.runRec();
+    }else if (strcmp(argv[1], "-table") == 0){
+        runTable();
+    }else{
+        printf("Defina o tipo de analisador sintático\n");
+    }
+    
+    return 0;
+}        

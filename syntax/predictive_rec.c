@@ -1,25 +1,61 @@
 #ifndef _PREDETIVE_REC_
 #define _PREDETIVE_REC_
 
-void eat(KEYWORD key){
-     //if (t)
-}
+#include <iostream>
 
-void program(Token* t){
-    
-    switch (t->key){
-        case PROG:
-            eat(PROG);
-            eat(ID);
-            eat(';');
-            //prevdec();
-            //block();
-        break;
-        default:
-            printf("expected id, num, or left-paren");
+class PredictiveRecursive{
+private:
+    Token* t = NULL;
+public:    
+    void error(){
+        std::cerr << "Error in Token " << this->t->name << " value : " << this->t->value << std::endl;  
     }
-}
     
+    void advance(){
+        delete t;
+        t = getToken();
+    }
+    
+    void eat(KEYWORD key){
+        if(this->t!=NULL && this->t->key==key){
+            this->advance();
+        }else{
+            this->error();
+        }    
+    }
+    
+    void eat(int key){
+        if(this->t!=NULL && this->t->key==key){
+            this->advance();
+        }else{
+            this->error();
+        }    
+    }
+    
+    void program(){
+        
+        this->t = getToken();
+        
+        switch (t->key){
+            case PROG:
+                eat(PROG);
+                eat(ID);
+                eat(';');
+                //prevdec();
+                //block();
+            break;
+            default:
+                printf("expected id, num, or left-paren");
+        }
+        
+    }
+    
+    void runRec(){
+        this->program();
+        
+        this->eat(FINAL);
+    }
+};    
 /*
 program -> "prog" "id" ";" prevdec block 
 block -> "inicio" prevcommand "fim" 
