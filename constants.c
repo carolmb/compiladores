@@ -168,4 +168,8 @@ bool is_non_terminal(int value){
 	return false;
 }
 
+int idx(int value){
+	return value - NOT;
+}
+
 #endif
