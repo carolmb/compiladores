@@ -2,26 +2,36 @@
 #define _CONSTANTS_
 
 typedef enum {
-    HEXA_VALUE,		
+	NOT = '!',  
+	HEXA_VALUE,		
     INT_VALUE,       
-    REAL_VALUE,      
-    BOOL_VALUE,       
-    STRING_VALUE,
-        
+    REAL_VALUE, 
+	MOD = '%',
+	BOOL_VALUE,
+	QUOTE = '\'',
+	LPARENT = '(',         
+    RPARENT = ')',
+    MULT = '*', 
+    SUM = '+', 
+    COMMA = ',',             
+    MINOR = '-',           
+    DOT = '.', //ADD NO DOC
+    DIVISION = '/',         
     ID,
-
-    /*PRIMITIVE TYPES*/
     INT,
     REAL,
     BOOL,
     STRING,
     VECTOR,      
-
-    /*KEYWORDS*/
     PROG,                   
     INIT,              
     END,
-    OF,
+    OF,   
+    COLON = ':',
+    SEMICOMMA = ';',        
+    LESS = '<',
+    ASSIGN = '=',            
+    GREATER = '>',         
     VAR,
     LABEL,           
     STRUCT,         
@@ -43,48 +53,27 @@ typedef enum {
     PROC,            
     BREAK,          
     CONTINUE,        
-    REF,             
-    
-    /*ARITHMETIC OPERATOR*/
-    SUM = '+',             
-    MINOR = '-',           
-    MULT = '*',            
-    DIVISION = '/',         
-    MOD = '%',             
-    
-    /*LOGIC OPERATOR*/
-    NOT = '!',             
+    REF,    
     AND,             
-    OR,              
-    LESS = '<',            
-    GREATER = '>',         
+    OR,                 
     LESSEQ,          
     GREATEQ,         
     EQUAL,           
-    NOTEQ,           
-    
-    /*OTHER OPERATOR*/
-    SEMICOMMA = ';',        
-    COMMA = ',',           
-    COLON = ':',           
-    LPARENT = '(',         
-    RPARENT = ')',         
-    LBRACKET = '[',        
-    RBRACKET = ']',        
-    DOUBLEDOT,      
-    QUOTE = '\'',           
-    
-    ASSIGN = '=',          
+    NOTEQ,    
+    LBRACKET = '[', 
+    STRING_VALUE,
+    RBRACKET = ']',                   
+    DOUBLEDOT,             
     CASSIGN,
-    
-    /*ADDITIONS*/
     FINAL,
     ERROR
     
 }KEYWORD;
 
+// namespace non_terminals{
+
 typedef enum {
-	PROGRAM_,
+	PROGRAM_ = ERROR+1,
 	BLOCK_,
 	PREVDEC_,
 	ARRAYDEC_,
@@ -165,6 +154,18 @@ typedef enum {
 	EXPRESSION_,
 	EXPRESSIONLIST_
 } NONTERMINALS;
+// };
 
+bool is_terminal(int value){
+	if(value >= NOT && value <= ERROR)
+		return true;
+	return false;
+}
+
+bool is_non_terminal(int value){
+	if(value >= PROGRAM_ && value <= EXPRESSIONLIST_)
+		return true;
+	return false;
+}
 
 #endif
