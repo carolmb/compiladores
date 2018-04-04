@@ -10,5 +10,5 @@ int main( int argc, char **argv ) {
     Token *t = getToken();
 
     printf("( %s, %d, %d ) \n", t->value, t->line, t->column );  
-                 
+    program2(t);         
 }
