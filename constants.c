@@ -1,7 +1,7 @@
 #ifndef _CONSTANTS_
 #define _CONSTANTS_
 
-typedef enum  {
+typedef enum {
     HEXA_VALUE,		
     INT_VALUE,       
     REAL_VALUE,      

@@ -1,17 +1,17 @@
 #ifndef _PREDITIVE_TABLE_
 #define _PREDITIVE_TABLE_
 
-// #include <string.h>
-// #include <stack>
-// #include <vector>
+#include <string.h>
+#include <stack>
+#include <vector>
 
-// typedef vector<vector<vector<int>>> matrix; 
+typedef std::vector<std::vector<std::vector<int> > > matrix; 
 
 NONTERMINALS nonterminals;
 
-void program2(){
-	// std::stack<int> stack;
-	// matrix mtx;
+void runTable(){
+	std::stack<int> stack;
+	matrix mtx;
 	
 	Token *t = getToken();
 	while(t->key != FINAL) {
