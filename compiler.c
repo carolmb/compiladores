@@ -5,8 +5,6 @@
 
 int main( int argc, char **argv ) {
     
-    std::cout << "NOT: " << NOT << " PROC: " << PROC << std::endl; 
-
     openFile(argc, argv);
     
     ++argv, --argc;  /* skip over program name */
