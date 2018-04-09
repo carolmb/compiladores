@@ -5,6 +5,8 @@
 
 int main( int argc, char **argv ) {
     
+    // std::cout << "NOT: " << NOT << " PROC: " << PROC << std::endl; 
+
     openFile(argc, argv);
     
     ++argv, --argc;  /* skip over program name */
@@ -13,7 +15,8 @@ int main( int argc, char **argv ) {
         PredictiveRecursive comp;
         comp.runRec();
     }else if (strcmp(argv[1], "-table") == 0){
-        runTable();
+        // runTable();
+        readMatrix("syntax/spt.csv");
     }else{
         printf("Defina o tipo de analisador sintático\n");
     }

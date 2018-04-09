@@ -6,8 +6,14 @@
 #include <vector>
 #include <iterator>
 
-typedef std::vector<int> list;
-typedef std::vector<std::vector<list> > matrix; 
+#include <fstream>
+
+using namespace std;
+
+typedef vector<int> list;
+typedef vector<vector<list> > matrix; 
+
+
 
 NONTERMINALS nonterminals;
 
@@ -19,11 +25,115 @@ bool is_valid_access(int non_terminal, int terminal) {
 void init_table(matrix &mtx) {
 	int n_non_terminals = EXPRESSIONLIST_ - PROGRAM_ + 1;
 	int n_terminals = ERROR - NOT;
-	mtx = matrix(n_non_terminals, std::vector<list>(n_terminals, std::vector<int>()));	
+	mtx = matrix(n_non_terminals, vector<list>(n_terminals, vector<int>()));	
 }
 
+
+/* 	Pega uma string correspondente a um elemento da tabela, e retorna uma lista
+	O ideal é que a lista seja de inteiros, correspondendo ao índice da tabela
+	*/
+vector<string> splite(string text){
+	vector<string> parts;
+	string part = "";
+	for(unsigned int i = 0; i < text.size(); i++){
+
+		
+
+		switch(text[i]){
+			case ' ':
+				parts.push_back(part);
+				part = "";
+				break;
+			case ',':
+				return parts;
+				break;
+			default:
+				part = part + text[i];
+				break;
+		}
+
+	}
+	
+	//Caso em que só o elemento aparece
+	if(part.size() > 0)
+		parts.push_back(part);
+	return parts;
+}
+
+
+/* 	Salvei em XLS
+	Exportei para csv modificando as tabulações para '\t'
+	Com isso não há coflito com o ';' ou com ','
+	*/
+void readMatrix(const char* file_name){
+
+	//Buffer de leitura do arquivo
+	ifstream fstream;
+	fstream.open(file_name, ifstream::in);
+
+	//variável auxiliar para armazenar os campos da tabela
+	string field;
+
+	//Tabela lida do CSV
+	vector<vector<vector<string> > > elements;
+
+
+	while(fstream.good()){
+
+		//Cria a primeira linha
+		if(elements.size() == 0) elements.push_back(vector<vector<string> >());
+		
+		// Ler um caractere do arquivo
+		char c_read;
+		c_read = fstream.get();
+
+		// Se for uma tabulação (delimitador de campo)
+	    if( c_read == '\t' ) {
+	    	
+	    	// Insere o novo elemento
+	    	elements[elements.size()-1].push_back(splite(field));
+	    	
+	    	// Limpa para ler o próximo campo
+	    	field = "";
+
+	    // Se for final de linha
+	    } else if( c_read == '\n') {
+	    	
+	    	//Cria uma nova linha da matriz
+	    	elements.push_back(vector<vector<string> >());
+	    	
+	    	// Garante a Limpeza do campo para ler o próximo campo na nova linha (Pode ser que não seja necessário)
+	    	field = "";
+
+	    } else {
+
+	    	// Constrói o campo, byte a byte
+	    	field = field + c_read;
+
+	    }
+		
+	} 
+
+	//Imprime o resultado
+	for(unsigned int i = 0; i <  elements.size(); i++){
+		for(unsigned int j = 0; j <  elements[i].size(); j++){
+			for(unsigned int k = 0; k <  elements[i][j].size(); k++){
+				cout << "[" << elements[i][j][k] << "]";
+			}
+			cout << '\t';
+		}
+		cout << endl;
+	}
+	
+	fstream.close();
+}
+
+
+
+
+
 void runTable(){
-	std::stack<int> stack;
+	stack<int> stack;
 	matrix mtx;
 	init_table(mtx);
 
@@ -53,5 +163,7 @@ void runTable(){
 		t = getToken();
 	}
 }
+
+
 
 #endif
