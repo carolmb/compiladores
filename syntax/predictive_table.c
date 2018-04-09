@@ -5,6 +5,7 @@
 #include <stack>
 #include <vector>
 #include <iterator>
+#include <map>
 
 #include <fstream>
 
@@ -34,31 +35,111 @@ void init_table(matrix &mtx) {
 	*/
 vector<string> splite(string text){
 	vector<string> parts;
-	string part = "";
-	for(unsigned int i = 0; i < text.size(); i++){
+	parts.push_back(text);
+	
+	// vector<string> parts;
+	// string part = "";
+	// for(unsigned int i = 0; i < text.size(); i++){
 
 		
 
-		switch(text[i]){
-			case ' ':
-				parts.push_back(part);
-				part = "";
-				break;
-			case ',':
-				return parts;
-				break;
-			default:
-				part = part + text[i];
-				break;
-		}
+	// 	switch(text[i]){
+	// 		case ' ':
+	// 			parts.push_back(part);
+	// 			part = "";
+	// 			break;
+	// 		case ',':
+	// 			return parts;
+	// 			break;
+	// 		default:
+	// 			part = part + text[i];
+	// 			break;
+	// 	}
 
-	}
+	// }
 	
-	//Caso em que só o elemento aparece
-	if(part.size() > 0)
-		parts.push_back(part);
+	// //Caso em que só o elemento aparece
+	// if(part.size() > 0)
+	// 	parts.push_back(part);
 	return parts;
 }
+
+map<string,int> mapToken;
+
+void translate(string key){
+	vector<string> terminals = {"~","literalhexa","literalint","literalreal","FINAL","literallogico","continue",
+		"(",")","*","+",",","-",".","/","id","inteiro","real","logico","texto","vetor","prog","inicio","fim",
+		"de","enquanto",":",";","<","=",">","var","rotulo","registro","tipo","const","retorne","pule","faca",
+
+		"[","]","..",":=","value","proc","func","ref","pare","escreva","leia",
+		"para","repita","ate","se","entao","senao","caso","seja","or","and","==","!=",">=",
+		"<=",,"literaltexto"};
+}
+/*
+NOT = '!',  
+	HEXA_VALUE,		
+    INT_VALUE,       
+    REAL_VALUE, 
+	FINAL,
+	BOOL_VALUE,
+	CONTINUE,
+	LPARENT = '(',         
+    RPARENT = ')',
+    MULT = '*', 
+    SUM = '+', 
+    COMMA = ',',             
+    MINOR = '-',           
+    DOT = '.', //ADD NO DOC
+    DIVISION = '/',         
+    ID,
+    INT,
+    REAL,
+    BOOL,
+    STRING,
+    VECTOR,      
+    PROG,                   
+    INIT,              
+    END,
+    OF,   
+    COLON = ':',
+    SEMICOMMA = ';',        
+    LESS = '<',
+    ASSIGN = '=',            
+    GREATER = '>',         
+    VAR,
+    LABEL,           
+    STRUCT,         
+    TYPE,            
+    CONST,           
+    RETURN,          
+    JUMP,            
+    FOR,
+    WHILE,              
+    DO,              
+    REPEAT,          
+    UNTIL,            
+    IF,              
+    THEN,            
+    ELSE,            
+    CASE,            
+    BE,             
+    FUNC,            
+    PROC,            
+    BREAK,                  
+    REF,    
+    AND,             
+    OR,                 
+    LESSEQ,          
+    GREATEQ,         
+    EQUAL,           
+    NOTEQ,    
+    LBRACKET = '[', 
+    STRING_VALUE,
+    RBRACKET = ']',                   
+    DOUBLEDOT,             
+    CASSIGN,
+    ERROR
+*/
 
 
 /* 	Salvei em XLS
@@ -77,18 +158,24 @@ void readMatrix(const char* file_name){
 	//Tabela lida do CSV
 	vector<vector<vector<string> > > elements;
 
+	bool firstLine = true;
+
 
 	while(fstream.good()){
 
 		//Cria a primeira linha
 		if(elements.size() == 0) elements.push_back(vector<vector<string> >());
-		
+
 		// Ler um caractere do arquivo
 		char c_read;
 		c_read = fstream.get();
 
 		// Se for uma tabulação (delimitador de campo)
 	    if( c_read == '\t' ) {
+
+	    	if(firstLine){
+	    		translate(field);
+	    	}
 	    	
 	    	// Insere o novo elemento
 	    	elements[elements.size()-1].push_back(splite(field));
@@ -98,6 +185,8 @@ void readMatrix(const char* file_name){
 
 	    // Se for final de linha
 	    } else if( c_read == '\n') {
+
+	    	firstLine = false;
 	    	
 	    	//Cria uma nova linha da matriz
 	    	elements.push_back(vector<vector<string> >());
@@ -115,15 +204,15 @@ void readMatrix(const char* file_name){
 	} 
 
 	//Imprime o resultado
-	for(unsigned int i = 0; i <  elements.size(); i++){
-		for(unsigned int j = 0; j <  elements[i].size(); j++){
-			for(unsigned int k = 0; k <  elements[i][j].size(); k++){
-				cout << "[" << elements[i][j][k] << "]";
-			}
-			cout << '\t';
-		}
-		cout << endl;
-	}
+	// for(unsigned int i = 0; i <  elements.size(); i++){
+	// 	for(unsigned int j = 0; j <  elements[i].size(); j++){
+	// 		for(unsigned int k = 0; k <  elements[i][j].size(); k++){
+	// 			cout << "[" << elements[i][j][k] << "]";
+	// 		}
+	// 		cout << '\t';
+	// 	}
+	// 	cout << endl;
+	// }
 	
 	fstream.close();
 }
