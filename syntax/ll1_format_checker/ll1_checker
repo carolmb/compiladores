@@ -28,12 +28,10 @@ parameters -> paramsaux | LAMBDA
 paramsaux -> "id" ":" type paramslist   | "ref" "id" ":" type paramslist 
 paramslist -> "," paramslist | LAMBDA
 prevcommand -> commands | LAMBDA
-callcommand ->  "pare" | write | read  | loop | block | return |  "continue" | id callidbegin | calllabel | conditional | block
+callcommand ->  "pare" | write | read  | loop | return |  "continue" | id callidbegin | calllabel | conditional | block
 commands -> callcommand commandsaux
 
 commandsaux -> ";"  commands | LAMBDA
-
-
 
 callidbegin  -> ":" callcommand  | ":=" expression | LAMBDA
 
@@ -45,9 +43,10 @@ loop -> forloop | whileloop | repeatloop
 forloop -> "para" "(" forstruct ")" "faca" callcommand
 forstruct -> prevfor ";" expression ";" posfor
 prevfor -> varassignlist | LAMBDA
-varassignlist -> assign varassignlistaux
-  
-varassignlistaux -> "," assign varassignlistaux | LAMBDA
+
+varassignlist -> "id" "=" expression varassignlistaux
+varassignlistaux -> "," "id" "=" expression varassignlistaux | LAMBDA
+
 posfor -> posforaux | LAMBDA
 posforaux ->  commands posforaux2
 posforaux2 -> "," commands posforaux2 | LAMBDA

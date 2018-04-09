@@ -1,0 +1,211 @@
+/* http://www.fit.vutbr.cz/~ikocman/llkptg/ */
+
+program : 'prog' 'id' ';' prevdec block ;
+block : 'inicio' prevcommand 'fim' ;
+prevdec : declaration ';' prevdec ;
+prevdec :  ;
+
+declaration : vardec ;
+declaration : usertype ;
+declaration : labeldec ;
+declaration : constdec ;
+declaration : abstractiondec ;
+
+arraydec : 'vetor' '[' rangelist ']' 'de' type arraydecaux ;
+
+arraydecaux : '=' '(' expressionlist ')';
+arraydecaux :  ;
+
+rangelist : range rangelistaux ;
+rangelistaux : ',' range rangelistaux;
+rangelistaux :  ;
+
+range : atomic '..' atomic ;
+vardec : 'var' idlist ':' varconstruction;
+varconstruction :  type decwithassign ;
+varconstruction : arraydec;
+
+decwithassign : '=' expr  ;
+decwithassign :  ;
+usertype : 'tipo' 'id' typedec;
+typedec : arraydec ;
+typedec :  ':=' typedecaux;
+typedecaux : 'registro' vardeclist 'fim' ;
+typedecaux :  'value' ;
+typedecaux :  '(' idlist ')' ;
+typedecaux :  range;
+
+vardeclist : vardec vardeclistaux ;
+vardeclistaux : ';' vardec vardeclistaux ;
+vardeclistaux :  ;
+
+labeldec : 'rotulo' idlist;
+constdec : 'const' 'id' '=' expr ;
+abstractiondec : procdec ;
+abstractiondec : funcdec;
+
+procdec : 'proc' 'id' '(' parameters ')' prevdec ';' block;
+funcdec : 'func' 'id' '(' parameters ')' ':' type ';' prevdec block;
+
+parameters : paramsaux ;
+parameters :  ;
+
+paramsaux : 'id' ':' type paramslist   ;
+paramsaux :  'ref' 'id' ':' type paramslist ;
+
+paramslist : ',' paramslist ;
+paramslist :   ;
+
+prevcommand : commands ;
+prevcommand :  ;
+
+callcommand :  'pare' ;
+callcommand : write ;
+callcommand : read  ;
+callcommand : loop ;
+callcommand : block ;
+callcommand : return ;
+callcommand :  'continue' ;
+callcommand : id callidbegin ;
+callcommand : calllabel ;
+callcommand : conditional ;
+/*callcommand : block;*/
+
+commands : callcommand commandsaux;
+
+commandsaux : ';'  commands ;
+commandsaux :  ;
+
+callidbegin  : ':' callcommand  ;
+callidbegin  : ':=' expr  ;
+callidbegin  :  ;
+
+calllabel : 'pule' 'id';
+write : 'escreva' '(' expressionlist ')';
+read : 'leia' '(' expressionlist ')';
+return : 'retorne' expr;
+loop : forloop ;
+loop :  whileloop ;
+loop :  repeatloop;
+
+forloop : 'para' '(' forstruct ')' 'faca' callcommand;
+forstruct : prevfor ';' expr  ';' posfor;
+prevfor : varassignlist;
+prevfor :  ;
+
+varassignlist : 'id' '=' expr  varassignlistaux;
+
+varassignlistaux : ',' 'id' '=' expr  varassignlistaux ;
+varassignlistaux :   ;
+
+posfor : posforaux ;
+posfor :   ;
+
+posforaux :  commands posforaux2;
+posforaux2 : ',' commands posforaux2 ;
+posforaux2 :  ;
+
+whileloop : 'enquanto' '(' expr  ')' 'faca' callcommand;
+repeatloop : 'repita' commands 'ate' expr ;
+conditional : ifcond ;
+conditional : casecond;
+ifcond :  'se' '(' expr  ')' 'entao' callcommand ifcondaux ;
+ifcondaux : 'senao' callcommand ;
+ifcondaux :   ;
+
+casecond : 'caso' '(' expr  ')' 'seja' caselist casecondaux;
+
+casecondaux : 'fim';
+casecondaux : 'senao' commands 'fim';
+
+caselist : caseclause caselistaux;
+caselistaux : ';' caselistaux2   ;
+caselistaux :  ;
+
+caselistaux2 :  caseclause caselistaux ;
+caselistaux2 :    ;
+caseclause : atomiclist ':' callcommand ;
+
+expressionlist : expr  expressionlistaux;
+expressionlistaux : ',' expr  expressionlistaux;
+
+
+expr  : andfact orfact ;
+orfact : 'or' andfact orfact ; 
+orfact : ;
+
+andfact : notfact andfactaux ;
+andfactaux : 'and' notfact andfactaux ;
+andfactaux : ;
+
+/* notfact : expreq notfactaux ; 
+notfactaux : '~' expreq notfactaux;
+notfactaux : ;
+*/
+
+notfact: '~' expreq ;
+notfact: expreq ;
+
+expreq : numericexpr expreqaux ;
+expreqaux : '==' numericexpr expreqaux ;
+expreqaux : '!=' numericexpr expreqaux ;
+expreqaux : '>' numericexpr expreqaux  ;
+expreqaux : '<' numericexpr expreqaux  ;
+expreqaux : '>=' numericexpr expreqaux ;
+expreqaux : '<=' numericexpr expreqaux ;
+expreqaux : ;
+
+numericexpr : exprmul exprsum;
+exprsum : '+' exprmul exprsum  ;
+exprsum :  '-' exprmul exprsum ;
+exprsum :   ;
+
+exprmul : simpleexpr exprmulaux;
+exprmulaux : '*' simpleexpr exprmulaux ;
+exprmulaux :  '/' simpleexpr exprmulaux ;
+exprmulaux : ;
+
+simpleexpr : atomic optrange ;
+simpleexpr : optunary optbracket ;
+simpleexpr : '(' expr  ')';
+
+optrange : '..' atomic ;
+optrange :  ;
+
+optunary : '-' ;
+optunary : '+';
+
+optbracket : '(' expr  ')' ;
+optbracket : atomic;
+
+idlist : 'id' idlistaux ;
+
+idlistaux : ',' 'id' idlistaux ;
+idlistaux :  ;
+
+type : 'inteiro' ;
+type :  'real' ;
+type : 'logico';
+type :  'texto' ;
+type :  'id' ;
+
+literal : 'literalint' ;
+literal : 'literalreal' ;
+literal : 'literallogico' ;
+literal : 'literaltexto'  ;
+
+atomic : literal ;
+atomic : id;
+   
+id : 'id' idaux;
+   
+idaux : '[' expressionlist ']' ;
+idaux :   '.' id ;
+idaux :   '(' expressionlist ')' ;
+idaux :  ;
+   
+
+atomiclist : atomic atomiclistaux;
+atomiclistaux :  ',' atomic atomiclistaux ;
+atomiclistaux :  ;
+

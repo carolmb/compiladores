@@ -2,13 +2,19 @@
 #define _PREDETIVE_REC_
 
 #include <iostream>
+#include <string>
 
 class PredictiveRecursive{
 private:
     Token* t = NULL;
 public:    
-    void error(){
-        std::cerr << "Error in Token " << this->t->name << " value : " << this->t->value << std::endl;  
+    void error(std::string menssage, std::string function){
+        std::cerr << "In function " << function << std::endl;
+        std::cerr << "ERROR : " << menssage << std::endl;
+        std::cerr << "Actual Token ( NAME : " << this->t->name << " VALUE : " << this->t->value  
+                  << " LINE : " << this->t->line << " COLUMN : " << this->t->column << ")" << std::endl;
+    
+        exit(-1);
     }
     
     void advance(){
@@ -16,55 +22,191 @@ public:
         t = getToken();
     }
     
-    void eat(KEYWORD key){
+    void eat(int key, std::string name){
         if(this->t!=NULL && this->t->key==key){
             this->advance();
         }else{
-            this->error();
+            this->error("Expected Token " + name, "eat");
         }    
     }
     
-    void eat(int key){
-        if(this->t!=NULL && this->t->key==key){
-            this->advance();
-        }else{
-            this->error();
-        }    
+    void type(){
+        
     }
     
-    void program(){
+    void range(){
+        
+    }
+    
+    void rangelistaux(){
+        
+    }
+    
+    //rangelist -> range rangelistaux 
+    void rangelist(){
+        switch (t->key){
+            case INT_VALUE:
+            case REAL_VALUE:
+            case BOOL_VALUE:
+            case STRING_VALUE:
+            case ID:
+                this->range();
+                this->rangelistaux();
+            break;
+            default:
+                this->error("Expected Token '=', ';', END", "arraydecaux");
+        }
+    }
+    
+    void expressionlist(){
+        
+    }
+    
+    //arraydecaux -> "=" "(" expressionlist ")" | LAMBDA
+    void arraydecaux(){
+        switch (t->key){
+            case '=' :
+                this->eat('=',"=");
+                this->eat('(',"(");
+                this->expressionlist();
+                this->eat(')',")");
+            break;
+            case ';':
+            case END:
+            break;
+            default:
+                this->error("Expected Token '=', ';', END", "arraydecaux");
+        }
+    }
+    
+    //arraydec -> "vetor" "[" rangelist "]" "de" type arraydecaux 
+    void arraydec(){
+        switch(t->key){
+            case VECTOR:
+                this->eat(VECTOR,"VECTOR");
+                this->eat('[',"[");
+                this->rangelist();
+                this->eat(']',"]");
+                this->eat(OF,"OF");
+                this->type();
+                this->arraydecaux();
+            break;
+            default:
+                this->error("Expected Token VECTOR", "arraydec");
+        }
+    }
+    
+    void abstractiondec(){
+        
+    }
+    
+    void constdec(){
+        
+    }
+    
+    void labeldec(){
+        
+    }
+    
+    void usertype(){
+        
+    }
+    
+    void vardec(){
+        
+    }
+    
+    void prevcommand(){
+        
+    }
+    
+    //declaration -> vardec | usertype | labeldec | constdec | abstractiondec 
+    void declaration(){
+        switch(t->key){
+            case VAR:
+                this->vardec();
+            break;
+            case TYPE:
+                this->usertype();
+            break;
+            case LABEL:
+                this->labeldec();
+            break;
+            case CONST:
+                this->constdec();
+            break;
+            case PROC:
+            case FUNC:
+                this->abstractiondec();
+            break;
+            default:
+                error("Expected Token VAR, TYPE, LABEL, CONST, PROC, FUNC", "declaration");
+        }
+    }
+    
+    //block -> "inicio" prevcommand "fim"
+    void block(){
+        switch (t->key){
+            case INIT:
+                this->eat(INIT, "INIT");
+                this->prevcommand();
+                this->eat(END,"END");
+            break;
+            default:
+                this->error("Expected Token INIT", "block");
+        }
+    }
+    
+    //prevdec -> declaration ";" prevdec | LAMBDA
+    void prevdec(){
+        
+        switch (t->key){
+            case INIT:
+            case ';':
+                
+            break;
+            case VAR:
+            case LABEL:
+            case TYPE:
+            case CONST:
+            case PROC:
+            case FUNC:
+                this->declaration();
+                this->eat(';',";");
+                this->prevdec();
+            break;
+            default:
+                this->error("Expected Token INIT, ';' , VAR, LABEL, TYPE, CONST, PROC, FUNC","prevdec");
+        }
+    }
+    
+    //program -> "prog" "id" ";" prevdec block 
+    void program(){ 
         
         this->t = getToken();
         
         switch (t->key){
             case PROG:
-                eat(PROG);
-                eat(ID);
-                eat(';');
-                //prevdec();
-                //block();
+                this->eat(PROG, "PROG");
+                this->eat(ID, "ID");
+                this->eat(';',";");
+                prevdec();
+                block();
             break;
             default:
-                printf("expected id, num, or left-paren");
+                this->error("Expected Token PROG", "program");
         }
-        
     }
     
     void runRec(){
         this->program();
         
-        this->eat(FINAL);
+        this->eat(FINAL,"EOF");
     }
 };    
 /*
-program -> "prog" "id" ";" prevdec block 
-block -> "inicio" prevcommand "fim" 
-prevdec -> declaration ";" prevdec | LAMBDA
 
-declaration -> vardec | usertype | labeldec | constdec | abstractiondec 
 
-arraydec -> "vetor" "[" rangelist "]" "de" type arraydecaux 
-arraydecaux -> "=" "(" expressionlist ")" | LAMBDA
 rangelist -> range rangelistaux 
 rangelistaux -> "," range rangelistaux |  LAMBDA   
 range -> atomic ".." atomic 
