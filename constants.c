@@ -1,6 +1,7 @@
 #ifndef _CONSTANTS_
 #define _CONSTANTS_
 
+
 typedef enum {
 	NOT = '!',  
 	HEXA_VALUE,		
@@ -27,7 +28,7 @@ typedef enum {
     INIT,              
     END,
     OF,   
-    COMMA = ':',
+    COLON = ':',
     SEMICOMMA = ';',        
     LESS = '<',
     ASSIGN = '=',            
@@ -64,6 +65,8 @@ typedef enum {
     RBRACKET = ']',                   
     DOUBLEDOT,             
     CASSIGN,
+    WRITE,
+    READ,
     ERROR
     
 }KEYWORD;

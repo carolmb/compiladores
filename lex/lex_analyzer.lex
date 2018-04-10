@@ -83,7 +83,6 @@ SUM             "+"
 MINOR           "-"
 MULT            "*"
 DIVISION        "/"
-MOD             "%"
 
 /*LOGIC OPERATOR*/
 NOT             "~"
@@ -106,7 +105,6 @@ RPARENT         ")"
 LBRACKET        "["
 RBRACKET        "]"
 DOUBLEDOT       ".."
-QUOTE           "\'"
 
 ASSIGN          "="
 CASSIGN         ":="
@@ -271,8 +269,7 @@ SCOMMENT        \*\*.*
 {MULT}		{ return baseBlock ( MULT, "MULT" ); } 
  
 {DIVISION}	{ return baseBlock ( DIVISION, "DIVISION" ); } 
- 
-{MOD}		{ return baseBlock ( MOD, "MOD" ); } 
+
 
 %{
     //======================================
@@ -323,8 +320,6 @@ SCOMMENT        \*\*.*
 {RBRACKET}	{ return baseBlock ( RBRACKET, "RBRACKET" ); } 
  
 {DOUBLEDOT}	{ return baseBlock ( DOUBLEDOT, "DOUBLEDOT" ); } 
- 
-{QUOTE}		{ return baseBlock ( QUOTE, "QUOTE" ); } 
  
 {ASSIGN}	{ return baseBlock ( ASSIGN, "ASSIGN" ); } 
  
