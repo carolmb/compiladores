@@ -81,7 +81,39 @@ int translate(string key){
 vector<int> splite(string text){
 	vector<int> parts;
 	// cout << text << endl;
-	parts.push_back(translate(text));
+	if (text.size() == 0){
+
+	}else if(text[0]=='\''){
+		parts.push_back(translate(text));
+	}else{
+
+		unsigned int st = 0;
+		while(st+1 < text.size() && text[st] != '-' && text[st+1] != '>') st++;
+		
+		string t;
+		for(unsigned int i = st+3; i < text.size(); i++){
+			switch(text[i]){
+				case ' ':
+					// cout << t << endl;
+					parts.push_back(translate(t));
+					t = "";
+					break;
+				default:
+					t+=text[i];
+
+			}
+		}
+		if(t.size() > 0)
+			// cout << t << endl;
+			parts.push_back(translate(t));
+	}
+	
+
+	
+		
+
+
+	// }
 	
 	// vector<string> parts;
 	// string part = "";
@@ -178,9 +210,14 @@ void readMatrix(const char* file_name){
 	// Imprime o resultado
 	for(unsigned int i = 0; i <  elements.size(); i++){
 		for(unsigned int j = 0; j <  elements[i].size(); j++){
+			if(elements[i][j].size() == 0) continue;
+			cout << "[";
 			for(unsigned int k = 0; k <  elements[i][j].size(); k++){
-				cout << "[" << elements[i][j][k] << "]";
+				cout << elements[i][j][k];
+				if(k+1 < elements[i][j].size()) 
+					cout << ", ";
 			}
+			cout << "]";
 			cout << '\t';
 		}
 		cout << endl;
