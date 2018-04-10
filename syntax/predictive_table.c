@@ -1,12 +1,13 @@
 #ifndef _PREDITIVE_TABLE_
 #define _PREDITIVE_TABLE_
 
-#include <string.h>
+// #include <string.h>
+#include <string>
 #include <stack>
 #include <vector>
 #include <iterator>
 #include <map>
-
+#include <iostream>
 #include <fstream>
 
 using namespace std;
@@ -30,12 +31,57 @@ void init_table(matrix &mtx) {
 }
 
 
+/*Recebe uma palavra chave e retorna o valor do ENUM correpondente*/
+int translate(string key){
+
+	int size_terminals = ERROR - NOT + 1;
+
+	int size_non_terminals = ATOMICLISTAUX_ - PROGRAM_ + 1;
+
+	string terminals[] = {
+	"~", "literalhexa", "literalint", "literalreal", "FINAL", "literallogico", "continue", 
+	"(", ")", "*", "+", ",", "-", ".", "/", "id", "inteiro", "real", "logico", "texto", "vetor", 
+	"prog", "inicio", "fim", "de", ":", ";", "<", "=", ">", "var", "rotulo", "registro", "tipo", 
+	"const", "retorne", "pule", "para", "enquanto", "faca", "repita", "ate", "se", "entao", 
+	"senao", "caso", "seja", "func", "proc", "pare", "ref", "and", "or", "<=", ">=", "==", "!=", 
+	"[", "literaltexto", "]", "..", ":=", "escreva", "leia"};
+
+	string non_terminals[] =  {"program", "block", "prevdec", "declaration", "arraydec", "arraydecaux", 
+	"rangelist", "rangelistaux", "range", "vardec", "varconstruction", "decwithassign", "usertype", 
+	"typedec", "typedecaux", "vardeclist", "vardeclistaux", "labeldec", "constdec", "abstractiondec", 
+	"procdec", "funcdec", "parameters", "paramsaux", "paramslist", "prevcommand", "callcommand", 
+	"commands", "commandsaux", "callidbegin", "calllabel", "write", "read", "return", "loop", "forloop", 
+	"forstruct", "prevfor", "varassignlist", "varassignlistaux", "posfor", "posforaux", "posforaux2", 
+	"whileloop", "repeatloop", "conditional", "ifcond", "ifcondaux", "casecond", "casecondaux", 
+	"caselist", "caselistaux", "caselistaux2", "caseclause", "expressionlist", "expressionlistaux", 
+	"expr", "orfact", "andfact", "andfactaux", "notfact", "expreq", "expreqaux", "numericexpr", "exprsum", 
+	"exprmul", "exprmulaux", "simpleexpr", "optrange", "optunary", "optbracket", "idlist", "idlistaux", 
+	"type", "literal", "atomic", "id", "idaux", "atomiclist", "atomiclistaux", };
+
+
+	for(int i = 0; i < size_terminals; i++){
+		if(key.compare("'"+terminals[i]+"'") == 0){
+			return i + NOT;
+		}
+	}
+	for(int i = 0; i < size_non_terminals; i++){
+		if(key.compare(non_terminals[i]) == 0){
+			return i + PROGRAM_;
+		}
+	}
+
+	return -1;
+}
+
+
+
 /* 	Pega uma string correspondente a um elemento da tabela, e retorna uma lista
 	O ideal é que a lista seja de inteiros, correspondendo ao índice da tabela
 	*/
-vector<string> splite(string text){
-	vector<string> parts;
-	parts.push_back(text);
+vector<int> splite(string text){
+	vector<int> parts;
+	// cout << text << endl;
+	parts.push_back(translate(text));
 	
 	// vector<string> parts;
 	// string part = "";
@@ -66,80 +112,6 @@ vector<string> splite(string text){
 
 map<string,int> mapToken;
 
-void translate(string key){
-	vector<string> terminals = {"~","literalhexa","literalint","literalreal","FINAL","literallogico","continue",
-		"(",")","*","+",",","-",".","/","id","inteiro","real","logico","texto","vetor","prog","inicio","fim",
-		"de","enquanto",":",";","<","=",">","var","rotulo","registro","tipo","const","retorne","pule","faca",
-
-		"[","]","..",":=","value","proc","func","ref","pare","escreva","leia",
-		"para","repita","ate","se","entao","senao","caso","seja","or","and","==","!=",">=",
-		"<=",,"literaltexto"};
-}
-/*
-NOT = '!',  
-	HEXA_VALUE,		
-    INT_VALUE,       
-    REAL_VALUE, 
-	FINAL,
-	BOOL_VALUE,
-	CONTINUE,
-	LPARENT = '(',         
-    RPARENT = ')',
-    MULT = '*', 
-    SUM = '+', 
-    COMMA = ',',             
-    MINOR = '-',           
-    DOT = '.', //ADD NO DOC
-    DIVISION = '/',         
-    ID,
-    INT,
-    REAL,
-    BOOL,
-    STRING,
-    VECTOR,      
-    PROG,                   
-    INIT,              
-    END,
-    OF,   
-    COLON = ':',
-    SEMICOMMA = ';',        
-    LESS = '<',
-    ASSIGN = '=',            
-    GREATER = '>',         
-    VAR,
-    LABEL,           
-    STRUCT,         
-    TYPE,            
-    CONST,           
-    RETURN,          
-    JUMP,            
-    FOR,
-    WHILE,              
-    DO,              
-    REPEAT,          
-    UNTIL,            
-    IF,              
-    THEN,            
-    ELSE,            
-    CASE,            
-    BE,             
-    FUNC,            
-    PROC,            
-    BREAK,                  
-    REF,    
-    AND,             
-    OR,                 
-    LESSEQ,          
-    GREATEQ,         
-    EQUAL,           
-    NOTEQ,    
-    LBRACKET = '[', 
-    STRING_VALUE,
-    RBRACKET = ']',                   
-    DOUBLEDOT,             
-    CASSIGN,
-    ERROR
-*/
 
 
 /* 	Salvei em XLS
@@ -156,7 +128,7 @@ void readMatrix(const char* file_name){
 	string field;
 
 	//Tabela lida do CSV
-	vector<vector<vector<string> > > elements;
+	vector<vector<vector<int> > > elements;
 
 	bool firstLine = true;
 
@@ -164,7 +136,7 @@ void readMatrix(const char* file_name){
 	while(fstream.good()){
 
 		//Cria a primeira linha
-		if(elements.size() == 0) elements.push_back(vector<vector<string> >());
+		if(elements.size() == 0) elements.push_back(vector<vector<int> >());
 
 		// Ler um caractere do arquivo
 		char c_read;
@@ -189,7 +161,7 @@ void readMatrix(const char* file_name){
 	    	firstLine = false;
 	    	
 	    	//Cria uma nova linha da matriz
-	    	elements.push_back(vector<vector<string> >());
+	    	elements.push_back(vector<vector<int> >());
 	    	
 	    	// Garante a Limpeza do campo para ler o próximo campo na nova linha (Pode ser que não seja necessário)
 	    	field = "";
@@ -203,16 +175,16 @@ void readMatrix(const char* file_name){
 		
 	} 
 
-	//Imprime o resultado
-	// for(unsigned int i = 0; i <  elements.size(); i++){
-	// 	for(unsigned int j = 0; j <  elements[i].size(); j++){
-	// 		for(unsigned int k = 0; k <  elements[i][j].size(); k++){
-	// 			cout << "[" << elements[i][j][k] << "]";
-	// 		}
-	// 		cout << '\t';
-	// 	}
-	// 	cout << endl;
-	// }
+	// Imprime o resultado
+	for(unsigned int i = 0; i <  elements.size(); i++){
+		for(unsigned int j = 0; j <  elements[i].size(); j++){
+			for(unsigned int k = 0; k <  elements[i][j].size(); k++){
+				cout << "[" << elements[i][j][k] << "]";
+			}
+			cout << '\t';
+		}
+		cout << endl;
+	}
 	
 	fstream.close();
 }
