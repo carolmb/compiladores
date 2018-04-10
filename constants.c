@@ -90,6 +90,7 @@ typedef enum {
 	USERTYPE_,
 	TYPEDEC_,
 	TYPEDECAUX_,
+	TYPEDECAUXRANGE_,
 	VARDECLIST_,
 	VARDECLISTAUX_,
 	LABELDEC_,
@@ -156,7 +157,6 @@ typedef enum {
 	ATOMICLIST_,
 	ATOMICLISTAUX_
 } NONTERMINALS;
-// };
 
 bool is_terminal(int value){
 	if(value >= NOT && value <= ERROR)

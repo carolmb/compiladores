@@ -48,7 +48,7 @@ int translate(string key){
 
 	string non_terminals[] =  {"program", "block", "prevdec", "declaration", "arraydec", "arraydecaux", 
 	"rangelist", "rangelistaux", "range", "vardec", "varconstruction", "decwithassign", "usertype", 
-	"typedec", "typedecaux", "vardeclist", "vardeclistaux", "labeldec", "constdec", "abstractiondec", 
+	"typedec", "typedecauxrange", "typedecaux", "vardeclist", "vardeclistaux", "labeldec", "constdec", "abstractiondec", 
 	"procdec", "funcdec", "parameters", "paramsaux", "paramslist", "prevcommand", "callcommand", 
 	"commands", "commandsaux", "callidbegin", "calllabel", "write", "read", "return", "loop", "forloop", 
 	"forstruct", "prevfor", "varassignlist", "varassignlistaux", "posfor", "posforaux", "posforaux2", 
@@ -58,7 +58,7 @@ int translate(string key){
 	"exprmul", "exprmulaux", "simpleexpr", "optrange", "optunary", "optbracket", "idlist", "idlistaux", 
 	"type", "literal", "atomic", "id", "idaux", "atomiclist", "atomiclistaux", };
 
-
+	/*Verifica terminais*/
 	for(int i = 0; i < size_terminals; i++){
 		if(key.compare("'"+terminals[i]+"'") == 0){
 			return i + NOT;
@@ -66,150 +66,76 @@ int translate(string key){
 			return 0;
 		}
 	}
+
+	/*Verifica não terminais*/
 	for(int i = 0; i < size_non_terminals; i++){
 		if(key.compare(non_terminals[i]) == 0){
 			return i + PROGRAM_;
 		}
 	}
 
+	/*Caso não encontrado*/
 	return -1;
 }
 
 
 
-/* 	Pega uma string correspondente a um elemento da tabela, e retorna uma lista
-	O ideal é que a lista seja de inteiros, correspondendo ao índice da tabela
-	*/
+/* 	Pega uma string correspondente a um elemento da tabela, e retorna uma lista de inteiros, 
+	correspondendo ao índice da tabela
+*/
 vector<int> splite(string text){
+
 	vector<int> parts;
-	// cout << text << endl;
+
+	/*Se é um espaço vazio da tabela*/
 	if (text.size() == 0){
+		/*Não faz nada, a lista será vazia*/
 
 	}else if(text[0]=='\''){
+		/*Se começar com aspas simples, tratará de um terminal*/
 		parts.push_back(translate(text));
 	}else{
 
+		/*Irá iterá em cada elemento da regra a fim de separar cada regra como um inteiro*/
 		unsigned int st = 0;
+
+		/*Retira a parte esquerda da regra*/
 		while(st+1 < text.size() && text[st] != '-' && text[st+1] != '>') st++;
+
+		st+=3; /*Retira o '-> '*/
 		
-		string t;
-		for(unsigned int i = st+3; i < text.size(); i++){
+		string t; /*Irá armazenar o conteúdo char a char, que depois será convertido em inteiro*/
+
+		/*Percorre o lado direito da regra*/
+		for(unsigned int i = st; i < text.size(); i++){
+
 			switch(text[i]){
+
+				/*Se o char for espaço*/
 				case ' ':
-					// cout << t << endl;
+					
+					/*Adiciona o t contrído a lista convertendo-o para o ENUM correspondente*/
 					parts.push_back(translate(t));
-					t = "";
+					t = ""; /*Reinicia t para construir os novos valores*/
 					break;
+
 				default:
 					t+=text[i];
 
 			}
 		}
-		if(t.size() > 0)
-			// cout << t << endl;
-			parts.push_back(translate(t));
+
+		/*Adiciona o último t a lista*/
+		if(t.size() > 0) parts.push_back(translate(t));
 	}
 	
 
-	
-		
-
-
-	// }
-	
-	// vector<string> parts;
-	// string part = "";
-	// for(unsigned int i = 0; i < text.size(); i++){
-
-		
-
-	// 	switch(text[i]){
-	// 		case ' ':
-	// 			parts.push_back(part);
-	// 			part = "";
-	// 			break;
-	// 		case ',':
-	// 			return parts;
-	// 			break;
-	// 		default:
-	// 			part = part + text[i];
-	// 			break;
-	// 	}
-
-	// }
-	
-	// //Caso em que só o elemento aparece
-	// if(part.size() > 0)
-	// 	parts.push_back(part);
 	return parts;
 }
 
-map<string,int> mapToken;
+void printTable(vector<vector<vector<int> > > elements){
 
-
-
-/* 	Salvei em XLS
-	Exportei para csv modificando as tabulações para '\t'
-	Com isso não há coflito com o ';' ou com ','
-	*/
-void readMatrix(const char* file_name){
-
-	//Buffer de leitura do arquivo
-	ifstream fstream;
-	fstream.open(file_name, ifstream::in);
-
-	//variável auxiliar para armazenar os campos da tabela
-	string field;
-
-	//Tabela lida do CSV
-	vector<vector<vector<int> > > elements;
-
-	bool firstLine = true;
-
-
-	while(fstream.good()){
-
-		//Cria a primeira linha
-		if(elements.size() == 0) elements.push_back(vector<vector<int> >());
-
-		// Ler um caractere do arquivo
-		char c_read;
-		c_read = fstream.get();
-
-		// Se for uma tabulação (delimitador de campo)
-	    if( c_read == '\t' ) {
-
-	    	if(firstLine){
-	    		translate(field);
-	    	}
-	    	
-	    	// Insere o novo elemento
-	    	elements[elements.size()-1].push_back(splite(field));
-	    	
-	    	// Limpa para ler o próximo campo
-	    	field = "";
-
-	    // Se for final de linha
-	    } else if( c_read == '\n') {
-
-	    	firstLine = false;
-	    	
-	    	//Cria uma nova linha da matriz
-	    	elements.push_back(vector<vector<int> >());
-	    	
-	    	// Garante a Limpeza do campo para ler o próximo campo na nova linha (Pode ser que não seja necessário)
-	    	field = "";
-
-	    } else {
-
-	    	// Constrói o campo, byte a byte
-	    	field = field + c_read;
-
-	    }
-		
-	} 
-
-	// Imprime o resultado
+	/*Imprime o resultado*/
 	for(unsigned int i = 0; i <  elements.size(); i++){
 		for(unsigned int j = 0; j <  elements[i].size(); j++){
 			if(elements[i][j].size() == 0) {
@@ -227,6 +153,71 @@ void readMatrix(const char* file_name){
 		}
 		cout << endl;
 	}
+
+}
+
+/* 	Salvei em XLS
+	Exportei para csv modificando as tabulações para '\t'
+	Com isso não há coflito com o ';' ou com ','
+	*/
+void readMatrix(const char* file_name){
+
+	//Buffer de leitura do arquivo
+	ifstream fstream;
+	fstream.open(file_name, ifstream::in);
+
+	//variável auxiliar para armazenar os campos da tabela
+	string field;
+
+	//Tabela lida do CSV
+	vector<vector<vector<int> > > elements;
+
+	// bool firstLine = true;
+
+
+	while(fstream.good()){
+
+		/*Cria a primeira linha*/
+		if(elements.size() == 0) elements.push_back(vector<vector<int> >());
+
+		/*Ler um caractere do arquivo*/
+		char c_read;
+		c_read = fstream.get();
+
+		/*Se for uma tabulação (delimitador de campo)*/
+	    if( c_read == '\t' ) {
+
+	    	// if(firstLine){
+	    	// 	translate(field);
+	    	// }
+	    	
+	    	/*Insere o novo elemento*/
+	    	elements[elements.size()-1].push_back(splite(field));
+	    	
+	    	/*Limpa para ler o próximo campo*/
+	    	field = "";
+
+	    /*Se for final de linha*/
+	    } else if( c_read == '\n') {
+
+	    	// firstLine = false;
+	    	
+	    	/*Cria uma nova linha da matriz*/
+	    	elements.push_back(vector<vector<int> >());
+	    	
+	    	/*Garante a Limpeza do campo para ler o próximo campo na nova linha*/
+	    	field = "";
+
+	    } else {
+
+	    	/*Constrói o campo, byte a byte*/
+	    	field = field + c_read;
+
+	    }
+		
+	} 
+
+	printTable(elements);
 	
 	fstream.close();
 }
