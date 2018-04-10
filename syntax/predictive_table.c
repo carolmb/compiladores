@@ -59,17 +59,17 @@ int translate(string key){
 	"type", "literal", "atomic", "id", "idaux", "atomiclist", "atomiclistaux", };
 
 	/*Verifica terminais*/
-	for(int i = 0; i < size_terminals; i++){
-		if(key.compare("'"+terminals[i]+"'") == 0){
+	for (int i = 0; i < size_terminals; i++) {
+		if (key.compare("'"+terminals[i]+"'") == 0) {
 			return i + NOT;
-		}else if(key.compare("''") == 0){
+		} else if (key.compare("''") == 0){
 			return 0;
 		}
 	}
 
 	/*Verifica não terminais*/
-	for(int i = 0; i < size_non_terminals; i++){
-		if(key.compare(non_terminals[i]) == 0){
+	for (int i = 0; i < size_non_terminals; i++) {
+		if (key.compare(non_terminals[i]) == 0) {
 			return i + PROGRAM_;
 		}
 	}
@@ -83,31 +83,31 @@ int translate(string key){
 /* 	Pega uma string correspondente a um elemento da tabela, e retorna uma lista de inteiros, 
 	correspondendo ao índice da tabela
 */
-vector<int> splite(string text){
+vector<int> splite(string text) {
 
 	vector<int> parts;
 
 	/*Se é um espaço vazio da tabela*/
-	if (text.size() == 0){
+	if (text.size() == 0) {
 		/*Não faz nada, a lista será vazia*/
 
-	}else if(text[0]=='\''){
+	} else if(text[0]=='\'') {
 		/*Se começar com aspas simples, tratará de um terminal*/
 		parts.push_back(translate(text));
-	}else{
+	} else {
 
 		/*Irá iterá em cada elemento da regra a fim de separar cada regra como um inteiro*/
 		unsigned int st = 0;
 
 		/*Retira a parte esquerda da regra*/
-		while(st+1 < text.size() && text[st] != '-' && text[st+1] != '>') st++;
+		while (st+1 < text.size() && text[st] != '-' && text[st+1] != '>') st++;
 
 		st+=3; /*Retira o '-> '*/
 		
 		string t; /*Irá armazenar o conteúdo char a char, que depois será convertido em inteiro*/
 
 		/*Percorre o lado direito da regra*/
-		for(unsigned int i = st; i < text.size(); i++){
+		for (unsigned int i = st; i < text.size(); i++) {
 
 			switch(text[i]){
 
@@ -128,39 +128,60 @@ vector<int> splite(string text){
 		/*Adiciona o último t a lista*/
 		if(t.size() > 0) parts.push_back(translate(t));
 	}
-	
 
 	return parts;
 }
 
-void printTable(vector<vector<vector<int> > > elements){
+// void printTable(map<int, map<int, vector<int> > > map_elements){
 
-	/*Imprime o resultado*/
-	for(unsigned int i = 0; i <  elements.size(); i++){
-		for(unsigned int j = 0; j <  elements[i].size(); j++){
-			if(elements[i][j].size() == 0) {
-				cout << '\t';
-				continue;
-			}
-			cout << "[";
-			for(unsigned int k = 0; k <  elements[i][j].size(); k++){
-				cout << elements[i][j][k];
-				if(k+1 < elements[i][j].size()) 
-					cout << ", ";
-			}
-			cout << "]";
-			cout << '\t';
-		}
-		cout << endl;
-	}
+// 	for (map<int, map<int, vector<int> > >::iterator it=map_elements.begin(); it!=map_elements.end(); ++it) {
+//     	for (map<int, vector<int> >::iterator it2=it->second.begin(); it2!=it->second.end(); ++it2) {
+//     		vector<int> v = it2->second;
+//     		if(v.size() == 0) {
+//     			cout << '\t';
+// 				continue;
+// 			}
+// 			cout << "[";
+// 			for(unsigned int i = 0; i <  v.size(); i++) {
+// 				cout << v[i];
+// 				if(i+1 < v.size()) 
+// 					cout << ", ";
+// 			}
+// 				cout << "]";
+// 			cout << '\t';
+// 		}
+// 		cout << endl;
+// 	}
+// }
 
-}
+
+// void printTable(vector<vector<vector<int> > > elements) {
+
+// 	/*Imprime o resultado*/
+// 	for(unsigned int i = 0; i <  elements.size(); i++) {
+// 		for(unsigned int j = 0; j <  elements[i].size(); j++) {
+// 			if(elements[i][j].size() == 0) {
+// 				cout << '\t';
+// 				continue;
+// 			}
+// 			cout << "[";
+// 			for(unsigned int k = 0; k <  elements[i][j].size(); k++) {
+// 				cout << elements[i][j][k];
+// 				if(k+1 < elements[i][j].size()) 
+// 					cout << ", ";
+// 			}
+// 			cout << "]";
+// 			cout << '\t';
+// 		}
+// 		cout << endl;
+// 	}
+// }
 
 /* 	Salvei em XLS
 	Exportei para csv modificando as tabulações para '\t'
 	Com isso não há coflito com o ';' ou com ','
 	*/
-void readMatrix(const char* file_name){
+void readMatrix(const char* file_name) {
 
 	//Buffer de leitura do arquivo
 	ifstream fstream;
@@ -169,42 +190,40 @@ void readMatrix(const char* file_name){
 	//variável auxiliar para armazenar os campos da tabela
 	string field;
 
-	//Tabela lida do CSV
-	vector<vector<vector<int> > > elements;
+	map<int, map<int, vector<int> > > map_elements;
+
+	vector<int> term_idx;
 
 	// bool firstLine = true;
+	int i = 0;
+	int j = 0;
 
-
-	while(fstream.good()){
-
-		/*Cria a primeira linha*/
-		if(elements.size() == 0) elements.push_back(vector<vector<int> >());
+	while (fstream.good()) {
 
 		/*Ler um caractere do arquivo*/
 		char c_read;
 		c_read = fstream.get();
 
 		/*Se for uma tabulação (delimitador de campo)*/
-	    if( c_read == '\t' ) {
+	    if ( c_read == '\t' ) {
 
-	    	// if(firstLine){
-	    	// 	translate(field);
-	    	// }
-	    	
-	    	/*Insere o novo elemento*/
-	    	elements[elements.size()-1].push_back(splite(field));
-	    	
+
+	    	if (i==0) {
+	    		term_idx.push_back(translate(field));
+	    	} else {
+	    		map_elements[i-1+PROGRAM_][term_idx[j]] = splite(field);
+	    	}
+
+	    	j++;
+
 	    	/*Limpa para ler o próximo campo*/
 	    	field = "";
 
 	    /*Se for final de linha*/
 	    } else if( c_read == '\n') {
+	    	i++;
+	    	j = 0;
 
-	    	// firstLine = false;
-	    	
-	    	/*Cria uma nova linha da matriz*/
-	    	elements.push_back(vector<vector<int> >());
-	    	
 	    	/*Garante a Limpeza do campo para ler o próximo campo na nova linha*/
 	    	field = "";
 
@@ -212,19 +231,16 @@ void readMatrix(const char* file_name){
 
 	    	/*Constrói o campo, byte a byte*/
 	    	field = field + c_read;
-
 	    }
-		
-	} 
+	}
 
-	printTable(elements);
+	// printTable(map_elements);
+
+	vector<int> v = map_elements[PROGRAM_][PROG];
+	cout << "(" << PROGRAM_ << ", " << PROG << ") = " << v[0] << endl;
 	
 	fstream.close();
 }
-
-
-
-
 
 void runTable(){
 	stack<int> stack;
