@@ -62,6 +62,8 @@ int translate(string key){
 	for(int i = 0; i < size_terminals; i++){
 		if(key.compare("'"+terminals[i]+"'") == 0){
 			return i + NOT;
+		}else if(key.compare("''") == 0){
+			return 0;
 		}
 	}
 	for(int i = 0; i < size_non_terminals; i++){
@@ -210,7 +212,10 @@ void readMatrix(const char* file_name){
 	// Imprime o resultado
 	for(unsigned int i = 0; i <  elements.size(); i++){
 		for(unsigned int j = 0; j <  elements[i].size(); j++){
-			if(elements[i][j].size() == 0) continue;
+			if(elements[i][j].size() == 0) {
+				cout << '\t';
+				continue;
+			}
 			cout << "[";
 			for(unsigned int k = 0; k <  elements[i][j].size(); k++){
 				cout << elements[i][j][k];
