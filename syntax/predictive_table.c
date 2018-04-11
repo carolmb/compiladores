@@ -12,6 +12,27 @@
 
 using namespace std;
 
+string terminals[] = {
+"~", "literalhexa", "literalint", "literalreal", "FINAL", "literallogico", "continue", 
+"(", ")", "*", "+", ",", "-", ".", "/", "id", "inteiro", "real", "logico", "texto", "vetor", 
+"prog", "inicio", "fim", "de", ":", ";", "<", "=", ">", "var", "rotulo", "registro", "tipo", 
+"const", "retorne", "pule", "para", "enquanto", "faca", "repita", "ate", "se", "entao", 
+"senao", "caso", "seja", "func", "proc", "pare", "ref", "and", "or", "<=", ">=", "==", "!=", 
+"[", "literaltexto", "]", "..", ":=", "escreva", "leia"};
+
+string non_terminals[] =  {"program", "block", "prevdec", "declaration", "arraydec", "arraydecaux", 
+"rangelist", "rangelistaux", "range", "vardec", "varconstruction", "decwithassign", "usertype", 
+"typedec", "typedecauxrange", "typedecaux", "vardeclist", "vardeclistaux", "labeldec", "constdec", "abstractiondec", 
+"procdec", "funcdec", "parameters", "paramsaux", "paramslist", "prevcommand", "callcommand", 
+"commands", "commandsaux", "callidbegin", "calllabel", "write", "read", "return", "loop", "forloop", 
+"forstruct", "prevfor", "varassignlist", "varassignlistaux", "posfor", "posforaux", "posforaux2", 
+"whileloop", "repeatloop", "conditional", "ifcond", "ifcondaux", "casecond", "casecondaux", 
+"caselist", "caselistaux", "caselistaux2", "caseclause", "expressionlist", "expressionlistaux", 
+"expr", "orfact", "andfact", "andfactaux", "notfact", "expreq", "expreqaux", "numericexpr", "exprsum", 
+"exprmul", "exprmulaux", "simpleexpr", "optrange", "optunary", "optbracket", "idlist", "idlistaux", 
+"type", "literal", "atomic", "id", "idaux", "atomiclist", "atomiclistaux", };
+
+
 typedef vector<int> list;
 typedef vector<vector<list> > matrix; 
 
@@ -31,6 +52,20 @@ bool is_valid_access(int non_terminal, int terminal, map<int, map<int, vector<in
 	return false;
 }
 
+string to_print(int a) {
+	if(a < NOT) {
+		return "0";
+	}
+	if(a > ATOMICLISTAUX_) {
+		return "-1";
+	}
+	if(is_terminal(a)) {
+		return terminals[a-NOT] + '(' + 't' + ')';
+	} else {
+		return non_terminals[a-ERROR-1] + '(' +'n' + ')';
+	}
+}
+
 // void init_table(matrix &mtx) {
 // 	int n_non_terminals = EXPRESSIONLIST_ - PROGRAM_ + 1;
 // 	int n_terminals = ERROR - NOT;
@@ -44,26 +79,6 @@ int translate(string key){
 	int size_terminals = ERROR - NOT + 1;
 
 	int size_non_terminals = ATOMICLISTAUX_ - PROGRAM_ + 1;
-
-	string terminals[] = {
-	"~", "literalhexa", "literalint", "literalreal", "FINAL", "literallogico", "continue", 
-	"(", ")", "*", "+", ",", "-", ".", "/", "id", "inteiro", "real", "logico", "texto", "vetor", 
-	"prog", "inicio", "fim", "de", ":", ";", "<", "=", ">", "var", "rotulo", "registro", "tipo", 
-	"const", "retorne", "pule", "para", "enquanto", "faca", "repita", "ate", "se", "entao", 
-	"senao", "caso", "seja", "func", "proc", "pare", "ref", "and", "or", "<=", ">=", "==", "!=", 
-	"[", "literaltexto", "]", "..", ":=", "escreva", "leia"};
-
-	string non_terminals[] =  {"program", "block", "prevdec", "declaration", "arraydec", "arraydecaux", 
-	"rangelist", "rangelistaux", "range", "vardec", "varconstruction", "decwithassign", "usertype", 
-	"typedec", "typedecauxrange", "typedecaux", "vardeclist", "vardeclistaux", "labeldec", "constdec", "abstractiondec", 
-	"procdec", "funcdec", "parameters", "paramsaux", "paramslist", "prevcommand", "callcommand", 
-	"commands", "commandsaux", "callidbegin", "calllabel", "write", "read", "return", "loop", "forloop", 
-	"forstruct", "prevfor", "varassignlist", "varassignlistaux", "posfor", "posforaux", "posforaux2", 
-	"whileloop", "repeatloop", "conditional", "ifcond", "ifcondaux", "casecond", "casecondaux", 
-	"caselist", "caselistaux", "caselistaux2", "caseclause", "expressionlist", "expressionlistaux", 
-	"expr", "orfact", "andfact", "andfactaux", "notfact", "expreq", "expreqaux", "numericexpr", "exprsum", 
-	"exprmul", "exprmulaux", "simpleexpr", "optrange", "optunary", "optbracket", "idlist", "idlistaux", 
-	"type", "literal", "atomic", "id", "idaux", "atomiclist", "atomiclistaux", };
 
 	/*Verifica terminais*/
 	for (int i = 0; i < size_terminals; i++) {
@@ -139,27 +154,40 @@ vector<int> splite(string text) {
 	return parts;
 }
 
-// void printTable(map<int, map<int, vector<int> > > map_elements){
+void printTable(map<int, map<int, vector<int> > > &map_elements){
 
-// 	for (map<int, map<int, vector<int> > >::iterator it=map_elements.begin(); it!=map_elements.end(); ++it) {
-//     	for (map<int, vector<int> >::iterator it2=it->second.begin(); it2!=it->second.end(); ++it2) {
-//     		vector<int> v = it2->second;
-//     		if(v.size() == 0) {
-//     			cout << '\t';
-// 				continue;
-// 			}
-// 			cout << "[";
-// 			for(unsigned int i = 0; i <  v.size(); i++) {
-// 				cout << v[i];
-// 				if(i+1 < v.size()) 
-// 					cout << ", ";
-// 			}
-// 				cout << "]";
-// 			cout << '\t';
-// 		}
-// 		cout << endl;
-// 	}
-// }
+	// for (map<int, map<int, vector<int> > >::iterator it=map_elements.begin(); it!=map_elements.end(); ++it) {
+ //    	for (map<int, vector<int> >::iterator it2=it->second.begin(); it2!=it->second.end(); ++it2) {
+ //    		vector<int> v = it2->second;
+ //    		if(v.size() == 0) {
+ //    			continue;
+	// 		}
+	// 		cout << "[";
+	// 		for(unsigned int i = 0; i <  v.size(); i++) {
+	// 			cout << to_print(v[i]);
+	// 			if(i+1 < v.size()) 
+	// 				cout << ", ";
+	// 		}
+	// 			cout << "]";
+	// 		cout << '\t';
+	// 	}
+	// 	cout << endl;
+	// }
+	// for(int i = NOT; i <= ERROR; i++) {
+	// 	for(int j = PROGRAM_; j <= ATOMICLISTAUX_; j++) {
+	// 		list v = map_elements[i][j];
+	// 		if(v.size() == 0)
+	// 			continue;
+			
+	// 		cout << to_print(i) << ", " << to_print(j) << ": ";
+	// 		for(list::iterator it = v.begin(); it < v.end(); it++) {
+	// 			cout << to_print(*it) << " ";
+	// 		}
+	// 		cout << endl;
+
+	// 	}
+	// }
+}
 
 
 // void printTable(vector<vector<vector<int> > > elements) {
@@ -244,7 +272,7 @@ map<int, map<int, vector<int> > > readMatrix(const char* file_name) {
 	// printTable(map_elements);
 	// acesso da matriz: nonterminal, terminal
 	vector<int> v = map_elements[PROGRAM_][PROG];
-	cout << "(" << PROGRAM_ << ", " << PROG << ") = " << v[0] << endl;
+	//cout << "(" << PROGRAM_ << ", " << PROG << ") = " << v[0] << endl;
 	
 	fstream.close();
 	return map_elements;
@@ -252,48 +280,50 @@ map<int, map<int, vector<int> > > readMatrix(const char* file_name) {
 
 void runTable(map<int, map<int, vector<int> > > mtx){
 	stack<int> stack;
+	// printTable(mtx);
 	// matrix mtx;
 	// init_table(mtx);
 
 	Token *t = getToken(); // ip 
 	stack.push(PROGRAM_);
+	//cout << "PROGRAM_ " << PROGRAM_ << " " << translate("program") << endl;
 	while(!stack.empty()) {
 		int top = stack.top(); // o que deveria ser encontrado no arquivo
 		int a = t->key; // o que está sendo lido do arquivo
-		cout << "Current top: " << top << "; current a: " << a << ' ';
-		printf("( %s, %d, %d ) \n", t->value, t->line, t->column );  
 		if(is_terminal(top) || top == FINAL) {
-			cout << "Is terminal" << endl;
+			cout << "Is all terminal" << endl;
+			cout << "Current top: " << to_print(top) << "; current a: " << to_print(a) << endl;
+		
 			if(top == a) {
 				stack.pop();
 				t = getToken();
 			} else {
 				// error
-				cout << "Invalid syntax: line " << t->line << endl;
+				cout << "Invalid syntax: line " << t->line << " expected " << to_print(top) << " instead of " << to_print(a) << endl;
 				return;
 			} 
 		} else {
 			cout << "Is nonterminal" << endl;
 			if(is_valid_access(top, a, mtx)) {
+				cout << "Is valid access: top is " << to_print(top) << " and a is " << to_print(a) << endl;
 				stack.pop();
-				cout << "Is valid access: top is " << top << " and a is " << a << endl;
+				
 				list predict = mtx[top][a];
-				for(list::iterator it = predict.end(); it != predict.begin(); it--) {
-					// todo: ignorar o predict[0] ou tirar no momento da leitura da tabela
+				for(list::iterator it = predict.end()-1; it >= predict.begin(); it--) {
+					cout << to_print(*it) << " ";
 					stack.push(*it);
 				}
+				cout << endl;
 			} else {
 				// error
-				cout << "Invalid syntax: line " << t->line << endl;
+				cout << "Invalid syntax: line " << t->line << " expected " << to_print(top) << " instead of " << to_print(a) << endl;
 				return;
 			}
 		}
 
 		// printf("( %s, %d, %d ) \n", t->value, t->line, t->column );  
-		t = getToken();
+		// t = getToken();
 	}
 }
-
-
 
 #endif
