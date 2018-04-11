@@ -1,9 +1,9 @@
 %{
 	//LIBRARY
-    #include "../token.c"
+    //#include "../token.c"
     
     //DEFINE
-    #define YY_DECL Token* yylex(void)
+    //#define YY_DECL Token* yylex(void)
     
 	//VARIABLES
     int lines = 1;
@@ -350,4 +350,14 @@ void openFile(int argc, char **argv){
 	}else{
 	        yyin = stdin;
     }
+}
+
+int main( int argc, char **argv ) {
+	++argv, --argc;  /* skip over program name */
+	if ( argc > 0 )
+	        yyin = fopen( argv[0], "r" );
+	else
+	        yyin = stdin;
+
+	yylex();
 }
