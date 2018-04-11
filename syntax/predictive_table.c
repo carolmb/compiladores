@@ -19,16 +19,23 @@ typedef vector<vector<list> > matrix;
 
 NONTERMINALS nonterminals;
 
-bool is_valid_access(int non_terminal, int terminal) {
-	if(true)
-		return true;
+bool is_valid_access(int non_terminal, int terminal, map<int, map<int, vector<int> > > mtx) {
+	//nonterminal, terminal
+	if(is_terminal(terminal)) {
+		if(mtx[non_terminal][terminal].size() == 0) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	return false;
 }
 
-void init_table(matrix &mtx) {
-	int n_non_terminals = EXPRESSIONLIST_ - PROGRAM_ + 1;
-	int n_terminals = ERROR - NOT;
-	mtx = matrix(n_non_terminals, vector<list>(n_terminals, vector<int>()));	
-}
+// void init_table(matrix &mtx) {
+// 	int n_non_terminals = EXPRESSIONLIST_ - PROGRAM_ + 1;
+// 	int n_terminals = ERROR - NOT;
+// 	mtx = matrix(n_non_terminals, vector<list>(n_terminals, vector<int>()));	
+// }
 
 
 /*Recebe uma palavra chave e retorna o valor do ENUM correpondente*/
@@ -181,7 +188,7 @@ vector<int> splite(string text) {
 	Exportei para csv modificando as tabulações para '\t'
 	Com isso não há coflito com o ';' ou com ','
 	*/
-void readMatrix(const char* file_name) {
+map<int, map<int, vector<int> > > readMatrix(const char* file_name) {
 
 	//Buffer de leitura do arquivo
 	ifstream fstream;
@@ -208,7 +215,7 @@ void readMatrix(const char* file_name) {
 	    if ( c_read == '\t' ) {
 
 
-	    	if (i==0) {
+	    	if (i == 0) {
 	    		term_idx.push_back(translate(field));
 	    	} else {
 	    		map_elements[i-1+PROGRAM_][term_idx[j]] = splite(field);
@@ -235,41 +242,54 @@ void readMatrix(const char* file_name) {
 	}
 
 	// printTable(map_elements);
-
+	// acesso da matriz: nonterminal, terminal
 	vector<int> v = map_elements[PROGRAM_][PROG];
 	cout << "(" << PROGRAM_ << ", " << PROG << ") = " << v[0] << endl;
 	
 	fstream.close();
+	return map_elements;
 }
 
-void runTable(){
+void runTable(map<int, map<int, vector<int> > > mtx){
 	stack<int> stack;
-	matrix mtx;
-	init_table(mtx);
+	// matrix mtx;
+	// init_table(mtx);
 
 	Token *t = getToken(); // ip 
 	stack.push(PROGRAM_);
 	while(!stack.empty()) {
-		int top = stack.top();
-		int a = t->key;
+		int top = stack.top(); // o que deveria ser encontrado no arquivo
+		int a = t->key; // o que está sendo lido do arquivo
+		cout << "Current top: " << top << "; current a: " << a << ' ';
+		printf("( %s, %d, %d ) \n", t->value, t->line, t->column );  
 		if(is_terminal(top) || top == FINAL) {
+			cout << "Is terminal" << endl;
 			if(top == a) {
 				stack.pop();
 				t = getToken();
 			} else {
 				// error
+				cout << "Invalid syntax: line " << t->line << endl;
+				return;
 			} 
 		} else {
-			if(is_valid_access(top, a)) {
+			cout << "Is nonterminal" << endl;
+			if(is_valid_access(top, a, mtx)) {
+				stack.pop();
+				cout << "Is valid access: top is " << top << " and a is " << a << endl;
 				list predict = mtx[top][a];
 				for(list::iterator it = predict.end(); it != predict.begin(); it--) {
+					// todo: ignorar o predict[0] ou tirar no momento da leitura da tabela
 					stack.push(*it);
 				}
+			} else {
+				// error
+				cout << "Invalid syntax: line " << t->line << endl;
+				return;
 			}
 		}
 
-		printf("( %s, %d, %d ) \n", t->value, t->line, t->column );  
-		//if(X >= )
+		// printf("( %s, %d, %d ) \n", t->value, t->line, t->column );  
 		t = getToken();
 	}
 }

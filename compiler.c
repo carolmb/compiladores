@@ -16,7 +16,8 @@ int main( int argc, char **argv ) {
         comp.runRec();
     }else if (strcmp(argv[1], "-table") == 0){
         // runTable();
-        readMatrix("syntax/spt.csv");
+        map<int, map<int, vector<int> > > mtx = readMatrix("syntax/spt.csv");
+        runTable(mtx);
     }else{
         printf("Defina o tipo de analisador sintático\n");
     }
