@@ -69,7 +69,7 @@ caselistaux2 ->  caseclause caselistaux | LAMBDA
 caseclause -> atomiclist ":" callcommand 
 
 expressionlist -> expr expressionlistaux
-expressionlistaux -> "," expr expressionlistaux
+expressionlistaux -> "," expr expressionlistaux | LAMBDA
 
 expr -> andfact orfact
 orfact -> "or" andfact orfact 
@@ -125,6 +125,5 @@ id -> "id" idaux
    
 idaux -> "[" expressionlist "]" |  "." id |  "(" expressionlist ")" | LAMBDA
    
-
 atomiclist -> atomic atomiclistaux
 atomiclistaux ->  "," atomic atomiclistaux | LAMBDA

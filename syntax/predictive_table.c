@@ -92,154 +92,71 @@ int translate(string key){
 	return -1;
 }
 
-/* 	Pega uma string correspondente a um elemento da tabela, e retorna uma lista de inteiros, 
-	correspondendo ao índice da tabela
-*/
-void get_rule(map<int, vector<list > > &rules, string text) {
-	list parts;
-
-	/*Se é um espaço vazio da tabela*/
-	if (text.size() == 0) {
-		/*Não faz nada, a lista será vazia*/
-		return;
-	} else if(text[0]=='\'') {
-		/*Se começar com aspas simples, tratará de um terminal*/
-		cout << "DEVERIA ENTRAR AQUI?" << endl;
-		parts.push_back(translate(text));
-	} else {
-		cout << text << endl;
-		/*Irá iterá em cada elemento da regra a fim de separar cada regra como um inteiro*/
-		unsigned int st = 0;
-
-		string no_terminal = "";
-		/*Retira a parte esquerda da regra*/
-		while (st+1 < text.size() && text[st] != ' ') {
-			no_terminal += text[st];
-			st++;
-		}
-
-		st+=4; /*Retira o '-> '*/
-		
-		string t; /*Irá armazenar o conteúdo char a char, que depois será convertido em inteiro*/
-		int key;
-		/*Percorre o lado direito da regra*/
-		for (unsigned int i = st; i < text.size(); i++) {
-
-			switch(text[i]){
-
-				/*Se o char for espaço*/
-				case ' ':
-					
-					/*Adiciona o t contrído a lista convertendo-o para o ENUM correspondente*/
-					key = translate(t);
-					parts.push_back(key);
-					//cout << key << " " << t << endl;
-					t = ""; /*Reinicia t para construir os novos valores*/
-					break;
-
-				default:
-					t+=text[i];
-
-			}
-		}
-
-		/*Adiciona o último t a lista*/
-		if(t.size() > 0) parts.push_back(translate(t));
-		vector<list> right = rules[translate(no_terminal)];
-		// for(list::iterator it = parts.begin(); it != parts.end(); it++)
-		// 	cout << *it << " ";
-		// cout << endl;
-		right.push_back(parts);
-		rules[translate(no_terminal)] = right;
-	}
-}
-
-/* 	Salvei em XLS
-	Exportei para csv modificando as tabulações para '\t'
-	Com isso não há coflito com o ';' ou com ','
-	*/
-void init_rules(const char* file_name, map<int, vector<list > > &rules) {
-
-	//Buffer de leitura do arquivo
-	ifstream fstream;
-	fstream.open(file_name, ifstream::in);
-
-	//variável auxiliar para armazenar os campos da tabela
-	string field;
-	
-	//vector<int> term_idx;
-
-	// bool firstLine = true;
-	int i = 0;
-	
-	while (fstream.good()) {
-
-		/*Ler um caractere do arquivo*/
-		char c_read;
-		c_read = fstream.get();
-
-		/*Se for uma tabulação (delimitador de campo)*/
-	    if ( c_read == '\t' ) {
-
-
-	    	if (i == 0) {
-	    		//term_idx.push_back(translate(field));
-	    	} else {
-	    		get_rule(rules, field);
-	    	}
-
-	    	/*Limpa para ler o próximo campo*/
-	    	field = "";
-
-	    /*Se for final de linha*/
-	    } else if( c_read == '\n') {
-	    	i++;
-	    	/*Garante a Limpeza do campo para ler o próximo campo na nova linha*/
-	    	field = "";
-
-	    } else {
-
-	    	/*Constrói o campo, byte a byte*/
-	    	field = field + c_read;
-	    }
-	}
-
-	fstream.close();
-}
-
-void init_sets(const char* file_name, map<int, list> &sets) {
-	cout << "init_sets " << file_name << endl;
-	ifstream fstream;
-	fstream.open(file_name, ifstream::in);
-
+void get_predict(string text, unsigned &init_id, list &rules) {
+	cout << endl << text << endl;
 	string field = "";
-	int i = 0;
-	int key, element;
-
-	while (fstream.good()) {
-		char c_read;
-		c_read = fstream.get();
-
-	    if ( c_read == ' ' ) {
-
-	    	if (i == 0) {
-	    		// lê terminal
-	    		key = translate(field);
-	    		sets[key] = list();
-	    	} else {
-	    		// lê elemento do conjunto
-	    		element = translate(field);
-	    		sets[key].push_back(element);
-	    	}
-			field = "";
-	    	i++;
-	    } else if( c_read == '\n') {
-	    	i = 0;
-			field = "";
+	unsigned i = init_id;
+	int element;
+	cout << " predict: ";
+	while (i < text.size()) {
+		char c_read = text[i];
+		i++;
+	    if (c_read == ' ') {
+    		element = translate(field);
+			rules.push_back(element);
+	    	cout << to_print(element) << " ";
+	    	field = "";
 	    } else {
 			/*Constrói o campo, byte a byte*/
 	    	field = field + c_read;
 	    }
+	}
+	cout << endl;
+}
+
+/* 	Pega uma string correspondente a um elemento da tabela, e retorna uma lista de inteiros, 
+	correspondendo ao índice da tabela
+*/
+void get_one_predict_set(map<int, map<list, list> > &rules, string text) {
+	
+	/*Se é um espaço vazio da tabela*/
+	if (text.size() == 0) {
+		return;
+	} else {
+		/*Irá iterá em cada elemento da regra a fim de separar cada regra como um inteiro*/
+		unsigned int st = 0;
+		string left_string = "";
+		/*Retira a parte esquerda da regra*/
+		while (st+1 < text.size() && text[st] != ' ') {
+			left_string += text[st];
+			st++;
+		}
+		st+=5; /*Retira o '-> '*/
+		
+		string t; /*Irá armazenar o conteúdo char a char, que depois será convertido em inteiro*/
+		int key;
+		int left_side = translate(left_string);
+		//cout << to_print(left_side) << " -> ";
+		list right_side;
+		list predict = list();
+		/*Percorre o lado direito da regra*/
+		for (unsigned int i = st; i < text.size(); i++) {
+			if(text[i] == ' ') {
+				key = translate(t);
+				right_side.push_back(key);
+				//cout << to_print(key) << " ";
+				t = ""; /*Reinicia t para construir os novos valores*/
+			} else if(text[i] == '\t') {
+				i++;
+				get_predict(text, i, predict);
+				break;
+			} else {
+				t+=text[i];
+			}
+		}
+		//cout << endl;
+
+		rules[left_side][right_side] = predict;
 	}
 }
 
@@ -267,43 +184,44 @@ void print_table(map<int, map<int, list > > &mtx) {
 	}
 }
 
-void print_sets(map<int, list> sets) {
-	for(map<int, list>::iterator it = sets.begin(); it != sets.end(); it++) {
-		cout << "set of " << to_print(it->first) << ": ";
-		for(list::iterator el = it->second.begin(); el != it->second.end(); el++) {
-			cout << to_print(*el) << " ";
-		}
-		cout << endl;
+void get_predict_sets(const char* file_name, map<int, map<list, list> > &predict_set) {
+	//Buffer de leitura do arquivo
+	ifstream fstream;
+	fstream.open(file_name, ifstream::in);
+
+	//variável auxiliar para armazenar os campos da tabela
+	string field;
+	
+	while (fstream.good()) {
+
+		/*Ler um caractere do arquivo*/
+		char c_read;
+		c_read = fstream.get();
+
+		if( c_read == '\n') {
+	    	get_one_predict_set(predict_set, field);
+	    	field = "";
+	    } else {
+	    	/*Constrói o campo, byte a byte*/
+	    	field = field + c_read;
+	    }
 	}
+	fstream.close();
 }
 
 void init_table(map<int, map<int, list > > &mtx) {
-	map<int, list> first_set, follow_set;
-	init_sets("syntax/first_set.csv", first_set);
-	init_sets("syntax/follow_set.csv", follow_set);
+	map<int, map<list, list> > predict_set;
+	get_predict_sets("syntax/predict_set.csv", predict_set);
 	
-	map<int, vector<list> > rules;
-	init_rules("syntax/spt.csv", rules);
-	
-	for (map<int,vector<list> >::iterator it = rules.begin(); it != rules.end(); it++) {
-		int left = it->first; // lado esquerdo da regra (não terminal)
-		vector<list> right_sides = it->second; // todos os lados direitos possíveis
-		
-		for(vector<list>::iterator right = right_sides.begin(); right != right_sides.end(); right++) {
-			// um lado direito possível (é uma lista de inteiros)
-			for(list::iterator a = right->begin(); a != right->end(); a++) {
-				list a_first_set = first_set[*a];
-				for(list::iterator t = a_first_set.begin(); t != a_first_set.end(); t++) {
-					if(is_terminal(*t))
-						mtx[left][*t] = *right;	
-				}
-				if(has_lambda(a_first_set)) {
-					list a_follow_set = follow_set[*a];
-					for(list::iterator t = a_follow_set.begin(); t != a_follow_set.end(); t++) {
-						if(is_terminal(*t)) {
-							mtx[left][*t] = *right;
-						}
-					}
+	for(map<int, map<list, list> >::iterator it = predict_set.begin(); it != predict_set.end(); it++) {
+		int left_side = it->first;
+		map<list, list> right_side = it->second;
+		for(map<list,list>::iterator it2 = right_side.begin(); it2 != right_side.end(); it2++) {
+			list right = it2->first;
+			list predict = it2->second;
+			for(list::iterator p = predict.begin(); p != predict.end(); p++) {
+				if(is_terminal(*p)) {
+					mtx[left_side][*p] = right;
 				}
 			}
 		}
@@ -315,13 +233,11 @@ void runTable(){
 	
 	map<int, map<int, list > > mtx;
 	init_table(mtx);
-	print_table(mtx);
-	return;
-	
+	//print_table(mtx);
+	//return;
 
 	Token *t = getToken(); // ip 
 	stack.push(PROGRAM_);
-	//cout << "PROGRAM_ " << PROGRAM_ << " " << translate("program") << endl;
 	while(!stack.empty()) {
 		int top = stack.top(); // o que deveria ser encontrado no arquivo
 		int a = t->key; // o que está sendo lido do arquivo
@@ -329,7 +245,9 @@ void runTable(){
 			cout << "Is all terminal" << endl;
 			cout << "Current top: " << to_print(top) << "; current a: " << to_print(a) << endl;
 		
-			if(top == a) {
+			if(top == 0) {
+				stack.pop();
+			} else if(top == a) {
 				stack.pop();
 				t = getToken();
 			} else {
@@ -338,7 +256,7 @@ void runTable(){
 				return;
 			} 
 		} else {
-			cout << "Is nonterminal" << endl;
+			cout << "Is nonterminal " << to_print(top) << " " << to_print(a) <<  endl;
 			if(is_valid_access(top, a, mtx)) {
 				cout << "Is valid access: top is " << to_print(top) << " and a is " << to_print(a) << endl;
 				stack.pop();

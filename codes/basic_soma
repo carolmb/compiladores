@@ -4,7 +4,5 @@ var x, y, soma : inteiro;
 
 inicio
 	x := 5;
-	y := 10;
-	soma := x+y;
-	escreva(soma);
+	escreva(x)
 fim

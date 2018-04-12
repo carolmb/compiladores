@@ -159,6 +159,9 @@ typedef enum {
 } NONTERMINALS;
 
 bool is_terminal(int value){
+	if(value == 0) 
+		return true;
+	
 	if(value >= NOT && value <= ERROR)
 		return true;
 	return false;
