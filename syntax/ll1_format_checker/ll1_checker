@@ -12,15 +12,15 @@ range -> atomic ".." atomic
 vardec -> "var" idlist ":" varconstruction
 varconstruction ->  type decwithassign | arraydec
  
-decwithassign -> "=" expression | LAMBDA
+decwithassign -> "=" expr | LAMBDA
 usertype -> "tipo" "id" typedec
 typedec -> arraydec | ":=" typedecaux
-typedecaux -> "registro" vardeclist "fim" | "value" | "(" idlist ")" | range
+typedecaux -> "registro" vardeclist "fim" | "(" idlist ")" | atomic optrange
 
 vardeclist -> vardec vardeclistaux 
 vardeclistaux -> ";" vardec vardeclistaux | LAMBDA
 labeldec -> "rotulo" idlist
-constdec -> "const" "id" "=" expression
+constdec -> "const" "id" "=" expr
 abstractiondec -> procdec | funcdec
 procdec -> "proc" "id" "(" parameters ")" prevdec ";" block
 funcdec -> "func" "id" "(" parameters ")" ":" type ";" prevdec block
@@ -33,30 +33,30 @@ commands -> callcommand commandsaux
 
 commandsaux -> ";"  commands | LAMBDA
 
-callidbegin  -> ":" callcommand  | ":=" expression | LAMBDA
+callidbegin  -> ":" callcommand  | ":=" expr | LAMBDA
 
 calllabel -> "pule" "id"
 write -> "escreva" "(" expressionlist ")"
 read -> "leia" "(" expressionlist ")"
-return -> "retorne" expression
+return -> "retorne" expr
 loop -> forloop | whileloop | repeatloop
 forloop -> "para" "(" forstruct ")" "faca" callcommand
-forstruct -> prevfor ";" expression ";" posfor
+forstruct -> prevfor ";" expr ";" posfor
 prevfor -> varassignlist | LAMBDA
 
-varassignlist -> "id" "=" expression varassignlistaux
-varassignlistaux -> "," "id" "=" expression varassignlistaux | LAMBDA
+varassignlist -> "id" "=" expr varassignlistaux
+varassignlistaux -> "," "id" "=" expr varassignlistaux | LAMBDA
 
 posfor -> posforaux | LAMBDA
 posforaux ->  commands posforaux2
 posforaux2 -> "," commands posforaux2 | LAMBDA
-whileloop -> "enquanto" "(" expression ")" "faca" callcommand
-repeatloop -> "repita" commands "ate" expression
+whileloop -> "enquanto" "(" expr ")" "faca" callcommand
+repeatloop -> "repita" commands "ate" expr
 conditional -> ifcond | casecond
-ifcond ->  "se" "(" expression ")" "entao" callcommand ifcondaux 
+ifcond ->  "se" "(" expr ")" "entao" callcommand ifcondaux 
 ifcondaux -> "senao" callcommand | LAMBDA
 
-casecond -> "caso" "(" expression ")" "seja" caselist casecondaux
+casecond -> "caso" "(" expr ")" "seja" caselist casecondaux
    
 casecondaux -> "fim"| "senao" commands "fim"
    
@@ -65,26 +65,51 @@ caselistaux -> ";" caselistaux2   | LAMBDA
 caselistaux2 ->  caseclause caselistaux | LAMBDA
 caseclause -> atomiclist ":" callcommand 
 
-expressionlist -> expression expressionlistaux
-expressionlistaux -> "," expression expressionlistaux
-expression -> logicexpr 
-logicexpr -> logicexprinter bla
-bla -> exprand | expreq 
-exprand -> "and" expreq exprand  | "or" expreq exprand  | LAMBDA
-expreq -> "==" logicexprinter expreq | "!=" logicexprinter expreq | LAMBDA
-   
-exprleq -> ">" logicexprinter   | "<" logicexprinter   | ">=" logicexprinter  | "<=" logicexprinter   | LAMBDA
-logicexprinter -> numericexpr exprleq |  "~" numericexpr exprleq 
+expressionlist -> expr expressionlistaux
+expressionlistaux -> "," expr expressionlistaux
 
-numericexpr -> numericexprinter exprsum
-exprsum -> "+" numericexprinter exprsum  | "-" numericexprinter exprsum | LAMBDA
+expr -> andfact orfact
+orfact -> "or" andfact orfact 
+orfact -> LAMBDA
 
-numericexprinter -> simpleexpr exprmul
-exprmul -> "*" simpleexpr exprmul | "/" simpleexpr exprmul  | LAMBDA
-simpleexpr -> atomic optrange | optminus optbracket |  "(" logicexpr ")"
-optrange -> ".." atomic | LAMBDA
-optminus -> "-" | "+"
-optbracket -> "(" logicexpr ")" | atomic
+andfact -> notfact andfactaux
+andfactaux -> "and" notfact andfactaux
+andfactaux -> LAMBDA
+
+notfact -> "~" expreq
+notfact -> expreq
+
+expreq -> numericexpr expreqaux
+expreqaux -> "==" numericexpr expreqaux 
+expreqaux -> "!=" numericexpr expreqaux 
+expreqaux -> ">" numericexpr expreqaux  
+expreqaux -> "<" numericexpr expreqaux  
+expreqaux -> ">=" numericexpr expreqaux 
+expreqaux -> "<=" numericexpr expreqaux 
+expreqaux -> LAMBDA 
+
+numericexpr -> exprmul exprsum
+exprsum -> "+" exprmul exprsum 
+exprsum -> "-" exprmul exprsum 
+exprsum -> LAMBDA 
+
+exprmul -> simpleexpr exprmulaux
+exprmulaux -> "*" simpleexpr exprmulaux
+exprmulaux -> "/" simpleexpr exprmulaux
+exprmulaux -> LAMBDA
+
+simpleexpr -> atomic optrange
+simpleexpr -> optunary optbracket
+simpleexpr -> "(" expr ")"
+
+optrange -> ".." atomic 
+optrange -> LAMBDA
+
+optunary -> "-" 
+optunary -> "+"
+
+optbracket -> "(" expr  ")" 
+optbracket -> atomic
 
 idlist -> "id" idlistaux 
 

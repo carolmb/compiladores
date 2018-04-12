@@ -15,9 +15,7 @@ int main( int argc, char **argv ) {
         PredictiveRecursive comp;
         comp.runRec();
     }else if (strcmp(argv[1], "-table") == 0){
-        // runTable();
-        map<int, map<int, vector<int> > > mtx = readMatrix("syntax/spt.csv");
-        runTable(mtx);
+        runTable();
     }else{
         printf("Defina o tipo de analisador sintático\n");
     }

@@ -18,7 +18,7 @@ string terminals[] = {
 "prog", "inicio", "fim", "de", ":", ";", "<", "=", ">", "var", "rotulo", "registro", "tipo", 
 "const", "retorne", "pule", "para", "enquanto", "faca", "repita", "ate", "se", "entao", 
 "senao", "caso", "seja", "func", "proc", "pare", "ref", "and", "or", "<=", ">=", "==", "!=", 
-"[", "literaltexto", "]", "..", ":=", "escreva", "leia"};
+"[", "literaltexto", "]", "..", ":=", "escreva", "leia", "$"};
 
 string non_terminals[] =  {"program", "block", "prevdec", "declaration", "arraydec", "arraydecaux", 
 "rangelist", "rangelistaux", "range", "vardec", "varconstruction", "decwithassign", "usertype", 
@@ -30,13 +30,9 @@ string non_terminals[] =  {"program", "block", "prevdec", "declaration", "arrayd
 "caselist", "caselistaux", "caselistaux2", "caseclause", "expressionlist", "expressionlistaux", 
 "expr", "orfact", "andfact", "andfactaux", "notfact", "expreq", "expreqaux", "numericexpr", "exprsum", 
 "exprmul", "exprmulaux", "simpleexpr", "optrange", "optunary", "optbracket", "idlist", "idlistaux", 
-"type", "literal", "atomic", "id", "idaux", "atomiclist", "atomiclistaux", };
-
+"type", "literal", "atomic", "id", "idaux", "atomiclist", "atomiclistaux"};
 
 typedef vector<int> list;
-typedef vector<vector<list> > matrix; 
-
-
 
 NONTERMINALS nonterminals;
 
@@ -53,6 +49,9 @@ bool is_valid_access(int non_terminal, int terminal, map<int, map<int, vector<in
 }
 
 string to_print(int a) {
+	if(a == 0) {
+		return "lambda";
+	}
 	if(a < NOT) {
 		return "0";
 	}
@@ -65,13 +64,6 @@ string to_print(int a) {
 		return non_terminals[a-ERROR-1] + '(' +'n' + ')';
 	}
 }
-
-// void init_table(matrix &mtx) {
-// 	int n_non_terminals = EXPRESSIONLIST_ - PROGRAM_ + 1;
-// 	int n_terminals = ERROR - NOT;
-// 	mtx = matrix(n_non_terminals, vector<list>(n_terminals, vector<int>()));	
-// }
-
 
 /*Recebe uma palavra chave e retorna o valor do ENUM correpondente*/
 int translate(string key){
@@ -100,29 +92,32 @@ int translate(string key){
 	return -1;
 }
 
-
-
 /* 	Pega uma string correspondente a um elemento da tabela, e retorna uma lista de inteiros, 
 	correspondendo ao índice da tabela
 */
-vector<int> splite(string text) {
+void get_rule(map<int, vector<list > > &rules, string text) {
 
-	vector<int> parts;
+	list parts;
 
 	/*Se é um espaço vazio da tabela*/
 	if (text.size() == 0) {
 		/*Não faz nada, a lista será vazia*/
-
+		return;
 	} else if(text[0]=='\'') {
 		/*Se começar com aspas simples, tratará de um terminal*/
+		cout << "DEVERIA ENTRAR AQUI?" << endl;
 		parts.push_back(translate(text));
 	} else {
 
 		/*Irá iterá em cada elemento da regra a fim de separar cada regra como um inteiro*/
 		unsigned int st = 0;
 
+		string no_terminal = "";
 		/*Retira a parte esquerda da regra*/
-		while (st+1 < text.size() && text[st] != '-' && text[st+1] != '>') st++;
+		while (st+1 < text.size() && text[st] != ' ') {
+			no_terminal += text[st];
+			st++;
+		}
 
 		st+=3; /*Retira o '-> '*/
 		
@@ -149,74 +144,17 @@ vector<int> splite(string text) {
 
 		/*Adiciona o último t a lista*/
 		if(t.size() > 0) parts.push_back(translate(t));
+		vector<list> right = rules[translate(no_terminal)];
+		right.push_back(parts);
+		rules[translate(no_terminal)] = right;
 	}
-
-	return parts;
 }
-
-void printTable(map<int, map<int, vector<int> > > &map_elements){
-
-	// for (map<int, map<int, vector<int> > >::iterator it=map_elements.begin(); it!=map_elements.end(); ++it) {
- //    	for (map<int, vector<int> >::iterator it2=it->second.begin(); it2!=it->second.end(); ++it2) {
- //    		vector<int> v = it2->second;
- //    		if(v.size() == 0) {
- //    			continue;
-	// 		}
-	// 		cout << "[";
-	// 		for(unsigned int i = 0; i <  v.size(); i++) {
-	// 			cout << to_print(v[i]);
-	// 			if(i+1 < v.size()) 
-	// 				cout << ", ";
-	// 		}
-	// 			cout << "]";
-	// 		cout << '\t';
-	// 	}
-	// 	cout << endl;
-	// }
-	// for(int i = NOT; i <= ERROR; i++) {
-	// 	for(int j = PROGRAM_; j <= ATOMICLISTAUX_; j++) {
-	// 		list v = map_elements[i][j];
-	// 		if(v.size() == 0)
-	// 			continue;
-			
-	// 		cout << to_print(i) << ", " << to_print(j) << ": ";
-	// 		for(list::iterator it = v.begin(); it < v.end(); it++) {
-	// 			cout << to_print(*it) << " ";
-	// 		}
-	// 		cout << endl;
-
-	// 	}
-	// }
-}
-
-
-// void printTable(vector<vector<vector<int> > > elements) {
-
-// 	/*Imprime o resultado*/
-// 	for(unsigned int i = 0; i <  elements.size(); i++) {
-// 		for(unsigned int j = 0; j <  elements[i].size(); j++) {
-// 			if(elements[i][j].size() == 0) {
-// 				cout << '\t';
-// 				continue;
-// 			}
-// 			cout << "[";
-// 			for(unsigned int k = 0; k <  elements[i][j].size(); k++) {
-// 				cout << elements[i][j][k];
-// 				if(k+1 < elements[i][j].size()) 
-// 					cout << ", ";
-// 			}
-// 			cout << "]";
-// 			cout << '\t';
-// 		}
-// 		cout << endl;
-// 	}
-// }
 
 /* 	Salvei em XLS
 	Exportei para csv modificando as tabulações para '\t'
 	Com isso não há coflito com o ';' ou com ','
 	*/
-map<int, map<int, vector<int> > > readMatrix(const char* file_name) {
+void init_rules(const char* file_name, map<int, vector<list > > &rules) {
 
 	//Buffer de leitura do arquivo
 	ifstream fstream;
@@ -224,15 +162,12 @@ map<int, map<int, vector<int> > > readMatrix(const char* file_name) {
 
 	//variável auxiliar para armazenar os campos da tabela
 	string field;
-
-	map<int, map<int, vector<int> > > map_elements;
-
-	vector<int> term_idx;
+	
+	//vector<int> term_idx;
 
 	// bool firstLine = true;
 	int i = 0;
-	int j = 0;
-
+	
 	while (fstream.good()) {
 
 		/*Ler um caractere do arquivo*/
@@ -244,12 +179,10 @@ map<int, map<int, vector<int> > > readMatrix(const char* file_name) {
 
 
 	    	if (i == 0) {
-	    		term_idx.push_back(translate(field));
+	    		//term_idx.push_back(translate(field));
 	    	} else {
-	    		map_elements[i-1+PROGRAM_][term_idx[j]] = splite(field);
+	    		get_rule(rules, field);
 	    	}
-
-	    	j++;
 
 	    	/*Limpa para ler o próximo campo*/
 	    	field = "";
@@ -257,8 +190,6 @@ map<int, map<int, vector<int> > > readMatrix(const char* file_name) {
 	    /*Se for final de linha*/
 	    } else if( c_read == '\n') {
 	    	i++;
-	    	j = 0;
-
 	    	/*Garante a Limpeza do campo para ler o próximo campo na nova linha*/
 	    	field = "";
 
@@ -269,20 +200,121 @@ map<int, map<int, vector<int> > > readMatrix(const char* file_name) {
 	    }
 	}
 
-	// printTable(map_elements);
-	// acesso da matriz: nonterminal, terminal
-	vector<int> v = map_elements[PROGRAM_][PROG];
-	//cout << "(" << PROGRAM_ << ", " << PROG << ") = " << v[0] << endl;
-	
 	fstream.close();
-	return map_elements;
 }
 
-void runTable(map<int, map<int, vector<int> > > mtx){
+void init_sets(const char* file_name, map<int, list> &sets) {
+	cout << "init_sets " << file_name << endl;
+	ifstream fstream;
+	fstream.open(file_name, ifstream::in);
+
+	string field;
+	int i = 0;
+	int key, element;
+
+	while (fstream.good()) {
+		char c_read;
+		c_read = fstream.get();
+
+	    if ( c_read == ' ' ) {
+
+	    	if (i == 0) {
+	    		// lê terminal
+	    		key = translate(field);
+	    		sets[key] = list();
+	    	} else {
+	    		// lê elemento do conjunto
+	    		element = translate(field);
+	    		sets[key].push_back(element);
+	    	}
+			field = "";
+	    	i++;
+	    } else if( c_read == '\n') {
+	    	i = 0;
+			field = "";
+	    } else {
+			/*Constrói o campo, byte a byte*/
+	    	field = field + c_read;
+	    }
+	}
+}
+
+bool has_lambda(list a_first_set) {
+	for(list::iterator it = a_first_set.begin(); it != a_first_set.end(); it++) {
+		if(*it == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void print_table(map<int, map<int, list > > &mtx) {
+	for(map<int, map<int, list > >::iterator it = mtx.begin(); it != mtx.end(); it++) {
+		int left = it->first;
+		map<int, list > rights = it->second;
+		for(map<int, list >::iterator right = rights.begin(); right != rights.end(); right++) {
+			int terminal = right->first;
+			cout << right->second.size() << " ";
+			cout << "[" << to_print(left) << ", " << to_print(terminal) << "]: ";
+			for(list::iterator el = right->second.begin(); el != right->second.end(); el++) {
+				cout << to_print(*el) << " ";
+			}
+			cout << endl;
+		}
+	}
+}
+
+void print_sets(map<int, list> sets) {
+	for(map<int, list>::iterator it = sets.begin(); it != sets.end(); it++) {
+		cout << "set of " << to_print(it->first) << ": ";
+		for(list::iterator el = it->second.begin(); el != it->second.end(); el++) {
+			cout << to_print(*el) << " ";
+		}
+		cout << endl;
+	}
+}
+
+void init_table(map<int, map<int, list > > &mtx) {
+	map<int, list> first_set, follow_set;
+	init_sets("syntax/first_set.csv", first_set);
+	init_sets("syntax/follow_set.csv", follow_set);
+
+	map<int, vector<list> > rules;
+	init_rules("syntax/spt.csv", rules);
+	
+	for (map<int,vector<list> >::iterator it = rules.begin(); it != rules.end(); it++) {
+		int left = it->first; // lado esquerdo da regra (não terminal)
+		vector<list> right_sides = it->second; // todos os lados direitos possíveis
+		
+		for(vector<list>::iterator right = right_sides.begin(); right != right_sides.end(); right++) {
+			// um lado direito possível (é uma lista de inteiros)
+			for(list::iterator a = right->begin(); a != right->end(); a++) {
+				list a_first_set = first_set[*a];
+				for(list::iterator t = a_first_set.begin(); t != a_first_set.end(); t++) {
+					if(is_terminal(*t))
+						mtx[left][*t] = *right;	
+				}
+				if(has_lambda(a_first_set)) {
+					list a_follow_set = follow_set[*a];
+					for(list::iterator t = a_follow_set.begin(); t != a_follow_set.end(); t++) {
+						if(is_terminal(*t)) {
+							mtx[left][*t] = *right;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void runTable(){
 	stack<int> stack;
-	// printTable(mtx);
-	// matrix mtx;
-	// init_table(mtx);
+	
+	map<int, map<int, list > > mtx;
+	init_table(mtx);
+	//print_table(mtx);
+	return;
+	
 
 	Token *t = getToken(); // ip 
 	stack.push(PROGRAM_);
