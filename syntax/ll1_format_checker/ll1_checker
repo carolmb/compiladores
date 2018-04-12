@@ -15,7 +15,10 @@ varconstruction ->  type decwithassign | arraydec
 decwithassign -> "=" expr | LAMBDA
 usertype -> "tipo" "id" typedec
 typedec -> arraydec | ":=" typedecaux
-typedecaux -> "registro" vardeclist "fim" | "(" idlist ")" | atomic optrange
+typedecaux -> "registro" vardeclist "fim" | "(" idlist ")" | atomic typedecauxrange 
+
+typedecauxrange -> '..' atomic
+typedecauxrange -> ''
 
 vardeclist -> vardec vardeclistaux 
 vardeclistaux -> ";" vardec vardeclistaux | LAMBDA

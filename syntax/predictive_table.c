@@ -18,7 +18,7 @@ string terminals[] = {
 "prog", "inicio", "fim", "de", ":", ";", "<", "=", ">", "var", "rotulo", "registro", "tipo", 
 "const", "retorne", "pule", "para", "enquanto", "faca", "repita", "ate", "se", "entao", 
 "senao", "caso", "seja", "func", "proc", "pare", "ref", "and", "or", "<=", ">=", "==", "!=", 
-"[", "literaltexto", "]", "..", ":=", "escreva", "leia", "$"};
+"[", "literaltexto", "]", "..", ":=", "escreva", "leia"};
 
 string non_terminals[] =  {"program", "block", "prevdec", "declaration", "arraydec", "arraydecaux", 
 "rangelist", "rangelistaux", "range", "vardec", "varconstruction", "decwithassign", "usertype", 
@@ -96,7 +96,6 @@ int translate(string key){
 	correspondendo ao índice da tabela
 */
 void get_rule(map<int, vector<list > > &rules, string text) {
-
 	list parts;
 
 	/*Se é um espaço vazio da tabela*/
@@ -108,7 +107,7 @@ void get_rule(map<int, vector<list > > &rules, string text) {
 		cout << "DEVERIA ENTRAR AQUI?" << endl;
 		parts.push_back(translate(text));
 	} else {
-
+		cout << text << endl;
 		/*Irá iterá em cada elemento da regra a fim de separar cada regra como um inteiro*/
 		unsigned int st = 0;
 
@@ -119,10 +118,10 @@ void get_rule(map<int, vector<list > > &rules, string text) {
 			st++;
 		}
 
-		st+=3; /*Retira o '-> '*/
+		st+=4; /*Retira o '-> '*/
 		
 		string t; /*Irá armazenar o conteúdo char a char, que depois será convertido em inteiro*/
-
+		int key;
 		/*Percorre o lado direito da regra*/
 		for (unsigned int i = st; i < text.size(); i++) {
 
@@ -132,7 +131,9 @@ void get_rule(map<int, vector<list > > &rules, string text) {
 				case ' ':
 					
 					/*Adiciona o t contrído a lista convertendo-o para o ENUM correspondente*/
-					parts.push_back(translate(t));
+					key = translate(t);
+					parts.push_back(key);
+					//cout << key << " " << t << endl;
 					t = ""; /*Reinicia t para construir os novos valores*/
 					break;
 
@@ -145,6 +146,9 @@ void get_rule(map<int, vector<list > > &rules, string text) {
 		/*Adiciona o último t a lista*/
 		if(t.size() > 0) parts.push_back(translate(t));
 		vector<list> right = rules[translate(no_terminal)];
+		// for(list::iterator it = parts.begin(); it != parts.end(); it++)
+		// 	cout << *it << " ";
+		// cout << endl;
 		right.push_back(parts);
 		rules[translate(no_terminal)] = right;
 	}
@@ -208,7 +212,7 @@ void init_sets(const char* file_name, map<int, list> &sets) {
 	ifstream fstream;
 	fstream.open(file_name, ifstream::in);
 
-	string field;
+	string field = "";
 	int i = 0;
 	int key, element;
 
@@ -254,7 +258,6 @@ void print_table(map<int, map<int, list > > &mtx) {
 		map<int, list > rights = it->second;
 		for(map<int, list >::iterator right = rights.begin(); right != rights.end(); right++) {
 			int terminal = right->first;
-			cout << right->second.size() << " ";
 			cout << "[" << to_print(left) << ", " << to_print(terminal) << "]: ";
 			for(list::iterator el = right->second.begin(); el != right->second.end(); el++) {
 				cout << to_print(*el) << " ";
@@ -278,7 +281,7 @@ void init_table(map<int, map<int, list > > &mtx) {
 	map<int, list> first_set, follow_set;
 	init_sets("syntax/first_set.csv", first_set);
 	init_sets("syntax/follow_set.csv", follow_set);
-
+	
 	map<int, vector<list> > rules;
 	init_rules("syntax/spt.csv", rules);
 	
@@ -312,7 +315,7 @@ void runTable(){
 	
 	map<int, map<int, list > > mtx;
 	init_table(mtx);
-	//print_table(mtx);
+	print_table(mtx);
 	return;
 	
 
