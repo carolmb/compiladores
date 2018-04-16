@@ -118,7 +118,7 @@ idlist -> "id" idlistaux
 
 idlistaux -> "," "id" idlistaux |LAMBDA
 type -> "inteiro" | "real" | "logico" | "texto" | "id" 
-literal -> "literalint" | "literalreal" | "literallogico" | "literaltexto"  
+literal -> "literalint" | "literalreal" | "literallogico" | "literaltexto" | "literallex" 
 atomic -> literal | id
    
 id -> "id" idaux

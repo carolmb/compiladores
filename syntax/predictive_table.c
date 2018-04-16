@@ -18,7 +18,7 @@ string terminals[] = {
 "prog", "inicio", "fim", "de", ":", ";", "<", "=", ">", "var", "rotulo", "registro", "tipo", 
 "const", "retorne", "pule", "para", "enquanto", "faca", "repita", "ate", "se", "entao", 
 "senao", "caso", "seja", "func", "proc", "pare", "ref", "and", "or", "<=", ">=", "==", "!=", 
-"[", "literaltexto", "]", "..", ":=", "escreva", "leia"};
+"..", "[", "literaltexto", "]", ":=", "escreva", "leia"};
 
 string non_terminals[] =  {"program", "block", "prevdec", "declaration", "arraydec", "arraydecaux", 
 "rangelist", "rangelistaux", "range", "vardec", "varconstruction", "decwithassign", "usertype", 
@@ -59,9 +59,9 @@ string to_print(int a) {
 		return "-1";
 	}
 	if(is_terminal(a)) {
-		return terminals[a-NOT] + '(' + 't' + ')';
+		return terminals[a-NOT];
 	} else {
-		return non_terminals[a-ERROR-1] + '(' +'n' + ')';
+		return non_terminals[a-ERROR-1];
 	}
 }
 
@@ -117,7 +117,7 @@ void get_predict(string text, unsigned &init_id, list &rules) {
 /* 	Pega uma string correspondente a um elemento da tabela, e retorna uma lista de inteiros, 
 	correspondendo ao índice da tabela
 */
-void get_one_predict_set(map<int, map<list, list> > &rules, string text) {
+void get_rule_and_predict_set(map<int, map<list, list> > &rules, string text) {
 	
 	/*Se é um espaço vazio da tabela*/
 	if (text.size() == 0) {
@@ -199,7 +199,7 @@ void get_predict_sets(const char* file_name, map<int, map<list, list> > &predict
 		c_read = fstream.get();
 
 		if( c_read == '\n') {
-	    	get_one_predict_set(predict_set, field);
+	    	get_rule_and_predict_set(predict_set, field);
 	    	field = "";
 	    } else {
 	    	/*Constrói o campo, byte a byte*/
@@ -229,6 +229,23 @@ map<int, map<list, list> > init_table(map<int, map<int, list > > &mtx) {
 	return predict_set;
 }
 
+void syntax_error(map<int, map<list, list> > predict_set, int top, Token *t) {
+	cout << "SYNTAX ERROR!!! EXPECTED TOKEN(S) (";
+	map<list, list> possible_rules = predict_set[top];
+	for(map<list, list>::iterator it = possible_rules.begin(); it != possible_rules.end(); it++) {
+		for(list::iterator el = it->second.begin(); el != it->second.end(); el++) {
+			cout << to_print(*el) << " ";
+		}
+	}
+	cout << ")" << endl;
+	cout << "ACTUAL TOKEN (LEXEME: " << t->value << " | LINE: " << t->line  << " | COLUMN: " << t->column << ")" << endl;
+}
+
+void syntax_error(int top, Token *t) {
+	cout << "SYNTAX ERROR!!! EXPECTED TOKEN (" << to_print(top) << ")" << endl;
+	cout << "ACTUAL TOKEN (LEXEME: " << t->value << " | LINE: " << t->line  << " | COLUMN: " << t->column << ")" << endl;
+}
+
 void runTable(){
 	stack<int> stack;
 	
@@ -243,16 +260,20 @@ void runTable(){
 	while(!stack.empty()) {
 		int top = stack.top(); // o que deveria ser encontrado no arquivo
 		int a = t->key; // o que está sendo lido do arquivo
+		if(a == ERROR) {
+			cout << "LEXICAL ERROR!!! (LEXEME: " << t->value << " | LINE: " << t->line  << " | COLUMN: " << t->column << ")" << endl;
+			return;
+		}
 		if(is_terminal(top) || top == FINAL) {
-			cout << "Is all terminal" << endl;
-			cout << "Current top: " << to_print(top) << "; current a: " << to_print(a) << endl;
+			//cout << "Is all terminal" << endl;
+			//cout << "Current top: " << to_print(top) << "; current a: " << to_print(a) << endl;
 			
 			if(a == FINAL) {
 				stack.pop();
 				if(stack.empty()) {
-					cout << "Program finished" << endl;
+					cout << "PROGRAM FINISHED" << endl;
 				} else {
-					cout << "Invalid syntax: top is " << to_print(top) << " and a is " << to_print(a) << endl;
+					syntax_error(top, t);
 				}
 				return;
 			}
@@ -262,32 +283,23 @@ void runTable(){
 				stack.pop();
 				t = getToken();
 			} else {
-				// error
-				cout << "Invalid syntax: line " << t->line  << " column " << t->column << " expected " << to_print(top) << " instead of " << to_print(a) << endl;
+				syntax_error(top, t);
 				return;
 			} 
 		} else {
-			cout << "Is nonterminal " << to_print(top) << " " << to_print(a) <<  endl;
+			//cout << "Is nonterminal " << to_print(top) << " " << to_print(a) <<  endl;
 			if(is_valid_access(top, a, mtx)) {
-				cout << "Is valid access: top is " << to_print(top) << " and a is " << to_print(a) << endl;
+				//cout << "Is valid access: top is " << to_print(top) << " and a is " << to_print(a) << endl;
 				stack.pop();
 				
 				list predict = mtx[top][a];
 				for(list::iterator it = predict.end()-1; it >= predict.begin(); it--) {
-					cout << to_print(*it) << " ";
+					//cout << to_print(*it) << " ";
 					stack.push(*it);
 				}
-				cout << endl;
+				//cout << endl;
 			} else {
-				// error
-				cout << "Invalid syntax: line " << t->line << " column " << t->column << " expected: ";
-				map<list, list> possible_rules = predict_set[top];
-				for(map<list, list>::iterator it = possible_rules.begin(); it != possible_rules.end(); it++) {
-					for(list::iterator el = it->second.begin(); el != it->second.end(); el++) {
-						cout << to_print(*el) << " ";
-					}
-				}
-				cout << "instead of " << to_print(a) << endl;
+				syntax_error(predict_set, top, t);
 				return;
 			}
 		}
