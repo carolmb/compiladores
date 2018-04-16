@@ -93,25 +93,25 @@ int translate(string key){
 }
 
 void get_predict(string text, unsigned &init_id, list &rules) {
-	cout << endl << text << endl;
+	//cout << endl << text << endl;
 	string field = "";
 	unsigned i = init_id;
 	int element;
-	cout << " predict: ";
+	//cout << " predict: ";
 	while (i < text.size()) {
 		char c_read = text[i];
 		i++;
 	    if (c_read == ' ') {
     		element = translate(field);
 			rules.push_back(element);
-	    	cout << to_print(element) << " ";
+	    	//cout << to_print(element) << " ";
 	    	field = "";
 	    } else {
 			/*Constrói o campo, byte a byte*/
 	    	field = field + c_read;
 	    }
 	}
-	cout << endl;
+	//cout << endl;
 }
 
 /* 	Pega uma string correspondente a um elemento da tabela, e retorna uma lista de inteiros, 
@@ -209,7 +209,7 @@ void get_predict_sets(const char* file_name, map<int, map<list, list> > &predict
 	fstream.close();
 }
 
-void init_table(map<int, map<int, list > > &mtx) {
+map<int, map<list, list> > init_table(map<int, map<int, list > > &mtx) {
 	map<int, map<list, list> > predict_set;
 	get_predict_sets("syntax/predict_set.csv", predict_set);
 	
@@ -226,17 +226,19 @@ void init_table(map<int, map<int, list > > &mtx) {
 			}
 		}
 	}
+	return predict_set;
 }
 
 void runTable(){
 	stack<int> stack;
 	
 	map<int, map<int, list > > mtx;
-	init_table(mtx);
+	map<int, map<list, list> > predict_set = init_table(mtx);
 	//print_table(mtx);
 	//return;
 
 	Token *t = getToken(); // ip 
+	stack.push(FINAL);
 	stack.push(PROGRAM_);
 	while(!stack.empty()) {
 		int top = stack.top(); // o que deveria ser encontrado no arquivo
@@ -244,7 +246,16 @@ void runTable(){
 		if(is_terminal(top) || top == FINAL) {
 			cout << "Is all terminal" << endl;
 			cout << "Current top: " << to_print(top) << "; current a: " << to_print(a) << endl;
-		
+			
+			if(a == FINAL) {
+				stack.pop();
+				if(stack.empty()) {
+					cout << "Program finished" << endl;
+				} else {
+					cout << "Invalid syntax: top is " << to_print(top) << " and a is " << to_print(a) << endl;
+				}
+				return;
+			}
 			if(top == 0) {
 				stack.pop();
 			} else if(top == a) {
@@ -252,7 +263,7 @@ void runTable(){
 				t = getToken();
 			} else {
 				// error
-				cout << "Invalid syntax: line " << t->line << " expected " << to_print(top) << " instead of " << to_print(a) << endl;
+				cout << "Invalid syntax: line " << t->line  << " column " << t->column << " expected " << to_print(top) << " instead of " << to_print(a) << endl;
 				return;
 			} 
 		} else {
@@ -269,13 +280,17 @@ void runTable(){
 				cout << endl;
 			} else {
 				// error
-				cout << "Invalid syntax: line " << t->line << " expected " << to_print(top) << " instead of " << to_print(a) << endl;
+				cout << "Invalid syntax: line " << t->line << " column " << t->column << " expected: ";
+				map<list, list> possible_rules = predict_set[top];
+				for(map<list, list>::iterator it = possible_rules.begin(); it != possible_rules.end(); it++) {
+					for(list::iterator el = it->second.begin(); el != it->second.end(); el++) {
+						cout << to_print(*el) << " ";
+					}
+				}
+				cout << "instead of " << to_print(a) << endl;
 				return;
 			}
 		}
-
-		// printf("( %s, %d, %d ) \n", t->value, t->line, t->column );  
-		// t = getToken();
 	}
 }
 

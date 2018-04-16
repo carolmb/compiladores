@@ -13,8 +13,8 @@ vardec -> "var" idlist ":" varconstruction
 varconstruction ->  type decwithassign | arraydec
  
 decwithassign -> "=" expr | LAMBDA
-usertype -> "tipo" "id" typedec
-typedec -> arraydec | ":=" typedecaux
+usertype -> "tipo" "id" ":=" typedec
+typedec -> arraydec | typedecaux
 typedecaux -> "registro" vardeclist "fim" | "(" idlist ")" | atomic typedecauxrange 
 
 typedecauxrange -> '..' atomic
@@ -25,11 +25,11 @@ vardeclistaux -> ";" vardec vardeclistaux | LAMBDA
 labeldec -> "rotulo" idlist
 constdec -> "const" "id" "=" expr
 abstractiondec -> procdec | funcdec
-procdec -> "proc" "id" "(" parameters ")" prevdec ";" block
+procdec -> "proc" "id" "(" parameters ")" prevdec block
 funcdec -> "func" "id" "(" parameters ")" ":" type ";" prevdec block
 parameters -> paramsaux | LAMBDA
 paramsaux -> "id" ":" type paramslist   | "ref" "id" ":" type paramslist 
-paramslist -> "," paramslist | LAMBDA
+paramslist -> "," paramsaux | LAMBDA
 prevcommand -> commands | LAMBDA
 callcommand ->  "pare" | write | read  | loop | return |  "continue" | id callidbegin | calllabel | conditional | block
 commands -> callcommand commandsaux
