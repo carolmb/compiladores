@@ -9,11 +9,17 @@ private:
     Token* t = NULL;
 public:    
     void error(std::string menssage, std::string function){
-        std::cerr << "In function " << function << std::endl;
-        std::cerr << "ERROR : " << menssage << std::endl;
-        std::cerr << "Actual Token ( NAME : " << this->t->name << " VALUE : " << this->t->value  
-                  << " LINE : " << this->t->line << " COLUMN : " << this->t->column << ")" << std::endl;
+        //std::cerr << "In function " << function << std::endl;
+        
+        if (this->t->key == ERROR){
+            std::cerr << "LEXICAL ERROR!!!" << " (LEXEME: " << this->t->value  
+                  << " | " << "LINE: " << this->t->line << " | " << "COLUMN: " << this->t->column << ")" << std::endl;
     
+        }else{
+            std::cerr << "SINTAX ERROR!!! " << menssage << std::endl;
+            std::cerr << "ACTUAL TOKEN (" << "LEXEME: " << this->t->value  
+                  << " | " << "LINE: " << this->t->line << " | " << "COLUMN: " << this->t->column << ")" << std::endl;
+        }
         exit(-1);
     }
     
@@ -26,7 +32,7 @@ public:
         if(this->t!=NULL && this->t->key==key){
             this->advance();
         }else{
-            this->error("Expected Token " + name, "eat");
+            this->error("EXPECTED TOKEN(S) ( " + name + " )", "eat");
         }    
     }
     
@@ -38,13 +44,14 @@ public:
             case REAL_VALUE:
             case BOOL_VALUE:
             case STRING_VALUE:
+            case HEXA_VALUE:
             case ID:
                 this->atomic();
                 this->eat(DOUBLEDOT, "DOUBLEDOT");
                 this->atomic();
             break;
             default:
-                this->error("Expected Token INT_VALUE, REAL_VALUE, BOOL_VALUE, STRING_VALUE, ID ","range");
+                this->error("EXPECTED TOKEN(S) ( literalint, literalreal, literallogico, literaltexto, literalhexa, id )","range");
         }
     }
     
@@ -59,7 +66,7 @@ public:
                 this->rangelistaux();
             break;
             default:
-                this->error("Expected Token ']', ','", "arraydecaux");
+                this->error("EXPECTED TOKEN(S) ( ']', ',' )", "arraydecaux");
         }
     }
     
@@ -76,7 +83,7 @@ public:
                 this->rangelistaux();
             break;
             default:
-                this->error("Expected Token INT_VALUE, HEXA_VALUE, REAL_VALUE, BOOL_VALUE, STRING_VALUE, ID ","arraydecaux");
+                this->error("EXPECTED TOKEN(S) ( literalint, literalreal, literallogico, literaltexto, literalhexa, id )","arraydecaux");
         }
     }
     
@@ -93,7 +100,7 @@ public:
             case ')' :
             break;
             default:
-                this->error("Expected Token ',', ']', ')'", "expressionlistaux");
+                this->error("EXPECTED TOKEN(S) ( ',', ']', ')' )", "expressionlistaux");
         }
     }
     
@@ -114,7 +121,7 @@ public:
                 this->expressionlistaux();
             break;
             default:
-                this->error("Expected Token ID, '(', '!', '+', '-', INT_VALUE, HEXA_VALUE, REAL_VALUE, BOOL_VALUE, STRING_VALUE ","expressionlist");
+                this->error("EXPECTED TOKEN(S) ( id, '(', '!', '+', '-', literalint, literalreal, literallogico, literaltexto, literalhexa )","expressionlist");
         }
     }
     
@@ -130,7 +137,7 @@ public:
             case ';':
             break;
             default:
-                this->error("Expected Token '=', ';', END", "arraydecaux");
+                this->error("EXPECTED TOKEN(S) ( '=', ';', 'fim' )", "arraydecaux");
         }
     }
     
@@ -147,7 +154,7 @@ public:
                 this->arraydecaux();
             break;
             default:
-                this->error("Expected Token VECTOR", "arraydec");
+                this->error("EXPECTED TOKEN(S) ( 'vetor' )", "arraydec");
         }
     }
     
@@ -162,7 +169,7 @@ public:
             case ')' :
             break;
             default:
-                this->error("Expected Token ',', ')'", "paramslist");
+                this->error("EXPECTED TOKEN(S) ( ',', ')'", "paramslist");
         }
     }
     
@@ -184,7 +191,7 @@ public:
                 this->paramslist();
             break;
             default:
-                this->error("Expected Token ID, REF", "paramsaux");
+                this->error("EXPECTED TOKEN(S) ( id, 'ref' )", "paramsaux");
         }
     }
     
@@ -199,7 +206,7 @@ public:
             case ')':
             break;
             default:
-                this->error("Expected Token ID, REF, ')'", "parameters");
+                this->error("EXPECTED TOKEN(S) ( id, 'ref', ')' )", "parameters");
         }
     }
     
@@ -216,7 +223,7 @@ public:
                 this->block();
             break;
             default:
-                this->error("Expected Token PROC", "procdec");
+                this->error("EXPECTED TOKEN(S) ( 'proc' )", "procdec");
         }
     }
     
@@ -235,7 +242,7 @@ public:
                 this->block();
             break;
             default:
-                this->error("Expected Token FUNC", "funcdec");
+                this->error("EXPECTED TOKEN(S) ( 'func' )", "funcdec");
         }
     }
     
@@ -250,7 +257,7 @@ public:
                 this->funcdec();
             break;
             default:
-                this->error("Expected Token PROC, FUNC", "abstractiondec");
+                this->error("EXPECTED TOKEN(S) ( 'proc', 'func' )", "abstractiondec");
         }
     }
     
@@ -264,7 +271,7 @@ public:
                 this->type();
             break;
             default:
-                this->error("Expected Token CONST", "constdec");
+                this->error("EXPECTED TOKEN(S) ( 'const' )", "constdec");
         }
     }
     
@@ -276,7 +283,7 @@ public:
                 this->idlist();
             break;
             default:
-                this->error("Expected Token LABEL", "labeldec");
+                this->error("EXPECTED TOKEN(S) ( 'rotulo' )", "labeldec");
         }
     }
     
@@ -292,7 +299,7 @@ public:
             case END:
             break;
             default:
-                this->error("Expected Token END, ';'", "vardeclistaux");
+                this->error("EXPECTED TOKEN(S) ( 'fim', ';' )", "vardeclistaux");
         }
     }
     
@@ -304,7 +311,7 @@ public:
                 this->vardeclistaux();
             break;
             default:
-                this->error("Expected Token VAR", "vardeclist");
+                this->error("EXPECTED TOKEN(S) ( 'var' )", "vardeclist");
         }
     }
     
@@ -319,7 +326,7 @@ public:
             case ';':
             break;
             default:
-                this->error("Expected Token DOUBLEDOT, ';'", "typedecauxrange");
+                this->error("EXPECTED TOKEN(S) ( '..', ';' )", "typedecauxrange");
         }
     }
     
@@ -348,7 +355,7 @@ public:
                 this->eat(')', ")");
             break;
             default:
-                this->error("Expected Token STRUCT, ID, INT_VALUE, REAL_VALUE, BOOL_VALUE, STRING_VALUE, HEXA_VALUE, '('", "typedecaux");
+                this->error("EXPECTED TOKEN(S) ( 'registro', id, literalint, literalreal, literallogico, literaltexto, literalhexa, '(' )", "typedecaux");
         }
     }
     
@@ -370,7 +377,7 @@ public:
                 this->typedecaux();
             break;
             default:
-                this->error("Expected Token VECTOR, ID, '(', STRUCT, INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE", "typedec");
+                this->error("EXPECTED TOKEN(S) ( 'vetor', id, '(', 'registro', literalint, literalreal, literallogico, literaltexto, literalhexa )", "typedec");
         }
     }
     
@@ -384,7 +391,7 @@ public:
                 this->typedec();
             break;
             default:
-                this->error("Expected Token TYPE", "usertype");
+                this->error("EXPECTED TOKEN(S) ( 'tipo' )", "usertype");
         }
     }
     
@@ -417,7 +424,7 @@ public:
             case '/' :
             break;
             default:
-                this->error("Expected Token DOUBLEDOT, '*', '/', '+', '-', ';', END, ']', ')', ',', UNTIL, ELSE, OR, AND, EQUAL, NOTEQ, '>', '<', GREATEQ, LESSEQ", "optrange");
+                this->error("EXPECTED TOKEN(S) ( '..', '*', '/', '+', '-', ';', 'fim', ']', ')', ',', 'ate', 'senao', '||', '&&', '==', '!=', '>', '<', '>=', '<=' )", "optrange");
         }  
     }
     
@@ -432,7 +439,7 @@ public:
                 this->eat('-', "-");
             break;
             default:
-                this->error("Expected Token '+', '-'", "optunary");
+                this->error("EXPECTED TOKEN(S) ( '+', '-' )", "optunary");
         }  
     }
     
@@ -461,7 +468,7 @@ public:
                 this->eat(')', ")");
             break;
             default:
-                this->error("Expected Token ID, '(', '+', '-', INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE", "simpleexpr");
+                this->error("EXPECTED TOKEN(S) ( id, '(', '+', '-', literalint, literalreal, literallogico, literaltexto, literalhexa )", "simpleexpr");
         }   
     }
     
@@ -499,7 +506,7 @@ public:
             case '-' :
             break;
             default:
-                this->error("Expected Token '*', '/', '+', '-', ';', END, ']', ')', ',', UNTIL, ELSE, OR, AND, EQUAL, NOTEQ, '>', '<', GREATEQ, LESSEQ", "exprmulaux");
+                this->error("EXPECTED TOKEN(S) ( '*', '/', '+', '-', ';', 'fim', ']', ')', ',', 'ate', 'senao', '||', '&&', '==', '!=', '>', '<', '>=', '<=' )", "exprmulaux");
         }  
     }
     
@@ -519,7 +526,7 @@ public:
                 this->exprmulaux();
             break;
             default:
-                this->error("Expected Token ID, '(', '+', '-', INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE", "exprmul");
+                this->error("EXPECTED TOKEN(S) ( id, '(', '+', '-', literalint, literalreal, literallogico, literaltexto, literalhexa )", "exprmul");
         }   
     }
     
@@ -555,7 +562,7 @@ public:
             case LESSEQ :
             break;
             default:
-                this->error("Expected Token '+', '-', ';', END, ']', ')', ',', UNTIL, ELSE, OR, AND, EQUAL, NOTEQ, '>', '<', GREATEQ, LESSEQ", "exprsum");
+                this->error("EXPECTED TOKEN(S) ( '+', '-', ';', 'fim', ']', ')', ',', 'ate', 'senao', '||', '&&', '==', '!=', '>', '<', '>=', '<=' )", "exprsum");
         }
     }
     
@@ -575,7 +582,7 @@ public:
                 this->exprsum();
             break;
             default:
-                this->error("Expected Token ID, '(', '+', '-', INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE", "numericexpr");
+                this->error("EXPECTED TOKEN(S) ( id, '(', '+', '-', literalint, literalreal, literallogico, literaltexto, literalhexa )", "numericexpr");
         }
     }
     
@@ -629,7 +636,7 @@ public:
             case AND :
             break;
             default:
-                this->error("Expected Token EQUAL, NOTEQ, '<', '>', GREATEQ, LESSEQ, ';', END, ']', ')', ',', UNTIL, ELSE, OR, AND", "expreqaux");
+                this->error("EXPECTED TOKEN(S) ( '==', '!=', '<', '>', '<=', '>=', ';', 'fim', ']', ')', ',', 'ate', 'senao', '||', '&&' )", "expreqaux");
         }
     }
     
@@ -649,7 +656,7 @@ public:
                 this->expreqaux();
             break;
             default:
-                this->error("Expected Token ID, '(', '+', '-', INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE", "expreq");
+                this->error("EXPECTED TOKEN(S) ( id, '(', '+', '-', literalint, literalreal, literallogico, literaltexto, literalhexa )", "expreq");
         }
     }
     
@@ -673,7 +680,7 @@ public:
                 this->expreq();
             break;
             default:
-                this->error("Expected Token ID, '(', '!', '+', '-', INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE", "notfact");
+                this->error("EXPECTED TOKEN(S) ( id, '(', '!', '+', '-', literalint, literalreal, literallogico, literaltexto, literalhexa )", "notfact");
         }
     }
     
@@ -696,7 +703,7 @@ public:
             case OR :
             break;
             default:
-                this->error("Expected Token AND, ';', END, ']', ')', ',', UNTIL, ELSE, OR", "andfactaux");
+                this->error("EXPECTED TOKEN(S) ( '&&', ';', 'fim', ']', ')', ',', 'ate', 'senao', '||' )", "andfactaux");
         }
     }
     
@@ -717,7 +724,7 @@ public:
                 this->andfactaux();
             break;
             default:
-                this->error("Expected Token ID, '(', '!', '+', '-', INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE", "andfact");
+                this->error("EXPECTED TOKEN(S) ( id, '(', '!', '+', '-', literalint, literalreal, literallogico, literaltexto, literalhexa )", "andfact");
         }
     }
     
@@ -739,7 +746,7 @@ public:
             case ELSE:
             break;
             default:
-                this->error("Expected Token OR, ';', ']', END, ')', ',', UNTIL, ELSE", "orfact");
+                this->error("EXPECTED TOKEN(S) ( '||', ';', ']', 'fim', ')', ',', 'ate', 'senao' )", "orfact");
         }
     }
     
@@ -760,7 +767,7 @@ public:
                 this->orfact();
             break;
             default:
-                this->error("Expected Token ID, '(', '!', '+', '-',  INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE", "expr");
+                this->error("EXPECTED TOKEN(S) ( id, '(', '!', '+', '-',  literalint, literalreal, literallogico, literaltexto, literalhexa )", "expr");
         }
     }
     
@@ -776,7 +783,7 @@ public:
                 this->expr();
             break;
             default:
-                this->error("Expected Token ';', END", "decwithassign");
+                this->error("EXPECTED TOKEN(S) ( ';', 'fim' )", "decwithassign");
         }
     }
     
@@ -796,7 +803,7 @@ public:
                 this->decwithassign();
             break;
             default:
-                this->error("Expected Token VECTOR, ID, INT, REAL, BOOL, STRING", "varconstruction");
+                this->error("EXPECTED TOKEN(S) ( 'vetor', id, 'inteiro', 'real', 'logico', 'texto' )", "varconstruction");
         }
     }
     
@@ -810,7 +817,7 @@ public:
                 this->varconstruction();
             break;
             default:
-                this->error("Expected Token VAR", "vardec");
+                this->error("EXPECTED TOKEN(S) ( 'var' )", "vardec");
         }
     }
     
@@ -828,7 +835,7 @@ public:
             case UNTIL :
             break;
             default:
-                this->error("Expected Token ';', ',', ')', UNTIL", "commandsaux");
+                this->error("EXPECTED TOKEN(S) ( ';', ',', ')', 'ate' )", "commandsaux");
         }
     }
     
@@ -852,7 +859,7 @@ public:
                 this->commandsaux();
             break;
             default:
-                this->error("Expected Token ID, INIT, BREAK, CONTINUE, JUMP, WRITE, READ, RETURN, FOR, WHILE, REPEAT, IF, CASE", "commands");
+                this->error("EXPECTED TOKEN(S) ( id, 'inicio', 'pare', 'continue', 'pule', 'escreva', 'leia', 'retorne', 'para', 'enquanto', 'repita', 'se', caso' )", "commands");
         }
     }
     
@@ -877,7 +884,7 @@ public:
             case ELSE :
             break;
             default:
-                this->error("Expected Token ':', ';', ',', ')', UNTIL, END, '=', ELSE", "callidbegin");
+                this->error("EXPECTED TOKEN(S) ( ':', ';', ',', ')', 'ate', 'fim', '=', 'senao' )", "callidbegin");
         }
     }
     
@@ -889,7 +896,7 @@ public:
                 this->eat(ID, "ID");
             break;
             default:
-                this->error("Expected Token JUMP", "calllabel");
+                this->error("EXPECTED TOKEN(S) ( 'pule' )", "calllabel");
         }
     }
     
@@ -903,7 +910,7 @@ public:
                 this->eat(')', ")");
             break;
             default:
-                this->error("Expected Token WRITE", "write");
+                this->error("EXPECTED TOKEN(S) ( 'escreva' )", "write");
         }
     }
     
@@ -917,7 +924,7 @@ public:
                 this->eat(')', ")");
             break;
             default:
-                this->error("Expected Token READ", "read");
+                this->error("EXPECTED TOKEN(S) ( 'leia' )", "read");
         }
     }
     
@@ -929,7 +936,7 @@ public:
                 this->expr();
             break;
             default:
-                this->error("Expected Token RETURN", "returns");
+                this->error("EXPECTED TOKEN(S) ( 'retorne' )", "returns");
         }
     }
     
@@ -947,7 +954,7 @@ public:
             case ';' :
             break;
             default:
-                this->error("Expected Token ',', ';'", "varassignlistaux");
+                this->error("EXPECTED TOKEN(S) ( ',', ';' )", "varassignlistaux");
         }
     }
     
@@ -961,7 +968,7 @@ public:
                 this->varassignlistaux();
             break;
             default:
-                this->error("Expected Token ID", "varassignlist");
+                this->error("EXPECTED TOKEN(S) ( id )", "varassignlist");
         }
     }
     
@@ -975,7 +982,7 @@ public:
             case ';' :
             break;
             default:
-                this->error("Expected Token ';', ID", "prevfor");
+                this->error("EXPECTED TOKEN(S) ( ';', id )", "prevfor");
         }
     }
     
@@ -991,7 +998,7 @@ public:
             case ')' :
             break;
             default:
-                this->error("Expected Token ',', ')'", "posforaux2");
+                this->error("EXPECTED TOKEN(S) ( ',', ')' )", "posforaux2");
         }
     }
     
@@ -1015,7 +1022,7 @@ public:
                 this->posforaux2();
             break;
             default:
-                this->error("Expected Token ID, INIT, BREAK, CONTINUE, JUMP, WRITE, READ, RETURN, FOR, WHILE, REPEAT, IF, CASE", "posforaux");
+                this->error("EXPECTED TOKEN(S) ( id, 'inicio', 'pare', 'continue', 'pule', 'escreva', 'leia', 'retorne', 'para', 'enquanto', 'repita', 'se', 'caso' )", "posforaux");
         }
     }
     
@@ -1041,7 +1048,7 @@ public:
             case ')' :
             break;
             default:
-                this->error("Expected Token ')', ID, INIT, BREAK, CONTINUE, JUMP, WRITE, READ, RETURN, FOR,WHILE, REPEAT, IF, CASE", "posfor");
+                this->error("EXPECTED TOKEN(S) ( ')', id, 'inicio', 'pare', 'continue', 'pule', 'escreva', 'leia', 'retorne', 'para', 'enquanto', 'repita', 'se', 'caso' )", "posfor");
         }
     }
     
@@ -1058,7 +1065,7 @@ public:
                 this->posfor();
             break;
             default:
-                this->error("Expected Token ID, ';', ')'", "forstruct");
+                this->error("EXPECTED TOKEN(S) ( id, ';', ')' )", "forstruct");
         }
     }
     
@@ -1074,7 +1081,7 @@ public:
                 this->callcommand();
             break;
             default:
-                this->error("Expected Token FOR", "forloop");
+                this->error("EXPECTED TOKEN(S) ( 'para' )", "forloop");
         }
     }
     
@@ -1090,7 +1097,7 @@ public:
                 this->callcommand();
             break;
             default:
-                this->error("Expected Token WHILE", "whileloop");
+                this->error("EXPECTED TOKEN(S) ( 'enquanto' )", "whileloop");
         }
     }
     
@@ -1104,7 +1111,7 @@ public:
                 this->expr();
             break;
             default:
-                this->error("Expected Token REPEAT", "repeatloop");
+                this->error("EXPECTED TOKEN(S) ( 'repita' )", "repeatloop");
         }
     }
     
@@ -1123,7 +1130,7 @@ public:
                 this->repeatloop();
             break;
             default:
-                this->error("Expected Token FOR, WHILE, REPEAT", "loop");
+                this->error("EXPECTED TOKEN(S) ( 'para', 'enquanto', 'repita' )", "loop");
         }
     }
     
@@ -1142,7 +1149,7 @@ public:
             case UNTIL :
             break;
             default:
-                this->error("Expected Token ELSE, ';', END, ')', ',', UNTIL", "ifcondaux");
+                this->error("EXPECTED TOKEN(S) ( 'senao', ';', 'fim', ')', ',', 'ate' )", "ifcondaux");
         }
     }
     
@@ -1159,7 +1166,7 @@ public:
                 this->ifcondaux();
             break;
             default:
-                this->error("Expected Token IF", "ifcond");
+                this->error("EXPECTED TOKEN(S) ( 'se' )", "ifcond");
         }
     }
     
@@ -1177,7 +1184,7 @@ public:
                 this->callcommand();
             break;
             default:
-                this->error("Expected Token ID", "caseclause");
+                this->error("EXPECTED TOKEN(S) ( id )", "caseclause");
         }
     }
     
@@ -1198,7 +1205,7 @@ public:
             case ELSE :
             break;
             default:
-                this->error("Expected Token ELSE, ';', END, ')', ',', UNTIL", "caselistaux2");
+                this->error("EXPECTED TOKEN(S) ( 'senao', ';', 'fim', ')', ',', 'ate' )", "caselistaux2");
         }
     }
     
@@ -1214,7 +1221,7 @@ public:
             case ELSE :
             break;
             default:
-                this->error("Expected Token ELSE, ';', END", "caselistaux");
+                this->error("EXPECTED TOKEN(S) ( 'senao', ';', 'fim' )", "caselistaux");
         }
     }
     
@@ -1231,7 +1238,7 @@ public:
                 this->caselistaux();
             break;
             default:
-                this->error("Expected Token ID, INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE", "caselist");
+                this->error("EXPECTED TOKEN(S) ( id, literalint, literalreal, literallogico, literaltexto, literalhexa )", "caselist");
         }
     }
     
@@ -1248,7 +1255,7 @@ public:
                 this->eat(END, "END");
             break;
             default:
-                this->error("Expected Token END, ELSE", "casecondaux");
+                this->error("EXPECTED TOKEN(S) ( 'fim', 'senao' )", "casecondaux");
         }
     }
     
@@ -1265,7 +1272,7 @@ public:
                 this->casecondaux();
             break;
             default:
-                this->error("Expected Token CASE", "casecond");
+                this->error("EXPECTED TOKEN(S) ( 'caso' )", "casecond");
         }
     }
     
@@ -1280,7 +1287,7 @@ public:
                 this->casecond();
             break;
             default:
-                this->error("Expected Token IF, CASE", "conditional");
+                this->error("EXPECTED TOKEN(S) ( 'se', 'caso' )", "conditional");
         }
     }
     
@@ -1331,7 +1338,7 @@ public:
                 this->conditional();
             break;
             default:
-                this->error("Expected Token ID, INIT, BREAK, CONTINUE, JUMP, WRITE, READ, RETURN, FOR, WHILE, REPEAT, IF, CASE", "callcommand");
+                this->error("EXPECTED TOKEN(S) ( id, 'inicio', 'pare', 'continue', 'pule', 'escreva', 'leia', 'retorne', 'para', 'enquanto', 'repita', 'se', 'caso' )", "callcommand");
         }
     }
     
@@ -1357,7 +1364,7 @@ public:
             case END :
             break;
             default:
-                this->error("Expected Token ID, INIT, BREAK, CONTINUE, JUMP, WRITE, READ, RETURN, FOR, WHILE, REPEAT, IF, CASE, END", "prevcommand");
+                this->error("EXPECTED TOKEN(S) ( id, 'inicio', 'pare', 'continue', 'pule', 'escreva', 'leia', 'retorne', 'para', 'enquanto', 'repita', 'se', 'caso', 'fim' )", "prevcommand");
         }
     }
     
@@ -1381,7 +1388,7 @@ public:
                 this->abstractiondec();
             break;
             default:
-                error("Expected Token VAR, TYPE, LABEL, CONST, PROC, FUNC", "declaration");
+                error("EXPECTED TOKEN(S) ( 'var', 'tipo', 'rotulo', 'const', 'proc', 'func' )", "declaration");
         }
     }
     
@@ -1394,7 +1401,7 @@ public:
                 this->eat(END,"END");
             break;
             default:
-                this->error("Expected Token INIT", "block");
+                this->error("EXPECTED TOKEN(S) ( 'inicio' )", "block");
         }
     }
     
@@ -1417,7 +1424,7 @@ public:
                 this->prevdec();
             break;
             default:
-                this->error("Expected Token ';' , VAR, LABEL, TYPE, CONST, PROC, FUNC","prevdec");
+                this->error("EXPECTED TOKEN(S) ('inicio', ';', 'var', 'rotulo', 'tipo', 'const', 'proc', 'func' )","prevdec");
         }
     }
     
@@ -1432,7 +1439,7 @@ public:
                 this->block();
             break;
             default:
-                this->error("Expected Token PROG", "program");
+                this->error("EXPECTED TOKEN(S) ( 'prog' )", "program");
         }
     }
     
@@ -1460,7 +1467,7 @@ public:
                 //DO NOTHING
             break;
             default :
-                this->error("Expected Token ',' e ':' ", "atomiclistaux");
+                this->error("EXPECTED TOKEN(S) ( ',', ':' )", "atomiclistaux");
         }
         
     }
@@ -1478,7 +1485,7 @@ public:
                 this->atomiclistaux();
             break;
             default :
-                this->error("Expected Token ID, INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE ", "atomiclist");
+                this->error("EXPECTED TOKEN(S) ( id, literalint, literalreal, literallogico, literaltexto, literalhexa )", "atomiclist");
         }
         
     }
@@ -1528,7 +1535,7 @@ public:
                 //DO NOTHING
             break;
             default :
-                this->error("Expected Token '[', '.', '(', ';', END, ']', ')', ',', DOUBLEDOT, ':', '=', UNTIL, ELSE, OR, AND, EQUAL, NOTEQ, '<', '>', GREATEQ, LESSEQ, '+', '-', '*', '/' ", "idaux");
+                this->error("EXPECTED TOKEN(S) ( '[', '.', '(', ';', 'fim', ']', ')', ',', '..', ':', '=', 'ate', 'senao', '||', '&&', '==', '!=', '<', '>', '>=', '<=', '+', '-', '*', '/' )", "idaux");
         }    
     }
     
@@ -1540,7 +1547,7 @@ public:
                 this->idaux();
             break;
             default:
-                this->error("Expected Token ID", "id");
+                this->error("EXPECTED TOKEN(S) ( id )", "id");
         }
     }
     
@@ -1559,7 +1566,7 @@ public:
                 this->literal();
             break;    
             default:
-                this->error("Expected Token ID, INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE" , "atomic");
+                this->error("EXPECTED TOKEN(S) ( id, literalint, literalreal, literallogico, literaltexto, literalhexa )" , "atomic");
         }
     }
     
@@ -1586,7 +1593,7 @@ public:
                 this->eat(STRING_VALUE, "STRING_VALUE");
             break;
             default:
-                this->error("Expected Token INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE", "literal");
+                this->error("EXPECTED TOKEN(S) ( literalint, literalreal, literallogico, literaltexto, literalhexa )", "literal");
         }
     }
     
@@ -1613,7 +1620,7 @@ public:
                 this->eat(ID, "ID");
             break;    
             default:
-                this->error("Expected Token INT, REAL, HEXA, BOOL, STRING", "type");
+                this->error("EXPECTED TOKEN(S) ( 'inteiro', 'real', 'logico', 'texto' )", "type");
         }
     }
     
@@ -1632,7 +1639,7 @@ public:
                 //DO NOTHING
             break;
             default:
-                this->error("Expected Token ',', ';', ')', ':' ", "idlistaux");
+                this->error("EXPECTED TOKEN(S) ( ',', ';', ')', ':' )", "idlistaux");
             
         }
     }
@@ -1645,7 +1652,7 @@ public:
                 this->idlistaux();
             break;
             default:
-               this->error("Expected Token ID", "idlist"); 
+               this->error("EXPECTED TOKEN(S) ( id )", "idlist"); 
         }
     }
     
@@ -1667,7 +1674,7 @@ public:
                 this->atomic();
             break;
             default:
-                this->error("Expected Token '(', ID, INT_VALUE, REAL_VALUE, HEXA_VALUE, BOOL_VALUE, STRING_VALUE", "optbracket"); 
+                this->error("EXPECTED TOKEN(S) ( '(', id, literalint, literalreal, literallogico, literaltexto, literalhexa )", "optbracket"); 
         }
     }
 };    
