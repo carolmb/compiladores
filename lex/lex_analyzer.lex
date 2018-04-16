@@ -85,7 +85,7 @@ MULT            "*"
 DIVISION        "/"
 
 /*LOGIC OPERATOR*/
-NOT             "~"
+NOT             "!"
 AND             "&&"
 OR              "||"
 LESS            "<"
@@ -105,6 +105,7 @@ RPARENT         ")"
 LBRACKET        "["
 RBRACKET        "]"
 DOUBLEDOT       ".."
+DOT       "."
 
 ASSIGN          "="
 CASSIGN         ":="
@@ -320,6 +321,8 @@ SCOMMENT        \*\*.*
 {RBRACKET}	{ return baseBlock ( RBRACKET, "RBRACKET" ); } 
  
 {DOUBLEDOT}	{ return baseBlock ( DOUBLEDOT, "DOUBLEDOT" ); } 
+
+{DOT}	    { return baseBlock ( DOT, "DOT" ); } 
  
 {ASSIGN}	{ return baseBlock ( ASSIGN, "ASSIGN" ); } 
  

@@ -1,33 +1,33 @@
 prog Calculator;
 
-func sum(n1: real , n2 : real) : real ;
+func sum(n1: real , n2 : real) : real 
 inicio
-	retorne n1 + n2;
+	retorne n1 + n2
 fim;
 
-func subtraction(n1 : real, n2 : real) : real ;
+func subtraction(n1 : real, n2 : real) : real 
 inicio
-	retorne n1 - n2;
+	retorne n1 - n2
 fim;
 
-func multiplication(n1 : real, n2 : real) : real ;
+func multiplication(n1 : real, n2 : real) : real 
 inicio
-	retorne n1 * n2;
+	retorne n1 * n2
 fim;
 
-func division(n1 : real, n2 : real) : real ;
+func division(n1 : real, n2 : real) : real 
 inicio
-	retorne n1 / n2;
+	retorne n1 / n2
 fim;
 
-func operation(n1 : real, op : texto, n2 : real) : real ;
+func operation(n1 : real, op : texto, n2 : real) : real 
 inicio
-	caso op seja
+	caso (op) seja
         '+' : retorne sum(n1, n2);
         '-' : retorne subtraction(n1, n2);
         '*' : retorne multiplication(n1, n2);
-        '/' : retorne division(n1, n2);
-    fim;
+        '/' : retorne division(n1, n2)
+    fim
 fim;
 
 var n1, n2 : real;
@@ -41,5 +41,5 @@ inicio
     leia(op);
     escreva ('Digite o segundo valor (real): \n');
     leia(n2);
-    escreva ('Resultado: ', n1, ' ', ' ', op,' ', n2, ' = ', operation(n1,op,n2), '\n');
+    escreva ('Resultado: ', n1, ' ', ' ', op,' ', n2, ' = ', operation(n1,op,n2), '\n')
 fim

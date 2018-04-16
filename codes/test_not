@@ -3,8 +3,9 @@ prog test_not;
 var n : inteiro;
 
 inicio
-    n := 5;
-    se ( ~ (n == 1) ) entao inicio
-		escreva('OK');
-	fim;
+    n = 5;
+    se ( ! (n == 1) ) entao 
+    inicio
+		escreva('OK')
+	fim
 fim

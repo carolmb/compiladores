@@ -60,7 +60,7 @@ commands -> callcommand commandsaux
 commandsaux -> ';' commands 
 commandsaux -> '' 
 callidbegin -> ':' callcommand 
-callidbegin -> ':=' expr 
+callidbegin -> '=' expr 
 callidbegin -> '' 
 calllabel -> 'pule' 'id' 
 write -> 'escreva' '(' expressionlist ')' 

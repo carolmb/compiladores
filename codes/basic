@@ -45,8 +45,8 @@ fim;
 proc procedimento2( ref t1 : texto , i1 : inteiro ) 
   var p1 : inteiro;
 inicio 
-	p1 := 5;
-	t1 := t1 + '!';
+	p1 = 5;
+	t1 = t1 + '!';
 	escreva(i1 + p1);
 	escreva(t1)
 fim;
@@ -60,8 +60,8 @@ fim;
 func funcao2( ref t1 : texto, i1 : inteiro  ) : inteiro 
   var f1 : inteiro;
 inicio 
-	f1 := 5;
-	t1 := t1 + '!';
+	f1 = 5;
+	t1 = t1 + '!';
 	escreva(i1 + f1);
 	escreva(t1)
 fim;
@@ -70,5 +70,5 @@ fim;
 (*    MAIN CODE   *)
 
 inicio
-    tdu.name = 'teste';
+    tdu.name = 'teste'
 fim

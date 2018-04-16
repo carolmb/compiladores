@@ -733,12 +733,13 @@ public:
             case ';':
             case END:
             case ')':
+            case ']':
             case ',':
             case UNTIL:
             case ELSE:
             break;
             default:
-                this->error("Expected Token OR, ';', END, ')', ',', UNTIL, ELSE", "orfact");
+                this->error("Expected Token OR, ';', ']', END, ')', ',', UNTIL, ELSE", "orfact");
         }
     }
     
@@ -856,7 +857,7 @@ public:
     }
     
     //callidbegin -> ':' callcommand 
-    //callidbegin -> ':=' expr 
+    //callidbegin -> '=' expr 
     //callidbegin -> '' 
     void callidbegin(){
         switch (t->key){
@@ -864,8 +865,8 @@ public:
                 this->eat(':', ":");
                 this->callcommand();
             break;
-            case CASSIGN :
-                this->eat(CASSIGN, "CASSIGN");
+            case '=' :
+                this->eat('=', "=");
                 this->expr();
             break;
             case ';' :
@@ -876,7 +877,7 @@ public:
             case ELSE :
             break;
             default:
-                this->error("Expected Token ':', ';', ',', ')', UNTIL, END, CASSIGN, ELSE", "callidbegin");
+                this->error("Expected Token ':', ';', ',', ')', UNTIL, END, '=', ELSE", "callidbegin");
         }
     }
     
@@ -1503,13 +1504,13 @@ public:
                 this->eat(')',")");
             break;
             case ';':
-            case FINAL:
+            case END:
             case ']':
             case ')':
             case ',':
             case DOUBLEDOT:
             case ':':
-            case CASSIGN:
+            case '=':
             case UNTIL:
             case ELSE:
             case OR:
@@ -1527,7 +1528,7 @@ public:
                 //DO NOTHING
             break;
             default :
-                this->error("Expected Token '[', '.', '(', ';', FINAL, ']', ')', ',', DOUBLEDOT, ':', CASSIGN, UNTIL, ELSE, OR, AND, EQUAL, NOTEQ, '<', '>', GREATEQ, LESSEQ, '+', '-', '*', '/' ", "idaux");
+                this->error("Expected Token '[', '.', '(', ';', END, ']', ')', ',', DOUBLEDOT, ':', '=', UNTIL, ELSE, OR, AND, EQUAL, NOTEQ, '<', '>', GREATEQ, LESSEQ, '+', '-', '*', '/' ", "idaux");
         }    
     }
     
