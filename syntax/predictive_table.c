@@ -12,6 +12,10 @@
 
 using namespace std;
 
+const std::string RED("\033[0;31m");
+const std::string GREEN("\033[0;32m");
+const std::string RESET("\033[0m");
+
 string terminals[] = {
 "~", "literalhexa", "literalint", "literalreal", "FINAL", "literallogico", "continue", 
 "(", ")", "*", "+", ",", "-", ".", "/", "id", "inteiro", "real", "logico", "texto", "vetor", 
@@ -230,7 +234,7 @@ map<int, map<list, list> > init_table(map<int, map<int, list > > &mtx) {
 }
 
 void syntax_error(map<int, map<list, list> > predict_set, int top, Token *t) {
-	cout << "SYNTAX ERROR!!! EXPECTED TOKEN(S) (";
+	cout << RED << "SYNTAX ERROR!!!" << RESET << " EXPECTED TOKEN(S) (";
 	map<list, list> possible_rules = predict_set[top];
 	for(map<list, list>::iterator it = possible_rules.begin(); it != possible_rules.end(); it++) {
 		for(list::iterator el = it->second.begin(); el != it->second.end(); el++) {
@@ -242,9 +246,11 @@ void syntax_error(map<int, map<list, list> > predict_set, int top, Token *t) {
 }
 
 void syntax_error(int top, Token *t) {
-	cout << "SYNTAX ERROR!!! EXPECTED TOKEN (" << to_print(top) << ")" << endl;
+	cout << RED << "SYNTAX ERROR!!!"<< RESET << "EXPECTED TOKEN (" << to_print(top) << ")" << endl;
 	cout << "ACTUAL TOKEN (LEXEME: " << t->value << " | LINE: " << t->line  << " | COLUMN: " << t->column << ")" << endl;
 }
+
+
 
 void runTable(){
 	stack<int> stack;
@@ -261,7 +267,7 @@ void runTable(){
 		int top = stack.top(); // o que deveria ser encontrado no arquivo
 		int a = t->key; // o que está sendo lido do arquivo
 		if(a == ERROR) {
-			cout << "LEXICAL ERROR!!! (LEXEME: " << t->value << " | LINE: " << t->line  << " | COLUMN: " << t->column << ")" << endl;
+			cout << RED << "LEXICAL ERROR!!! " << RESET << "(LEXEME: " << t->value << " | LINE: " << t->line  << " | COLUMN: " << t->column << ")" << endl;
 			return;
 		}
 		if(is_terminal(top) || top == FINAL) {
@@ -271,7 +277,7 @@ void runTable(){
 			if(a == FINAL) {
 				stack.pop();
 				if(stack.empty()) {
-					cout << "PROGRAM FINISHED" << endl;
+					cout << GREEN << "PROGRAM FINISHED" << RESET << endl;
 				} else {
 					syntax_error(top, t);
 				}
