@@ -12,20 +12,23 @@ sudo apt install flex
 
 ## Running Pasc codes
 
-### Build lex executable
+### Build compiler executable
 
 ```bash
-cd lex
 make
 ```
 
-### Running lex
+### Running compiler
 Execute by passing the input code as a parameter
 
 ```bash
-cd lex
-./lex_analyzer.o < codes/test
+./compiler.o codes/test -syntaxparser
 ```
+#### Where:
+
+```test_code``` is the name of the PasC code that you want to run.
+
+```-syntaxparser``` is the choosen parser that you want to use. Can be ```-rec``` for the predictive recursive or ```-table``` for the predictive table.
 
 ## Pascal codes
 
