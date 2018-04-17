@@ -4,6 +4,10 @@
 #include <iostream>
 #include <string>
 
+const std::string RED("\033[0;31m");
+const std::string GREEN("\033[0;32m");
+const std::string RESET("\033[0m");
+
 class PredictiveRecursive{
 private:
     Token* t = NULL;
@@ -12,11 +16,11 @@ public:
         //std::cerr << "In function " << function << std::endl;
         
         if (this->t->key == ERROR){
-            std::cerr << "LEXICAL ERROR!!!" << " (LEXEME: " << this->t->value  
+            std::cout << RED << "LEXICAL ERROR!!! " << RESET << " (LEXEME: " << this->t->value  
                   << " | " << "LINE: " << this->t->line << " | " << "COLUMN: " << this->t->column << ")" << std::endl;
     
         }else{
-            std::cerr << "SINTAX ERROR!!! " << menssage << std::endl;
+            std::cout << RED << "SYNTAX ERROR!!!" << RESET << menssage << std::endl;
             std::cerr << "ACTUAL TOKEN (" << "LEXEME: " << this->t->value  
                   << " | " << "LINE: " << this->t->line << " | " << "COLUMN: " << this->t->column << ")" << std::endl;
         }
@@ -1449,6 +1453,7 @@ public:
         this->program();
         
         this->eat(FINAL,"EOF");
+		std::cout << GREEN << "PROGRAM FINISHED" << RESET << std::endl;
     }
     
     

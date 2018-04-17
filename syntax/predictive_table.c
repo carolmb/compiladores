@@ -12,9 +12,9 @@
 
 using namespace std;
 
-const std::string RED("\033[0;31m");
-const std::string GREEN("\033[0;32m");
-const std::string RESET("\033[0m");
+// const std::string RED("\033[0;31m");
+// const std::string GREEN("\033[0;32m");
+// const std::string RESET("\033[0m");
 
 string terminals[] = {
 "~", "literalhexa", "literalint", "literalreal", "FINAL", "literallogico", "continue", 
