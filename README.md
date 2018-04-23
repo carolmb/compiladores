@@ -7,6 +7,12 @@ PasC is a compiled language, still under construction, aimed to teach structured
 ```bash
 sudo apt install make
 sudo apt install flex
+
+# http://techapple.net/2014/10/install-lex-yacc-ubuntu-linuxmint-easily-works-versions/
+sudo apt-get install bison
+sudo apt-get install byacc
+sudo apt-get install bison++
+# sudo apt-get install byacc -j
 ```
 
 
