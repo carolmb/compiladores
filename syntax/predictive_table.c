@@ -2,6 +2,7 @@
 #define _PREDITIVE_TABLE_
 
 // #include <string.h>
+#include "../constants.h"
 #include <string>
 #include <stack>
 #include <vector>

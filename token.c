@@ -1,7 +1,7 @@
 #ifndef _TOKEN_
 #define _TOKEN_
 
-#include "constants.c"
+#include "constants.h"
 
 //STRUCTS
 typedef struct {

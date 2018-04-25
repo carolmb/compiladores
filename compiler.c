@@ -2,6 +2,7 @@
 #include "syntax/predictive_rec.c"
 #include "syntax/predictive_table.c"
 #include "semantics/sem.c"
+#include <string.h> 
 
 int main( int argc, char **argv ) {
     
