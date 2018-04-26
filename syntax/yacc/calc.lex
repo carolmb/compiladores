@@ -1,6 +1,6 @@
 %{
 	//LIBRARY
-    #include "../token.c"
+    #include "../../token.c"
     #include "y.tab.h"
     #include <stdlib.h>
     //DEFINE

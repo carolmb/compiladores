@@ -1,5 +1,5 @@
 %{
-#include "../token.c"
+#include "../../token.c"
 %}
 
 %{
@@ -23,88 +23,91 @@ void updateSymbolVal(char symbol, int val);
 
 %%
 
-expr		: andfact orfact					{;}
+
+expr		: andfact orfact					{printf("expr -> andfact orfact\n");}
 			;
 
-orfact		: OR andfact orfact					{;}
-			|									{;}
+orfact		: OR andfact orfact					{printf("orfact -> OR andfact orfact\n");}
+			|									{printf("orfact -> LAMBDA\n");}
 			;
 
-andfact		: notfact andfactaux				{;}
+andfact		: notfact andfactaux				{printf("andfact -> notfact andfactaux\n");}
 			;
 		
-andfactaux	: AND notfact andfactaux			{;}
-			|									{;}
+andfactaux	: AND notfact andfactaux			{printf("andfactaux -> AND notfact andfactaux\n");}
+			|									{printf("andfactaux -> LAMBDA\n");}
 			;
 
-notfact		: '!' expreq						{;}
-			| expreq							{;}
+notfact		: '!' expreq						{printf("notfact -> '!' expreq\n");}
+			| expreq							{printf("notfact -> expreq\n");}
 			;
 
-expreq		: numericexpr expreqaux				{;}
+expreq		: numericexpr expreqaux				{printf("expreq -> numericexpr expreqaux\n");}
 			;
 
-expreqaux	: EQUAL numericexpr expreqaux		{;}
-			| NOTEQ numericexpr expreqaux		{;}
-			| '>' numericexpr expreqaux		{;}
-			| '<' numericexpr expreqaux		{;}
-			| LESSEQ numericexpr expreqaux		{;}
-			| GREATEQ numericexpr expreqaux		{;}
-			|									{;}
+expreqaux	: EQUAL numericexpr expreqaux		{printf("expreqaux -> EQUAL numericexpr expreqaux\n");}
+			| NOTEQ numericexpr expreqaux		{printf("expreqaux -> NOTEQ numericexpr expreqaux\n");}
+			| '>' numericexpr expreqaux			{printf("expreqaux -> '>' numericexpr expreqaux\n");}
+			| '<' numericexpr expreqaux			{printf("expreqaux -> '<' numericexpr expreqaux\n");}
+			| LESSEQ numericexpr expreqaux		{printf("expreqaux -> LESSEQ numericexpr expreqaux\n");}
+			| GREATEQ numericexpr expreqaux		{printf("expreqaux -> GREATEQ numericexpr expreqaux\n");}
+			|									{printf("expreqaux -> LAMBDA\n");}
 			;
 			
-numericexpr	: exprmul exprsum					{;}
+numericexpr	: exprmul exprsum					{printf("numericexpr -> exprmul exprsum\n");}
 			;
 
-exprsum		: '+' exprmul exprsum				{;}
-			| '-' exprmul exprsum				{;}
-			|									{;}
+exprsum		: '+' exprmul exprsum				{printf("exprsum -> '+' exprmul exprsum\n");}
+			| '-' exprmul exprsum				{printf("exprsum -> '-' exprmul exprsum\n");}
+			|									{printf("exprsum -> LAMBDA\n");}
 			;
 
-exprmul		: simpleexpr exprmulaux				{;}
+exprmul		: simpleexpr exprmulaux				{printf("exprmul -> simpleexpr exprmulaux\n");}
 			;
 			
-exprmulaux	: '*' simpleexpr exprmulaux		{;}
-			| '/' simpleexpr exprmulaux	{;}
-			|									{;}
+exprmulaux	: '*' simpleexpr exprmulaux			{printf("exprmulaux -> '*' simpleexpr exprmulaux\n");}
+			| '/' simpleexpr exprmulaux			{printf("exprmulaux -> '/' simpleexpr exprmulaux\n");}
+			|									{printf("exprmulaux -> LAMBDA\n");}
 			;
 			
-simpleexpr	: atomic optrange					{;}
-			| optunary optbracket				{;}
-			| '(' expr ')'				{;}
+simpleexpr	: atomic optrange					{printf("simpleexpr -> atomic optrange\n");}
+			| optunary optbracket				{printf("simpleexpr -> optunary optbracket\n");}
+			| '(' expr ')'						{printf("simpleexpr -> '(' expr ')'\n");}
 			;
        	
-optrange	: DOUBLEDOT atomic						{;}
-			|									{;}
+optrange	: DOUBLEDOT atomic					{printf("optrange -> DOUBLEDOT atomic\n");}
+			|									{printf("optrange -> LAMBDA\n");}
 			;
         		
-optunary	: '-'								{;}
-			| '+'								{;}
+optunary	: '-'								{printf("optunary -> '-'\n");}
+			| '+'								{printf("optunary -> '+'\n");}
 			;
 			
-optbracket	: '(' expr ')'				{;}
-			| atomic							{;}
+optbracket	: '(' expr ')'						{printf("optbracket -> '(' expr ')'\n");}
+			| atomic							{printf("optbracket -> atomic\n");}
 			;
 
-atomic		: literal							{;}
-			| id								{;}
+atomic		: literal							{printf("atomic -> literal\n");}
+			| id								{printf("atomic -> id\n");}
 			;
 
-literal		: INT_VALUE							{;}
-			| REAL_VALUE						{;}
-			| HEXA_VALUE						{;}
-			| BOOL_VALUE						{;}
-			| STRING_VALUE						{;}
+literal		: INT_VALUE							{printf("literal -> INT_VALUE\n");}
+			| REAL_VALUE						{printf("literal -> REAL_VALUE\n");}
+			| HEXA_VALUE						{printf("literal -> HEXA_VALUE\n");}
+			| BOOL_VALUE						{printf("literal -> BOOL_VALUE\n");}
+			| STRING_VALUE						{printf("literal -> STRING_VALUE\n");}
 			;
 
-id			: ID idaux							{;}
+id			: ID idaux							{printf("id -> ID idaux\n");}
 			;
 
-idaux		: '['  ']'	{;}
-			| '.' id							{;}
-			| '('  ')'	{;}
-			|									{;}
+idaux		: '['  ']'			{printf("idaux -> '[' expressionlist ']'\n");}
+			| '.' id							{printf("idaux -> '.' id\n");}
+			| '('  ')'			{printf("idaux -> '(' expressionlist ')'\n");}
+			|									{printf("idaux -> LAMBDA\n");}
 			;
+			
+			
 
 %%                     /* C code */
 
