@@ -1,5 +1,6 @@
 prog Latex_test;
 
+
 inicio
     se (4 > 1) entao inicio
 		se (1 > 1) entao 
@@ -10,6 +11,6 @@ inicio
 	fim 
 	
 	senao se (1 == 2) entao
-		escreva(2)
+		escreva(2);
 	
 fim
