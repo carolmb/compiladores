@@ -235,10 +235,6 @@ typedef
 #define	CASSIGN	303
 #define	WRITE	304
 #define	READ	305
-#define	INT_TYPE	306
-#define	REAL_TYPE	307
-#define	HEXA_TYPE	308
-#define	STRING_TYPE	309
 
 
 #line 169 "/usr/share/bison++/bison.h"
@@ -335,10 +331,6 @@ static const int STRING_VALUE;
 static const int CASSIGN;
 static const int WRITE;
 static const int READ;
-static const int INT_TYPE;
-static const int REAL_TYPE;
-static const int HEXA_TYPE;
-static const int STRING_TYPE;
 
 
 #line 212 "/usr/share/bison++/bison.h"
@@ -395,10 +387,6 @@ static const int STRING_TYPE;
 	,CASSIGN=303
 	,WRITE=304
 	,READ=305
-	,INT_TYPE=306
-	,REAL_TYPE=307
-	,HEXA_TYPE=308
-	,STRING_TYPE=309
 
 
 #line 215 "/usr/share/bison++/bison.h"

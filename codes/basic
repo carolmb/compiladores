@@ -4,8 +4,8 @@ prog meu_programa;
 **@@@@@@@
 
 ** CONST DECLARATION 
-const bla : real;
-const ble,bli : inteiro;
+const bla : real = 4;
+const ble,bli : inteiro = 2;
 
 ** STRUCT DECLARATION
 tipo TDU := registro 

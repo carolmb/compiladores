@@ -37,6 +37,7 @@
 	}
 	
 %}
+%x COMMENT2
 
 LINE            \n
 
@@ -115,8 +116,6 @@ DOT       "."
 ASSIGN          "="
 CASSIGN         ":="
 
-
-COMMENT         \(\*[^\(]*\*\)
 SCOMMENT        \*\*.* 
 
 %%
@@ -134,7 +133,12 @@ SCOMMENT        \*\*.*
     //======================================
 %}
 
-{COMMENT}   /* eat up mult-line comments */
+"(*"                 BEGIN(COMMENT2);
+<COMMENT2>[^)*\n]+
+<COMMENT2>\n            ++lines;
+<COMMENT2><<EOF>>    yyerror("EOF in comment");
+<COMMENT2>"*)"       BEGIN(INITIAL);
+<COMMENT2>[*)] 
 
 {SCOMMENT}  /* eat up one-line comments */
 

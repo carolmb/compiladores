@@ -13,14 +13,13 @@ void success();
 %union {Token* token;}         /* Yacc definitions */
 %start program
 
-
 /*Terminals*/
 %token HEXA_VALUE INT_VALUE REAL_VALUE FINAL BOOL_VALUE CONTINUE 
 ID INT REAL BOOL STRING VECTOR PROG INIT END OF VAR LABEL STRUCT 
 TYPE CONST RETURN JUMP FOR WHILE DO REPEAT UNTIL IF THEN ELSE CASE 
 BE FUNC PROC BREAK 
 REF AND OR LESSEQ GREATEQ EQUAL NOTEQ DOUBLEDOT 
-STRING_VALUE CASSIGN WRITE READ INT_TYPE REAL_TYPE HEXA_TYPE STRING_TYPE
+STRING_VALUE CASSIGN WRITE READ INT REAL BOOL STRING
 %%
 
 program  			: PROG ID ';' prevdec block 							{printf("program -> 'prog' ID ';' prevdec block\n"); success();}
@@ -94,7 +93,7 @@ vardeclistaux  		: ';' vardec vardeclistaux 								{printf("vardeclistaux -> ';
 labeldec  			: LABEL idlist 											{printf("labeldec -> 'rotulo' idlist\n");}
 					;
 
-constdec  			: CONST ID '=' expr 									{printf("constdec -> 'const' ID '=' expr\n");}
+constdec  			: CONST idlist ':' type '=' expr 						{printf("constdec -> 'const' idlist ':' type '=' expr\n");}
 					;
 
 abstractiondec  	: procdec 												{printf("abstractiondec -> procdec\n");}
@@ -309,10 +308,10 @@ idlistaux 			: ',' ID idlistaux 										{printf("idlistaux -> ',' ID idlistaux
 		 			| 														{printf("idlistaux -> LAMBDA\n");}
 					;
 
-type 				: INT_TYPE 												{printf("type -> INT_TYPE\n");}
- 					| REAL_TYPE 											{printf("type -> REAL_TYPE\n");}
-					| HEXA_TYPE												{printf("type -> HEXA_TYPE\n");}
- 					| STRING_TYPE 											{printf("type -> STRING_TYPE\n");}
+type 				: INT 												{printf("type -> INT\n");}
+ 					| REAL 											{printf("type -> REAL\n");}
+					| BOOL												{printf("type -> BOOL\n");}
+ 					| STRING 											{printf("type -> STRING\n");}
  					| ID 													{printf("type -> ID\n");}
  					;
 
@@ -332,9 +331,13 @@ id					: ID idaux												{printf("id -> ID idaux\n");}
 
 idaux				: '[' expressionlist ']'								{printf("idaux -> '[' expressionlist ']'\n");}
 					| '.' id												{printf("idaux -> '.' id\n");}
-					| '(' expressionlist ')'								{printf("idaux -> '(' expressionlist ')'\n");}
+					| '(' idauxexpraux										{printf("idaux -> '(' idauxexpraux\n");}
 					|														{printf("idaux -> LAMBDA\n");}
 					;
+					
+idauxexpraux		: expressionlist ')'									{printf("idauxexpraux -> expressionlist ')'\n");}
+					| ')'													{printf("idauxexpraux -> ')'\n");}
+					;	
 			
 atomiclist  		: atomic atomiclistaux									{printf("atomiclist -> atomic atomiclistaux\n");}
 					;
