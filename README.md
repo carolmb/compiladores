@@ -12,29 +12,20 @@ sudo apt install flex
 sudo apt-get install bison
 sudo apt-get install byacc
 sudo apt-get install bison++
-# sudo apt-get install byacc -j
 ```
 
 
 ## Running Pasc codes
 
-### Build compiler executable
-
-```bash
-make
-```
-
-### Running compiler
+### Running syntax parser
 Execute by passing the input code as a parameter
 
 ```bash
-./compiler.o codes/test -syntaxparser
+ ./run.sh codes/test_code 
 ```
 #### Where:
 
 ```test_code``` is the name of the PasC code that you want to run.
-
-```-syntaxparser``` is the choosen parser that you want to use. Can be ```-rec``` for the predictive recursive or ```-table``` for the predictive table.
 
 ## Pascal codes
 

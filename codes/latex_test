@@ -11,6 +11,6 @@ inicio
 	fim 
 	
 	senao se (1 == 2) entao
-		escreva(2);
+		escreva(2)
 	
 fim
