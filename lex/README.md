@@ -1,22 +1,7 @@
-## Dependencies
+# File description
 
-```bash
-sudo apt install make
-sudo apt install flex
-```
+`lex_analyzer.lex`
+Lex file used by top-down syntax parsers.
 
-
-## Running
-
-Build lex executable
-
-```bash
-make
-```
-
-Execute by passing the input code as a parameter
-
-```bash
-./lex_analyzer.o < codes/test
-```
-
+`yacc_analyzer.lex`
+Lex file used by botton-up syntax parsers.

@@ -3,7 +3,7 @@ prog Calculator;
 func sum(n1: real , n2 : real) : real 
 inicio
 	retorne n1 + n2
-fim
+fim;
 
 func subtraction(n1 : real, n2 : real) : real 
 	func multiplication(n1 : real, n2 : real) : real 

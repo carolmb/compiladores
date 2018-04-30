@@ -1,5 +1,13 @@
-prog basic_soma;
+prog bla;
 
 inicio
-
+    x = 10;
+    se ( x == 10 ) entao inicio
+        escreva ('oi')
+    fim; 
+    enquanto ( x < 10 ) faca inicio 
+        x = x - 1;
+        y = x
+    fim;
+    x = 1 + 4 + ( 3 * 5 )
 fim

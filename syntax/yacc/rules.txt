@@ -181,7 +181,8 @@ conditional  		: ifcond 												{printf("conditional -> ifcond\n");}
 ifcond  			: IF '(' expr ')' THEN callcommand ifcondaux 			{printf("ifcond -> 'se' '(' expr ')' 'entao' callcommand ifcondaux\n");}
 					;
 
-ifcondaux  			:   													{printf("ifcondaux -> FALTA SENAO\n");}
+ifcondaux  			: ELSE callcommand										{printf("ifcondaux -> 'senao' callcommand \n");}
+					|														{printf("ifcondaux -> LAMBDA \n");}
 					;
 
 casecond  			: CASE '(' expr ')' BE caselist casecondaux 			{printf("casecond -> 'caso' '(' expr ')' 'seja' caselist casecondaux\n");}

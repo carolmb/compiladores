@@ -1,23 +1,27 @@
 %{
 	//LIBRARY
-    //#include "../token.c"
-    
+    #include "../../token.c"
+    #include "y.tab.h"
+    #include <stdlib.h>
     //DEFINE
     //#define YY_DECL Token* yylex(void)
     
 	//VARIABLES
+	//int yylex();
     int lines = 1;
     int column = 1;
+
 %}
 
 %{
 	//FUNCTIONS AND PROCEDURES
+    // int baseBlock ( int caracter ) {
+    //return caracter;
+    //}
     
-	Token* baseBlock ( KEYWORD token_id, const char* name) {
+	int baseBlock ( int token_id, const char* name) {
 	    
-	    //Token *t = malloc(sizeof(Token));
-	    
-	    Token *t = new Token;
+	    Token *t = malloc(sizeof(Token));
 	    
 	    t->key = token_id;
 	    t->name = name;
@@ -27,11 +31,12 @@
 	    
 	    column += yyleng;
 	    
-	    return t;
+	    yylval.token = t;
+	    
+	    return token_id;
 	}
 	
 %}
-
 
 LINE            \n
 
@@ -85,7 +90,7 @@ MULT            "*"
 DIVISION        "/"
 
 /*LOGIC OPERATOR*/
-NOT             "~"
+NOT             "!"
 AND             "&&"
 OR              "||"
 LESS            "<"
@@ -105,6 +110,7 @@ RPARENT         ")"
 LBRACKET        "["
 RBRACKET        "]"
 DOUBLEDOT       ".."
+DOT       "."
 
 ASSIGN          "="
 CASSIGN         ":="
@@ -262,13 +268,13 @@ SCOMMENT        \*\*.*
     //======================================
 %}
 
-{SUM}		{ return baseBlock ( SUM, "SUM" ); } 
+{SUM}		{return yytext[0];} 
  
-{MINOR}		{ return baseBlock ( MINOR, "MINOR" ); } 
+{MINOR}		{return yytext[0];} 
  
-{MULT}		{ return baseBlock ( MULT, "MULT" ); } 
+{MULT}		{return yytext[0];} 
  
-{DIVISION}	{ return baseBlock ( DIVISION, "DIVISION" ); } 
+{DIVISION}	{return yytext[0]; } 
 
 
 %{
@@ -283,11 +289,11 @@ SCOMMENT        \*\*.*
  
 {OR}	    { return baseBlock ( OR, "OR" ); } 
  
-{LESS}		{ return baseBlock ( LESS, "LESS" ); } 
+{LESS}		{return yytext[0]; } 
 
-{NOT}	    { return baseBlock ( NOT, "NOT" ); } 
+{NOT}	    { return yytext[0];} 
  
-{GREATER}	{ return baseBlock ( GREATER, "GREATER" ); } 
+{GREATER}	{ return yytext[0];} 
  
 {LESSEQ}	{ return baseBlock ( LESSEQ, "LESSEQ" ); } 
  
@@ -305,23 +311,25 @@ SCOMMENT        \*\*.*
     //======================================
 %}
  
-{SEMICOMMA}	{ return baseBlock ( SEMICOMMA, "SEMICOMMA" ); } 
+{SEMICOMMA}	{ return yytext[0];} 
  
-{COMMA}		{ return baseBlock ( COMMA, "COMMA" ); } 
+{COMMA}		{return yytext[0]; } 
  
-{COLON}		{ return baseBlock ( COLON,"COLON" ); } 
+{COLON}		{return yytext[0];} 
  
-{LPARENT}	{ return baseBlock ( LPARENT, "LPARENT" ); } 
+{LPARENT}	{return yytext[0]; } 
  
-{RPARENT}	{ return baseBlock ( RPARENT, "RPARENT" ); } 
+{RPARENT}	{return yytext[0];} 
 
-{LBRACKET}	{ return baseBlock ( LBRACKET, "LBRACKET" ); } 
+{LBRACKET}	{ return yytext[0]; } 
  
-{RBRACKET}	{ return baseBlock ( RBRACKET, "RBRACKET" ); } 
+{RBRACKET}	{return yytext[0]; } 
  
 {DOUBLEDOT}	{ return baseBlock ( DOUBLEDOT, "DOUBLEDOT" ); } 
+
+{DOT}	    {return yytext[0];} 
  
-{ASSIGN}	{ return baseBlock ( ASSIGN, "ASSIGN" ); } 
+{ASSIGN}	{ return yytext[0]; } 
  
 {CASSIGN}	{ return baseBlock ( CASSIGN, "CASSIGN" ); } 
 
@@ -338,9 +346,9 @@ SCOMMENT        \*\*.*
 
 %%
 
-Token* getToken(){
-    return yylex();
-}
+//Token* getToken(){
+//    return yylex();
+//}
 
 void openFile(int argc, char **argv){
     ++argv, --argc;  /* skip over program name */
@@ -350,14 +358,4 @@ void openFile(int argc, char **argv){
 	}else{
 	        yyin = stdin;
     }
-}
-
-int main( int argc, char **argv ) {
-	++argv, --argc;  /* skip over program name */
-	if ( argc > 0 )
-	        yyin = fopen( argv[0], "r" );
-	else
-	        yyin = stdin;
-
-	yylex();
 }

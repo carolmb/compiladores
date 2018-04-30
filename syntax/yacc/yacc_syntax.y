@@ -3,7 +3,8 @@
 #include <stdio.h>     /* C declarations used in actions */
 #include <stdlib.h>
 
-void yyerror (char *s);
+void yyerror (char *s); 
+
 int yylex();
 
 void success();
@@ -12,11 +13,13 @@ void success();
 %union {Token* token;}         /* Yacc definitions */
 %start program
 
+
 /*Terminals*/
 %token HEXA_VALUE INT_VALUE REAL_VALUE FINAL BOOL_VALUE CONTINUE 
 ID INT REAL BOOL STRING VECTOR PROG INIT END OF VAR LABEL STRUCT 
 TYPE CONST RETURN JUMP FOR WHILE DO REPEAT UNTIL IF THEN ELSE CASE 
-BE FUNC PROC BREAK REF AND OR LESSEQ GREATEQ EQUAL NOTEQ DOUBLEDOT 
+BE FUNC PROC BREAK 
+REF AND OR LESSEQ GREATEQ EQUAL NOTEQ DOUBLEDOT 
 STRING_VALUE CASSIGN WRITE READ INT_TYPE REAL_TYPE HEXA_TYPE STRING_TYPE
 %%
 
@@ -203,9 +206,11 @@ conditional  		: ifcond 												{printf("conditional -> ifcond\n");}
 ifcond  			: IF '(' expr ')' THEN callcommand ifcondaux 			{printf("ifcond -> 'se' '(' expr ')' 'entao' callcommand ifcondaux\n");}
 					;
 
-ifcondaux  			:   													{printf("ifcondaux -> FALTA SENAO\n");}
+ifcondaux  			: ELSE callcommand										{printf("ifcondaux -> 'senao' callcommand \n");}
+					|														{printf("ifcondaux -> LAMBDA \n");}
 					;
-
+					
+					
 casecond  			: CASE '(' expr ')' BE caselist casecondaux 			{printf("casecond -> 'caso' '(' expr ')' 'seja' caselist casecondaux\n");}
 					;
 
@@ -340,14 +345,17 @@ atomiclistaux		: ',' atomic atomiclistaux								{printf("atomiclistaux -> ',' a
 		
 %%                     /* C code */
 
-void success(){
+void success() {
 	printf("\033[0;32mparse success\033[0m\n"); 
 	exit(1);
 }
 
-int main (void) {
-	return yyparse ( );
+int main() {
+	return yyparse();
 }
 
-void yyerror (char *s) {fprintf (stderr, "%s\n", s);} 
-
+void yyerror (char *s) {
+	fprintf(stderr,"%s:", s);
+	//fprintf(stderr,"Line: %d | Column: %d\n ", yylval.token->line, yylval.token->column);
+	fprintf(stderr,"%d:%d: No expected '%s'\n", yylval.token->line, yylval.token->column, yylval.token->value);
+}
