@@ -22,7 +22,7 @@ REF AND OR LESSEQ GREATEQ EQUAL NOTEQ DOUBLEDOT
 STRING_VALUE CASSIGN WRITE READ INT REAL BOOL STRING
 %%
 
-program  			: PROG ID ';' prevdec block 							{printf("program -> 'prog' ID ';' prevdec block\n"); success();}
+program  			: PROG ID ';' prevdec block 							{printf("%s program -> 'prog' ID ';' prevdec block\n", $1); success();}
 					;
 
 block  				: INIT prevcommand END 									{printf("block -> 'inicio' prevcommand 'fim'\n");}

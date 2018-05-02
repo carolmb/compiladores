@@ -1464,7 +1464,7 @@ YYLABEL(yyreduce)
 
 case 1:
 #line 25 "yacc_syntax.y"
-{printf("program -> 'prog' ID ';' prevdec block\n"); success();;
+{printf("%s program -> 'prog' ID ';' prevdec block\n", yyvsp[-4]); success();;
     break;}
 case 2:
 #line 28 "yacc_syntax.y"
