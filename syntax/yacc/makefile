@@ -1,4 +1,4 @@
-calc: lex.yy.c y.tab.c
+yacc: lex.yy.c y.tab.c
 	gcc -g lex.yy.c y.tab.c -o yacc_syn -lfl
 
 lex.yy.c: y.tab.c ../../lex/yacc_analyzer.lex

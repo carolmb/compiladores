@@ -18,7 +18,7 @@ var tdu : TDU;
 var blo : logico;
 var blu, pla : texto;
 var ple : texto = 'oi';
-var pli : inteiro = 4 + 20;
+var pli : real = 4 + 20;
 var plu : inteiro = 0x0001;
 var nome_negocio : vetor[3..5] de texto = ('aaa', 'bbb', 'ccc'); 
 
@@ -45,10 +45,17 @@ fim;
 proc procedimento2( ref t1 : texto , i1 : inteiro ) 
   var p1 : inteiro;
 inicio 
-	p1 = 5;
-	t1 = t1 + '!';
-	escreva(i1 + p1);
-	escreva(t1)
+	** IF TEST
+    se (4 > 1) entao inicio
+		se (1 > 1) entao 
+		    escreva(4)
+		(*senao se (1 == 2) entao inicio
+		    escreva('')
+	    fim*)
+	fim
+	senao se (1 == 2) entao inicio
+		escreva(2)
+	fim
 fim;
 
 ** EMPTY FUNCTION 
@@ -57,18 +64,47 @@ inicio
 fim;
 
 ** TEST FUNCTION 
-func funcao2( ref t1 : texto, i1 : inteiro  ) : inteiro 
-  var f1 : inteiro;
-inicio 
-	f1 = 5;
-	t1 = t1 + '!';
-	escreva(i1 + f1);
-	escreva(t1)
+func operation(n1 : real, op : texto, n2 : real) : real 
+inicio
+	** CASE TEST
+	caso (op) seja
+        '+' : retorne sum(n1, n2);
+        '-' : retorne subtraction(n1, n2);
+        '*' : retorne multiplication(n1, n2);
+        '/' : retorne division(n1, n2)
+    fim
 fim;
 
 
 (*    MAIN CODE   *)
-
 inicio
-    tdu.name = 'teste'
+	** USER TYPE TEST
+    tdu.name = 'teste';
+    
+    ** VECTOR TEST
+    arr1[0] = 'teste';
+    
+    ** LABEL TEST
+    salto:
+    
+    ** FUNC CALL TEST
+	pli = operation(4, '+', 3);
+	
+	** PROC CALL TEST
+	procedimento();
+	
+	** FOR TEST
+	para (i = 0; i <= 5; i = i + 1) faca inicio
+        escreva(i)
+    fim;
+    
+    ** WHILE TEST
+    enquanto (1 == 0) faca inicio
+    	escreva('teste')
+    fim;
+    
+    ** DO TEST
+    repita 
+    	leia(pli)
+    ate (2 < 1)
 fim

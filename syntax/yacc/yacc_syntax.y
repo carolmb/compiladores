@@ -308,10 +308,10 @@ idlistaux 			: ',' ID idlistaux 										{printf("idlistaux -> ',' ID idlistaux
 		 			| 														{printf("idlistaux -> LAMBDA\n");}
 					;
 
-type 				: INT 												{printf("type -> INT\n");}
- 					| REAL 											{printf("type -> REAL\n");}
-					| BOOL												{printf("type -> BOOL\n");}
- 					| STRING 											{printf("type -> STRING\n");}
+type 				: INT 													{printf("type -> INT\n");}
+ 					| REAL 													{printf("type -> REAL\n");}
+					| BOOL													{printf("type -> BOOL\n");}
+ 					| STRING 												{printf("type -> STRING\n");}
  					| ID 													{printf("type -> ID\n");}
  					;
 

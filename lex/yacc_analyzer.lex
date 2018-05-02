@@ -346,7 +346,7 @@ SCOMMENT        \*\*.*
 
 <<EOF>>     { return baseBlock ( FINAL, "FINAL" ); }   
 
-.           { 	fprintf(stderr,"lexical error:%d:%d: No expected '%s'\n", lines, column, yytext);exit(1); }
+.           { 	fprintf(stderr,"lexical error:%d:%d: No expected '%s'\n", lines, column, yytext); exit(1); }
 
 %%
 
