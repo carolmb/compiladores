@@ -13,7 +13,7 @@
 
  #line 8 "/usr/share/bison++/bison.h"
 
-#line 13 "yacc_syntax.y"
+#line 21 "yacc_syntax.y"
 typedef union {Token* token;} yy_parse_stype;
 #define YY_parse_STYPE yy_parse_stype
 #ifndef YY_USE_CLASS

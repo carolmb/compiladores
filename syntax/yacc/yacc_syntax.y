@@ -8,6 +8,14 @@ void yyerror (char *s);
 int yylex();
 
 void success();
+
+void p(char *s);
+void placeTab();
+
+void add_tab();
+void rem_tab();
+int scopo;
+
 %} 
 
 %union {Token* token;}         /* Yacc definitions */
@@ -22,339 +30,359 @@ REF AND OR LESSEQ GREATEQ EQUAL NOTEQ DOUBLEDOT
 STRING_VALUE CASSIGN WRITE READ INT REAL BOOL STRING
 %%
 
-program  			: PROG ID ';' prevdec block 							{printf("%s program -> 'prog' ID ';' prevdec block\n", $1); success();}
+program  			: PROG {p(" "); } ID {p("");} ';' {p(";\n");} prevdec {} block {success();}
 					;
 
-block  				: INIT prevcommand END 									{printf("block -> 'inicio' prevcommand 'fim'\n");}
+block  				: INIT {p("\n"); add_tab();} prevcommand {printf("\n");rem_tab();placeTab();} END {p("");}
 					;
 
-prevdec  			: declaration ';' prevdec 								{printf("prevdec -> declaration ';' prevdec\n");}
-		  			|  														{printf("prevdec -> LAMBDA\n");}
+prevdec  			: declaration ';' {p(";\n"); } prevdec {}
+		  			| {}
 					;
 
-declaration  		: vardec 												{printf("declaration -> vardec\n");}
-			  		| usertype 												{printf("declaration -> usertype\n");}
-			  		| labeldec 												{printf("declaration -> labeldec\n");}
-			  		| constdec 												{printf("declaration -> constdec\n");}
-			  		| abstractiondec 										{printf("declaration -> abstractiondec\n");}
+declaration  		: vardec {}
+			  		| usertype {}
+			  		| labeldec {}
+			  		| constdec {}
+			  		| abstractiondec {}
 					;
 
-arraydec  			: VECTOR '[' rangelist ']' OF type arraydecaux 			{printf("arraydec -> 'vetor' '[' rangelist ']' 'de' type arraydecaux\n");}
+arraydec  			: VECTOR {p(" ");} '[' {p("[ ");} rangelist ']' {p("] ");} OF {p(" ");} type arraydecaux {}
 					;
 
-arraydecaux  		: '=' '(' expressionlist ')' 							{printf("arraydecaux -> '=' '(' expressionlist ')'\n");}
-			  		|  														{printf("arraydecaux -> LAMBDA\n");}
+arraydecaux  		: '=' {p("= ");} '(' {p("( ");} expressionlist ')' {p(") ");} {}
+			  		| {}
 					;
 
-rangelist  			: range rangelistaux 									{printf("rangelist -> range rangelistaux\n");}
+rangelist  			: range rangelistaux {}
 					;
 
-rangelistaux  		: ',' range rangelistaux 								{printf("rangelistaux -> ',' range rangelistaux\n");}
-			  		|   													{printf("rangelistaux -> LAMBDA\n");}
+rangelistaux  		: ',' {p(", ");} range rangelistaux {}
+			  		| {}
 					;
 
-range  				: atomic DOUBLEDOT atomic 								{printf("range -> atomic '..' atomic\n");}
+range  				: atomic DOUBLEDOT {p(" ");} atomic {}
 					;
 
-vardec  			: VAR idlist ':' varconstruction 						{printf("vardec -> 'var' idlist ':' varconstruction\n");}
+vardec  			: {placeTab();} VAR {p(" ");} idlist ':' {p(": ");} varconstruction {}
 					;
 
-varconstruction  	: type decwithassign 									{printf("varconstruction -> type decwithassign\n");}
-				  	| arraydec 												{printf("varconstruction -> arraydec\n");}
+varconstruction  	: type decwithassign {}
+				  	| arraydec {}
 					;
 
-decwithassign  		: '=' expr 												{printf("decwithassign -> '=' expr\n");}
-			  		|   													{printf("decwithassign -> LAMBDA\n");}
+decwithassign  		: '=' {p("= ");} expr {}
+			  		| {}
 					;
 
-usertype  			: TYPE ID CASSIGN typedec 								{printf("usertype -> 'tipo' ID ':=' typedec\n");}
+usertype  			: {placeTab();} TYPE {p(" ");} ID {p(" ");} CASSIGN {p(" ");} typedec {}
 					;
 
-typedec  			: arraydec 												{printf("typedec -> arraydec\n");}
-		  			| typedecaux 											{printf("typedec -> typedecaux\n");}
+typedec  			: arraydec {}
+		  			| typedecaux {}
 					;
 
-typedecaux  		: STRUCT vardeclist END 								{printf("typedecaux -> 'registro' vardeclist 'fim'\n");}
-			  		| atomic typedecauxrange								{printf("typedecaux -> atomic typedecauxrange\n");}
-			  		| '(' idlist ')' 										{printf("typedecaux -> '(' idlist ')'\n");}
+typedecaux  		: STRUCT {p("\n"); add_tab();} vardeclist {printf("\n"); rem_tab(); } END {p("");} {}
+			  		| atomic typedecauxrange {}
+			  		| '(' {p("( ");} idlist ')' {p(") ");} {}
 					;
 
-typedecauxrange		: DOUBLEDOT atomic 										{printf("typedecauxrange -> '..' atomic \n");}
-					| 														{printf("typedecauxrange -> LAMBDA\n");}
+typedecauxrange		: DOUBLEDOT {p(" ");} atomic {}
+					| {}
 					;
 
-vardeclist  		: vardec vardeclistaux 									{printf("vardeclist -> vardec vardeclistaux\n");}
+vardeclist  		: vardec vardeclistaux {}
 					;
 
-vardeclistaux  		: ';' vardec vardeclistaux 								{printf("vardeclistaux -> ';' vardec vardeclistaux\n");}
-			  		|   													{printf("vardeclistaux -> LAMBDA\n");}
+vardeclistaux  		: ';' {p(";\n");} vardec vardeclistaux {}
+			  		| {}
 					;
 
-labeldec  			: LABEL idlist 											{printf("labeldec -> 'rotulo' idlist\n");}
+labeldec  			: {placeTab();} LABEL {p(" ");} idlist {}
 					;
 
-constdec  			: CONST idlist ':' type '=' expr 						{printf("constdec -> 'const' idlist ':' type '=' expr\n");}
+constdec  			: {placeTab();} CONST {p(" ");} idlist ':' {p(": ");} type '=' {p("= ");} expr {}
 					;
 
-abstractiondec  	: procdec 												{printf("abstractiondec -> procdec\n");}
-				  	| funcdec 												{printf("abstractiondec -> funcdec\n");}
+abstractiondec  	: procdec {}
+				  	| funcdec {}
 					;
 
-procdec  			: PROC ID '(' parameters ')' prevdec block 				{printf("procdec -> 'proc' ID '(' parameters ')' prevdec block\n");}
+procdec  			: {placeTab();} PROC {p(" ");} ID {p("");} '(' {p("( ");} parameters ')' {p(")\n");add_tab();} prevdec {rem_tab();} block 
 					;
 
-funcdec  			: FUNC ID '(' parameters ')' ':' type prevdec block 	{printf("funcdec -> 'func' ID '(' parameters ')' ':' type prevdec block\n");}
+funcdec  			: {placeTab();} FUNC {p(" ");} ID {p("");} '(' {p("( ");} parameters ')' {p(") ");} ':' {p(": ");} type  {p("\n");add_tab();} prevdec {rem_tab();}  block 
 					;
 
-parameters  		: paramsaux 											{printf("parameters -> paramsaux\n");}
-			  		|   													{printf("parameters -> LAMBDA\n");}
+parameters  		: paramsaux {}
+			  		| {}
 					;
 
-paramsaux  			: ID ':' type paramslist 								{printf("paramsaux -> ID ':' type paramslist\n");}
-		  			| REF ID ':' type paramslist 							{printf("paramsaux -> 'ref' ID ':' type paramslist\n");}
+paramsaux  			: ID {p("");} ':' {p(": ");} type paramslist {}
+		  			| REF {p(" ");} ID {p("");} ':' {p(": ");} type paramslist {}
 					;
 
-paramslist  		: ',' paramsaux 										{printf("paramslist -> paramsaux\n");}
-			  		|   													{printf("paramslist -> LAMBDA\n");}
+paramslist  		: ',' {p(", ");} paramsaux {}
+			  		| {}
 					;
 
 
-prevcommand  		: commands 												{printf("prevcommand -> commands\n");}
-			  		|   													{printf("prevcommand -> LAMBDA\n");}
+prevcommand  		: commands {}
+			  		| {}
 					;
 
-callcommand  		: BREAK 												{printf("callcommand -> 'pare'\n");}
-			  		| write 												{printf("callcommand -> write\n");}
-			  		| read 													{printf("callcommand -> read\n");}
-			  		| loop 													{printf("callcommand -> loop\n");}
-			  		| block 												{printf("callcommand -> block\n");}
-			  		| return 												{printf("callcommand -> return\n");}
-			  		| CONTINUE 												{printf("callcommand -> 'continue'\n");}
-			  		| id callidbegin 										{printf("callcommand -> id callidbegin\n");}
-			  		| calllabel 											{printf("callcommand -> calllabel\n");}
-			  		| conditional 											{printf("callcommand -> conditional\n");}
+callcommand  		: {placeTab();} BREAK {p("");}		
+			  		| {placeTab();} write {}
+			  		| {placeTab();} read {}
+			  		| loop {}
+			  		| block {}
+			  		| {placeTab();} return {}
+			  		| {placeTab();} CONTINUE {p("");}
+			  		| {placeTab();} id callidbegin {}
+			  		| {placeTab();} calllabel {}
+			  		| conditional {}
 					;
 
-commands  			: callcommand commandsaux 								{printf("commands -> callcommand commandsaux\n");}
+commands  			: callcommand commandsaux {}
 					;
 
-commandsaux  		: ';' commands 											{printf("commandsaux -> ';' commands\n");}
-			  		|   													{printf("commandsaux -> LAMBDA\n");}
+commandsaux  		: ';' {p(";\n");} commands {}
+			  		| {}
 					;
 
-callidbegin  		: ':' callcommand 										{printf("callidbegin -> ':' callcommand \n");}
-			  		| '=' expr 												{printf("callidbegin -> '=' expr\n");}
-			  		|   													{printf("callidbegin -> LAMBDA\n");}
+callidbegin  		: ':' {p(":\n");} callcommand {}
+			  		| '=' {p("= ");} expr {}
+			  		| {}
 					;
 
-calllabel  			: JUMP ID 												{printf("calllabel -> JUMP ID\n");}
+calllabel  			: JUMP {p(" ");} ID {p("");}
 					;
 
-write  				: WRITE '(' expressionlist ')' 							{printf("write -> 'escreva' '(' expressionlist ')'\n");}
+write  				: WRITE {p("");} '(' {p("( ");} expressionlist ')' {p(")");}
 					;
 
-read  				: READ '(' expressionlist ')' 							{printf("read -> 'leia' '(' expressionlist ')'\n");}
+read  				: READ {p("");} '(' {p("( ");} expressionlist ')' {p(")");}
 					;
 
-return  			: RETURN expr 											{printf("return -> 'retorne' expr \n");}
+return  			: RETURN {p(" ");} expr {}
 					;
 
-loop  				: forloop 												{printf("loop -> forloop\n");}
-	  				| whileloop 											{printf("loop -> whileloop\n");}
-	  				| repeatloop 											{printf("loop -> repeatloop\n");}
+loop  				: {placeTab();} forloop {}
+	  				| {placeTab();} whileloop {}
+	  				| {placeTab();} repeatloop {}
 					;
 
-forloop  			: FOR '(' forstruct ')' DO callcommand 					{printf("forloop -> 'para' '(' forstruct ')' 'faca' callcommand\n");}
+forloop  			: FOR {p("");} '(' {p("( ");} forstruct ')' {p(") ");} DO {p(" ");} callcommand 
 					;
 
-forstruct  			: prevfor ';' expr ';' posfor 							{printf("forstruct -> prevfor ';' expr ';' posfor \n");}
+forstruct  			: prevfor ';' {p(" ");} expr ';' {p("; ");} posfor {}
 					;
 
-prevfor 			: varassignlist 										{printf("prevfor -> varassignlist\n");}
-		  			|   													{printf("prevfor -> LAMBDA\n");}
+prevfor 			: varassignlist {}
+		  			| {}
 					;
 
-varassignlist  		: ID '=' expr varassignlistaux 							{printf("varassignlist -> ID '=' expr varassignlistaux\n");}
+varassignlist  		: ID {p(" ");} '=' {p("= ");} expr varassignlistaux {}
 					;
 
-varassignlistaux  	: ',' ID '=' expr varassignlistaux 						{printf("varassignlistaux -> ',' ID '=' expr varassignlistaux\n");}
-				  	|   													{printf("varassignlistaux -> LAMBDA\n");}
+varassignlistaux  	: ',' {p(", ");} ID {p(" ");} '=' {p("= ");} expr varassignlistaux {}
+				  	| {}
 					;
 
-posfor  			: posforaux 											{printf("posfor -> posforaux\n");}
-		  			|   													{printf("posfor -> LAMBDA\n");}
+posfor  			: posforaux {}
+		  			| {}
 					;
 
-posforaux  			: commands posforaux2 									{printf("posforaux -> commands posforaux2\n");}
+posforaux  			: commands posforaux2 {}
 					;
 
-posforaux2  		: ',' commands posforaux2 								{printf("posforaux2 -> ',' commands posforaux2\n");}
-			  		|   													{printf("posforaux2 -> LAMBDA\n");}
+posforaux2  		: ',' {p(", ");} commands posforaux2 {}
+			  		| {}
 					;
 
-whileloop  			: WHILE '(' expr ')' DO callcommand 					{printf("whileloop -> 'enquanto' '(' expr ')' 'faca' callcommand\n");}
+whileloop  			: WHILE {p("");} '(' {p("( ");} expr ')' {p(") ");} DO {p(" ");} callcommand 
 					;
 
-repeatloop  		: REPEAT commands UNTIL expr 							{printf("repeatloop -> 'repita' commands 'ate' expr \n");}
+repeatloop  		: REPEAT {p("\n");add_tab();} commands {rem_tab();printf("\n");placeTab();} UNTIL {p(" ");} expr {}
 					;
 
-conditional  		: ifcond 												{printf("conditional -> ifcond\n");}
-			 		| casecond 												{printf("conditional -> casecond\n");}
+conditional  		: {placeTab();} ifcond {}
+			 		| {placeTab();} casecond {}
 					;
 
-ifcond  			: IF '(' expr ')' THEN callcommand ifcondaux 			{printf("ifcond -> 'se' '(' expr ')' 'entao' callcommand ifcondaux\n");}
+ifcond  			: IF {p(" ");} '(' {p("( ");} expr ')' {p(") ");} THEN {p(" ");} callcommand {} ifcondaux {}
 					;
 
-ifcondaux  			: ELSE callcommand										{printf("ifcondaux -> 'senao' callcommand \n");}
-					|														{printf("ifcondaux -> LAMBDA \n");}
+ifcondaux  			: {printf("\n");placeTab();} ELSE {p(" ");} callcommand 
+					| {}
 					;
 					
 					
-casecond  			: CASE '(' expr ')' BE caselist casecondaux 			{printf("casecond -> 'caso' '(' expr ')' 'seja' caselist casecondaux\n");}
+casecond  			:  CASE {p("");} '(' {p("( ");} expr ')' {p(") ");} BE {p("\n");add_tab();} caselist casecondaux 
 					;
 
-casecondaux  		: END 													{printf("casecondaux -> 'fim'\n");}
-			  		| ELSE commands END 									{printf("casecondaux -> 'senao' commands 'fim'\n");}
+casecondaux  		: {printf("\n"); rem_tab(); placeTab();} END {p("");} {}
+			  		| {placeTab();} ELSE {p("\n");}  commands {printf("\n");} END {p("");} {}
 					;
 
-caselist  			: caseclause caselistaux 								{printf("caselist -> caseclause caselistaux\n");}
+caselist  			: caseclause caselistaux {}
 					;
 
-caselistaux  		: ';' caselistaux2 										{printf("caselistaux -> ';' caselistaux2\n");}
-			  		|   													{printf("caselistaux -> LAMBDA\n");}
+caselistaux  		: ';' {p(";\n");} caselistaux2 {}
+			  		| {}
 					;
 
-caselistaux2  		: caseclause caselistaux 								{printf("caselistaux2 -> caseclause caselistaux\n");}
-			  		|   													{printf("caselistaux2 -> LAMBDA\n");}
+caselistaux2  		: caseclause caselistaux {}
+			  		| {}
 					;
 
-caseclause  		: atomiclist ':' callcommand 							{printf("caseclause -> atomiclist ':' callcommand\n");}
+caseclause  		: {placeTab();} atomiclist ':' {p(":\n");add_tab();} callcommand {rem_tab();}
 					;
 
-expressionlist  	: expr expressionlistaux 								{printf("expressionlist -> expr expressionlistaux\n");}
+expressionlist  	: expr expressionlistaux {}
 					;
 
-expressionlistaux  	: ',' expr expressionlistaux 							{printf("expressionlistaux -> ',' expr expressionlistaux\n");}
-				  	|   													{printf("expressionlistaux -> LAMBDA\n");}
+expressionlistaux  	: ',' {p(", ");} expr expressionlistaux {}
+				  	| {}
 					;
 
-expr				: andfact orfact										{printf("expr -> andfact orfact\n");}
+expr				: andfact orfact {}
 					;
 
-orfact				: OR andfact orfact										{printf("orfact -> OR andfact orfact\n");}
-					|														{printf("orfact -> LAMBDA\n");}
+orfact				: OR {p(" ");} andfact orfact {}
+					| {}
 					;
 
-andfact				: notfact andfactaux									{printf("andfact -> notfact andfactaux\n");}
+andfact				: notfact andfactaux {}
 					;
 		
-andfactaux			: AND notfact andfactaux								{printf("andfactaux -> AND notfact andfactaux\n");}
-					|														{printf("andfactaux -> LAMBDA\n");}
+andfactaux			: AND {p(" ");} notfact andfactaux {}
+					| {}
 					;
 
-notfact				: '!' expreq											{printf("notfact -> '!' expreq\n");}
-					| expreq												{printf("notfact -> expreq\n");}
+notfact				: '!' {p("!");} expreq {}
+					| expreq {}
 					;
 
-expreq				: numericexpr expreqaux									{printf("expreq -> numericexpr expreqaux\n");}
+expreq				: numericexpr expreqaux {}
 					;
 
-expreqaux			: EQUAL numericexpr expreqaux							{printf("expreqaux -> EQUAL numericexpr expreqaux\n");}
-					| NOTEQ numericexpr expreqaux							{printf("expreqaux -> NOTEQ numericexpr expreqaux\n");}
-					| '>' numericexpr expreqaux								{printf("expreqaux -> '>' numericexpr expreqaux\n");}
-					| '<' numericexpr expreqaux								{printf("expreqaux -> '<' numericexpr expreqaux\n");}
-					| LESSEQ numericexpr expreqaux							{printf("expreqaux -> LESSEQ numericexpr expreqaux\n");}
-					| GREATEQ numericexpr expreqaux							{printf("expreqaux -> GREATEQ numericexpr expreqaux\n");}
-					|														{printf("expreqaux -> LAMBDA\n");}
+expreqaux			: EQUAL {p(" ");} numericexpr expreqaux {}
+					| NOTEQ {p(" ");} numericexpr expreqaux {}
+					| '>' {p("> ");} numericexpr expreqaux {}
+					| '<' {p("< ");} numericexpr expreqaux {}
+					| LESSEQ {p(" ");} numericexpr expreqaux {}
+					| GREATEQ {p(" ");} numericexpr expreqaux {}
+					| {}
 					;
 			
-numericexpr			: exprmul exprsum										{printf("numericexpr -> exprmul exprsum\n");}
+numericexpr			: exprmul exprsum {}
 					;
 
-exprsum				: '+' exprmul exprsum									{printf("exprsum -> '+' exprmul exprsum\n");}
-					| '-' exprmul exprsum									{printf("exprsum -> '-' exprmul exprsum\n");}
-					|														{printf("exprsum -> LAMBDA\n");}
+exprsum				: '+' {p("+ ");} exprmul exprsum {}
+					| '-' {p("- ");} exprmul exprsum {}
+					| {}
 					;
 
-exprmul				: simpleexpr exprmulaux									{printf("exprmul -> simpleexpr exprmulaux\n");}
+exprmul				: simpleexpr exprmulaux {}
 					;
 			
-exprmulaux			: '*' simpleexpr exprmulaux								{printf("exprmulaux -> '*' simpleexpr exprmulaux\n");}
-					| '/' simpleexpr exprmulaux								{printf("exprmulaux -> '/' simpleexpr exprmulaux\n");}
-					|														{printf("exprmulaux -> LAMBDA\n");}
+exprmulaux			: '*' {p("* ");} simpleexpr exprmulaux {}
+					| '/' {p("/ ");} simpleexpr exprmulaux {}
+					| {}
 					;
 			
-simpleexpr			: atomic optrange										{printf("simpleexpr -> atomic optrange\n");}
-					| optunary optbracket									{printf("simpleexpr -> optunary optbracket\n");}
-					| '(' expr ')'											{printf("simpleexpr -> '(' expr ')'\n");}
+simpleexpr			: atomic optrange {}
+					| optunary optbracket {}
+					| '(' {p("( ");} expr ')' {p(") ");} {}
 					;
        	
-optrange			: DOUBLEDOT atomic										{printf("optrange -> DOUBLEDOT atomic\n");}
-					|														{printf("optrange -> LAMBDA\n");}
+optrange			: DOUBLEDOT {p("");} atomic {}
+					| {}
 					;
         		
-optunary			: '-'													{printf("optunary -> '-'\n");}
-					| '+'													{printf("optunary -> '+'\n");}
+optunary			: '-' {p("- ");} {}
+					| '+' {p("+ ");} {}
 					;
 			
-optbracket			: '(' expr ')'											{printf("optbracket -> '(' expr ')'\n");}
-					| atomic												{printf("optbracket -> atomic\n");}
+optbracket			: '(' {p("( ");} expr ')' {p(") ");} {}
+					| atomic {}
 					;
 
-idlist 				: ID idlistaux 											{printf("idlist -> ID idlistaux\n");}
+idlist 				: ID {p(" ");} idlistaux {}
 					;
 
-idlistaux 			: ',' ID idlistaux 										{printf("idlistaux -> ',' ID idlistaux\n");}
-		 			| 														{printf("idlistaux -> LAMBDA\n");}
+idlistaux 			: ',' {p(", ");} ID {p(" ");} idlistaux {}
+		 			| {}
 					;
 
-type 				: INT 													{printf("type -> INT\n");}
- 					| REAL 													{printf("type -> REAL\n");}
-					| BOOL													{printf("type -> BOOL\n");}
- 					| STRING 												{printf("type -> STRING\n");}
- 					| ID 													{printf("type -> ID\n");}
+type 				: INT 			{p(" ");} {}
+ 					| REAL 			{p(" ");} {}
+					| BOOL			{p(" ");} {}
+ 					| STRING 		{p(" ");} {}
+ 					| ID 			{p(" ");} {}
  					;
 
-literal				: INT_VALUE												{printf("literal -> INT_VALUE\n");}
-					| REAL_VALUE											{printf("literal -> REAL_VALUE\n");}
-					| HEXA_VALUE											{printf("literal -> HEXA_VALUE\n");}
-					| BOOL_VALUE											{printf("literal -> BOOL_VALUE\n");}
-					| STRING_VALUE											{printf("literal -> STRING_VALUE\n");}
+literal				: INT_VALUE		{p(" ");} {}
+					| REAL_VALUE	{p(" ");} {}
+					| HEXA_VALUE	{p(" ");} {}
+					| BOOL_VALUE	{p(" ");} {}
+					| STRING_VALUE	{p(" ");} {}
 					;
 
-atomic				: literal												{printf("atomic -> literal\n");}
-					| id													{printf("atomic -> id\n");}
+atomic				: literal {}
+					| id {}
 					;
 
-id					: ID idaux												{printf("id -> ID idaux\n");}
+id					: ID {p("");} idaux {}
 					;
 
-idaux				: '[' expressionlist ']'								{printf("idaux -> '[' expressionlist ']'\n");}
-					| '.' id												{printf("idaux -> '.' id\n");}
-					| '(' idauxexpraux										{printf("idaux -> '(' idauxexpraux\n");}
-					|														{printf("idaux -> LAMBDA\n");}
+idaux				: '[' {p("[ ");} expressionlist ']' {p("] ");} {}
+					| '.' {p(".");} id {}
+					| '(' {p("( ");} idauxexpraux {}
+					| {printf(" ");}
 					;
 					
-idauxexpraux		: expressionlist ')'									{printf("idauxexpraux -> expressionlist ')'\n");}
-					| ')'													{printf("idauxexpraux -> ')'\n");}
+idauxexpraux		: expressionlist ')' {p(") ");} {}
+					| ')' {p(") ");} {}
 					;	
 			
-atomiclist  		: atomic atomiclistaux									{printf("atomiclist -> atomic atomiclistaux\n");}
+atomiclist  		: atomic atomiclistaux {}
 					;
 				
-atomiclistaux		: ',' atomic atomiclistaux								{printf("atomiclistaux -> ',' atomic atomiclistaux\n");}
-					|   													{printf("atomiclistaux -> LAMBDA\n");}
+atomiclistaux		: ',' {p(", ");} atomic atomiclistaux {}
+					| {}
 					;
 		
 %%                     /* C code */
 
 void success() {
-	printf("\033[0;32mparse success\033[0m\n"); 
+	printf("\n\033[0;32mparse success\033[0m\n"); 
 	exit(1);
+}
+
+scopo = 0;
+void add_tab(){
+	scopo++;
+}
+void rem_tab(){
+	scopo--;
+}
+
+void placeTab(){
+	int i;
+	for (i = 0; i < scopo; i++){
+		printf("\t");
+	}
 }
 
 int main() {
 	return yyparse();
+}
+
+void p(char *s){
+	printf("%s%s", yylval.token->value, s);
+	yylval.token->value = "";
 }
 
 void yyerror (char *s) {
