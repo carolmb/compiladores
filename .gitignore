@@ -1,2 +1,5 @@
+syntax/yacc/y.tab.c
+syntax/yacc/y.tab.h
+syntax/yacc/yacc_syn
 *.o
 lex.yy.c

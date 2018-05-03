@@ -1,1 +1,4 @@
-make yacc && ./syntax/yacc/yacc_syn < $1
+echo "-----------------"
+make yacc && 
+echo "-----------------" &&
+./syntax/yacc/yacc_syn < $1
