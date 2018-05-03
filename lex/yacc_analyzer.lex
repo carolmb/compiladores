@@ -11,6 +11,8 @@
     int lines = 1;
     int column = 1;
 
+    void yyerror (char *s); 
+
 %}
 
 %{

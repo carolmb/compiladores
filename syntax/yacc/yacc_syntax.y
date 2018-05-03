@@ -16,6 +16,8 @@ void add_tab();
 void rem_tab();
 int scopo;
 
+
+
 %} 
 
 %union {Token* token;}         /* Yacc definitions */
@@ -361,7 +363,6 @@ void success() {
 	exit(1);
 }
 
-scopo = 0;
 void add_tab(){
 	scopo++;
 }
@@ -377,6 +378,7 @@ void placeTab(){
 }
 
 int main() {
+	scopo = 0;
 	return yyparse();
 }
 
