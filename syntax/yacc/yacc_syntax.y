@@ -32,10 +32,10 @@ REF AND OR LESSEQ GREATEQ EQUAL NOTEQ DOUBLEDOT
 STRING_VALUE CASSIGN WRITE READ INT REAL BOOL STRING
 %%
 
-program  			: PROG {p(" "); } ID {p("");} ';' {p(";\n");} prevdec {} block {success();}
+program  			: PROG {p(" "); } ID {p("");} ';' {p(" ;\n");} prevdec {} block FINAL {success();}
 					;
 
-block  				: INIT {p("\n"); add_tab();} prevcommand {printf("\n");rem_tab();placeTab();} END {p("");}
+block  				: INIT {p("\n"); add_tab();} prevcommand {printf("\n"); rem_tab(); placeTab();} END {p("");}
 					;
 
 prevdec  			: declaration ';' {p(";\n"); } prevdec {}
@@ -389,6 +389,6 @@ void p(char *s){
 
 void yyerror (char *s) {
 	fprintf(stderr,"%s:", s);
-	//fprintf(stderr,"Line: %d | Column: %d\n ", yylval.token->line, yylval.token->column);
 	fprintf(stderr,"%d:%d: No expected '%s'\n", yylval.token->line, yylval.token->column, yylval.token->value);
+	exit(1); 
 }
