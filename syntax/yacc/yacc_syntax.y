@@ -177,7 +177,7 @@ loop  				: {placeTab();} forloop {}
 forloop  			: FOR {p("");} '(' {p("( ");} forstruct ')' {p(") ");} DO {p(" ");} callcommand 
 					;
 
-forstruct  			: prevfor ';' {p(" ");} expr ';' {p("; ");} posfor {}
+forstruct  			: prevfor ';' {p("; ");} expr ';' {p("; ");} posfor {}
 					;
 
 prevfor 			: varassignlist {}
@@ -388,7 +388,9 @@ void p(char *s){
 }
 
 void yyerror (char *s) {
-	fprintf(stderr,"%s:", s);
-	fprintf(stderr,"%d:%d: No expected '%s'\n", yylval.token->line, yylval.token->column, yylval.token->value);
+	//fprintf(stderr,"%s:", s);
+	//fprintf(stderr,"%d:%d: No expected '%s'\n", yylval.token->line, yylval.token->column, yylval.token->value);
+	printf("\n%s:", s);
+	printf("%d:%d: No expected '%s'\n", yylval.token->line, yylval.token->column, yylval.token->value);
 	exit(1); 
 }
