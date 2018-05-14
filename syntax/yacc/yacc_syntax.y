@@ -2,6 +2,10 @@
 #include "../../token.c"
 #include <stdio.h>     /* C declarations used in actions */
 #include <stdlib.h>
+#include <vector>
+#include <string>
+#include <iostream>
+#include <map>
 
 void yyerror (char *s); 
 
@@ -9,19 +13,34 @@ int yylex();
 
 void success();
 
-void p(char *s);
-void placeTab();
+void addTable(std::string type);
 
-void add_tab();
-void rem_tab();
-int scopo;
+int currentScope;
 
+struct Symbol {
+	std::string name;
+	std::string type;
+	Symbol(std::string n, std::string t) : name(n), type(t) {}
+};
 
+struct Scope {
+	int parentScope;
+	std::vector<Symbol> symbolsTable;
+	Scope(int p, std::vector<Symbol> st) : parentScope(p), symbolsTable(st) {}
+	Scope(){}
+};
 
-%} 
+std::map<int, Scope> scopesTable; 
 
-%union {Token* token;}         /* Yacc definitions */
+std::vector<std::string> prevSymbols;
+std::string prevType;
+
+%}
+
+%union { Token* token; std::string *symbolType; }         /* Yacc definitions */
 %start program
+
+%type <symbolType> type
 
 /*Terminals*/
 %token HEXA_VALUE INT_VALUE REAL_VALUE FINAL BOOL_VALUE CONTINUE 
@@ -32,13 +51,13 @@ REF AND OR LESSEQ GREATEQ EQUAL NOTEQ DOUBLEDOT
 STRING_VALUE CASSIGN WRITE READ INT REAL BOOL STRING
 %%
 
-program  			: PROG {p(" "); } ID {p("");} ';' {p(" ;\n");} prevdec {} block FINAL {success();}
+program  			: PROG ID ';' prevdec block FINAL { success(); }
 					;
 
-block  				: INIT {p("\n"); add_tab();} prevcommand {printf("\n"); rem_tab(); placeTab();} END {p("");}
+block  				: INIT prevcommand END {}
 					;
 
-prevdec  			: declaration ';' {p(";\n"); } prevdec {}
+prevdec  			: declaration ';' prevdec {}
 		  			| {}
 					;
 
@@ -49,82 +68,82 @@ declaration  		: vardec {}
 			  		| abstractiondec {}
 					;
 
-arraydec  			: VECTOR {p(" ");} '[' {p("[ ");} rangelist ']' {p("] ");} OF {p(" ");} type arraydecaux {}
+arraydec  			: VECTOR '[' rangelist ']' OF type arraydecaux {}
 					;
 
-arraydecaux  		: '=' {p("= ");} '(' {p("( ");} expressionlist ')' {p(") ");} {}
+arraydecaux  		: '=' '(' expressionlist ')' {}
 			  		| {}
 					;
 
 rangelist  			: range rangelistaux {}
 					;
 
-rangelistaux  		: ',' {p(", ");} range rangelistaux {}
+rangelistaux  		: ',' range rangelistaux {}
 			  		| {}
 					;
 
-range  				: atomic DOUBLEDOT {p(" ");} atomic {}
+range  				: atomic DOUBLEDOT atomic {}
 					;
 
-vardec  			: {placeTab();} VAR {p(" ");} idlist ':' {p(": ");} varconstruction {}
+vardec  			: VAR idlist ':' varconstruction {}
 					;
 
-varconstruction  	: type decwithassign {}
+varconstruction  	: type decwithassign { addTable(*$1); }
 				  	| arraydec {}
 					;
 
-decwithassign  		: '=' {p("= ");} expr {}
+decwithassign  		: '=' expr {}
 			  		| {}
 					;
 
-usertype  			: {placeTab();} TYPE {p(" ");} ID {p(" ");} CASSIGN {p(" ");} typedec {}
+usertype  			: TYPE ID CASSIGN typedec {}
 					;
 
 typedec  			: arraydec {}
 		  			| typedecaux {}
 					;
 
-typedecaux  		: STRUCT {p("\n"); add_tab();} vardeclist {printf("\n"); rem_tab(); } END {p("");} {}
+typedecaux  		: STRUCT vardeclist END {}
 			  		| atomic typedecauxrange {}
-			  		| '(' {p("( ");} idlist ')' {p(") ");} {}
+			  		| '(' idlist ')' {}
 					;
 
-typedecauxrange		: DOUBLEDOT {p(" ");} atomic {}
+typedecauxrange		: DOUBLEDOT atomic {}
 					| {}
 					;
 
 vardeclist  		: vardec vardeclistaux {}
 					;
 
-vardeclistaux  		: ';' {p(";\n");} vardec vardeclistaux {}
+vardeclistaux  		: ';' vardec vardeclistaux {}
 			  		| {}
 					;
 
-labeldec  			: {placeTab();} LABEL {p(" ");} idlist {}
+labeldec  			: LABEL idlist {}
 					;
 
-constdec  			: {placeTab();} CONST {p(" ");} idlist ':' {p(": ");} type '=' {p("= ");} expr {}
+constdec  			: CONST idlist ':' type '=' expr {}
 					;
 
 abstractiondec  	: procdec {}
 				  	| funcdec {}
 					;
 
-procdec  			: {placeTab();} PROC {p(" ");} ID {p("");} '(' {p("( ");} parameters ')' {p(")\n");add_tab();} prevdec {rem_tab();} block 
+procdec  			: PROC ID '(' parameters ')' prevdec block 
 					;
 
-funcdec  			: {placeTab();} FUNC {p(" ");} ID {p("");} '(' {p("( ");} parameters ')' {p(") ");} ':' {p(": ");} type  {p("\n");add_tab();} prevdec {rem_tab();}  block 
+funcdec  			: FUNC ID '(' parameters ')' ':' type prevdec block 
 					;
 
 parameters  		: paramsaux {}
 			  		| {}
 					;
 
-paramsaux  			: ID {p("");} ':' {p(": ");} type paramslist {}
-		  			| REF {p(" ");} ID {p("");} ':' {p(": ");} type paramslist {}
+paramsaux  			: ID ':' type paramslist {}
+		  			| REF ID ':' type paramslist {}
 					;
 
-paramslist  		: ',' {p(", ");} paramsaux {}
+paramslist  		: ',' paramsaux {}
 			  		| {}
 					;
 
@@ -133,61 +152,61 @@ prevcommand  		: commands {}
 			  		| {}
 					;
 
-callcommand  		: {placeTab();} BREAK {p("");}		
-			  		| {placeTab();} write {}
-			  		| {placeTab();} read {}
+callcommand  		: BREAK {}		
+			  		| write {}
+			  		| read {}
 			  		| loop {}
 			  		| block {}
-			  		| {placeTab();} return {}
-			  		| {placeTab();} CONTINUE {p("");}
-			  		| {placeTab();} id callidbegin {}
-			  		| {placeTab();} calllabel {}
+			  		| return {}
+			  		| CONTINUE {}
+			  		| id callidbegin {}
+			  		| calllabel {}
 			  		| conditional {}
 					;
 
 commands  			: callcommand commandsaux {}
 					;
 
-commandsaux  		: ';' {p(";\n");} commands {}
+commandsaux  		: ';' commands {}
 			  		| {}
 					;
 
-callidbegin  		: ':' {p(":\n");} callcommand {}
-			  		| '=' {p("= ");} expr {}
+callidbegin  		: ':' callcommand {}
+			  		| '=' expr {}
 			  		| {}
 					;
 
-calllabel  			: JUMP {p(" ");} ID {p("");}
+calllabel  			: JUMP ID
 					;
 
-write  				: WRITE {p("");} '(' {p("( ");} expressionlist ')' {p(")");}
+write  				: WRITE '(' expressionlist ')'
 					;
 
-read  				: READ {p("");} '(' {p("( ");} expressionlist ')' {p(")");}
+read  				: READ '(' expressionlist ')'
 					;
 
-return  			: RETURN {p(" ");} expr {}
+return  			: RETURN expr {}
 					;
 
-loop  				: {placeTab();} forloop {}
-	  				| {placeTab();} whileloop {}
-	  				| {placeTab();} repeatloop {}
+loop  				: forloop {}
+	  				| whileloop {}
+	  				| repeatloop {}
 					;
 
-forloop  			: FOR {p("");} '(' {p("( ");} forstruct ')' {p(") ");} DO {p(" ");} callcommand 
+forloop  			: FOR '(' forstruct ')' DO callcommand 
 					;
 
-forstruct  			: prevfor ';' {p("; ");} expr ';' {p("; ");} posfor {}
+forstruct  			: prevfor ';' expr ';' posfor {}
 					;
 
 prevfor 			: varassignlist {}
 		  			| {}
 					;
 
-varassignlist  		: ID {p(" ");} '=' {p("= ");} expr varassignlistaux {}
+varassignlist  		: ID '=' expr varassignlistaux {}
 					;
 
-varassignlistaux  	: ',' {p(", ");} ID {p(" ");} '=' {p("= ");} expr varassignlistaux {}
+varassignlistaux  	: ',' ID '=' expr varassignlistaux {}
 				  	| {}
 					;
 
@@ -198,39 +217,39 @@ posfor  			: posforaux {}
 posforaux  			: commands posforaux2 {}
 					;
 
-posforaux2  		: ',' {p(", ");} commands posforaux2 {}
+posforaux2  		: ',' commands posforaux2 {}
 			  		| {}
 					;
 
-whileloop  			: WHILE {p("");} '(' {p("( ");} expr ')' {p(") ");} DO {p(" ");} callcommand 
+whileloop  			: WHILE '(' expr ')' DO callcommand 
 					;
 
-repeatloop  		: REPEAT {p("\n");add_tab();} commands {rem_tab();printf("\n");placeTab();} UNTIL {p(" ");} expr {}
+repeatloop  		: REPEAT commands UNTIL expr {}
 					;
 
-conditional  		: {placeTab();} ifcond {}
-			 		| {placeTab();} casecond {}
+conditional  		: ifcond {}
+			 		| casecond {}
 					;
 
-ifcond  			: IF {p(" ");} '(' {p("( ");} expr ')' {p(") ");} THEN {p(" ");} callcommand {} ifcondaux {}
+ifcond  			: IF '(' expr ')' THEN callcommand ifcondaux {}
 					;
 
-ifcondaux  			: {printf("\n");placeTab();} ELSE {p(" ");} callcommand 
+ifcondaux  			: ELSE callcommand 
 					| {}
 					;
 					
 					
-casecond  			:  CASE {p("");} '(' {p("( ");} expr ')' {p(") ");} BE {p("\n");add_tab();} caselist casecondaux 
+casecond  			:  CASE '(' expr ')' BE caselist casecondaux 
 					;
 
-casecondaux  		: {printf("\n"); rem_tab(); placeTab();} END {p("");} {}
-			  		| {placeTab();} ELSE {p("\n");}  commands {printf("\n");} END {p("");} {}
+casecondaux  		: END {}
+			  		| ELSE commands END {}
 					;
 
 caselist  			: caseclause caselistaux {}
 					;
 
-caselistaux  		: ';' {p(";\n");} caselistaux2 {}
+caselistaux  		: ';' caselistaux2 {}
 			  		| {}
 					;
 
@@ -238,121 +257,121 @@ caselistaux2  		: caseclause caselistaux {}
 			  		| {}
 					;
 
-caseclause  		: {placeTab();} atomiclist ':' {p(":\n");add_tab();} callcommand {rem_tab();}
+caseclause  		: atomiclist ':' callcommand {}
 					;
 
 expressionlist  	: expr expressionlistaux {}
 					;
 
-expressionlistaux  	: ',' {p(", ");} expr expressionlistaux {}
+expressionlistaux  	: ',' expr expressionlistaux {}
 				  	| {}
 					;
-
+	
 expr				: andfact orfact {}
 					;
 
-orfact				: OR {p(" ");} andfact orfact {}
+orfact				: OR andfact orfact {}
 					| {}
 					;
 
 andfact				: notfact andfactaux {}
 					;
 		
-andfactaux			: AND {p(" ");} notfact andfactaux {}
+andfactaux			: AND notfact andfactaux {}
 					| {}
 					;
 
-notfact				: '!' {p("!");} expreq {}
+notfact				: '!' expreq {}
 					| expreq {}
 					;
 
 expreq				: numericexpr expreqaux {}
 					;
 
-expreqaux			: EQUAL {p(" ");} numericexpr expreqaux {}
-					| NOTEQ {p(" ");} numericexpr expreqaux {}
-					| '>' {p("> ");} numericexpr expreqaux {}
-					| '<' {p("< ");} numericexpr expreqaux {}
-					| LESSEQ {p(" ");} numericexpr expreqaux {}
-					| GREATEQ {p(" ");} numericexpr expreqaux {}
+expreqaux			: EQUAL numericexpr expreqaux {}
+					| NOTEQ numericexpr expreqaux {}
+					| '>' numericexpr expreqaux {}
+					| '<' numericexpr expreqaux {}
+					| LESSEQ numericexpr expreqaux {}
+					| GREATEQ numericexpr expreqaux {}
 					| {}
 					;
 			
 numericexpr			: exprmul exprsum {}
 					;
 
-exprsum				: '+' {p("+ ");} exprmul exprsum {}
-					| '-' {p("- ");} exprmul exprsum {}
+exprsum				: '+' exprmul exprsum {}
+					| '-' exprmul exprsum {}
 					| {}
 					;
 
 exprmul				: simpleexpr exprmulaux {}
 					;
 			
-exprmulaux			: '*' {p("* ");} simpleexpr exprmulaux {}
-					| '/' {p("/ ");} simpleexpr exprmulaux {}
+exprmulaux			: '*' simpleexpr exprmulaux {}
+					| '/' simpleexpr exprmulaux {}
 					| {}
 					;
 			
 simpleexpr			: atomic optrange {}
 					| optunary optbracket {}
-					| '(' {p("( ");} expr ')' {p(") ");} {}
+					| '(' expr ')' {}
 					;
        	
-optrange			: DOUBLEDOT {p("");} atomic {}
+optrange			: DOUBLEDOT atomic {}
 					| {}
 					;
         		
-optunary			: '-' {p("- ");} {}
-					| '+' {p("+ ");} {}
+optunary			: '-' {}
+					| '+' {}
 					;
 			
-optbracket			: '(' {p("( ");} expr ')' {p(") ");} {}
+optbracket			: '(' expr ')' {}
 					| atomic {}
 					;
 
-idlist 				: ID {p(" ");} idlistaux {}
+idlist 				: ID { prevSymbols.push_back(yylval.token->value); } idlistaux
 					;
 
-idlistaux 			: ',' {p(", ");} ID {p(" ");} idlistaux {}
+idlistaux 			: ',' ID { prevSymbols.push_back(yylval.token->value); } idlistaux
 		 			| {}
 					;
 
-type 				: INT 			{p(" ");} {}
- 					| REAL 			{p(" ");} {}
-					| BOOL			{p(" ");} {}
- 					| STRING 		{p(" ");} {}
- 					| ID 			{p(" ");} {}
+type 				: INT { $$ = new std::string("int"); }
+ 					| REAL { $$ = new std::string("real"); }
+					| BOOL { $$ = new std::string("bool"); }
+ 					| STRING { $$ = new std::string("str"); }
+ 					| ID { $$ = new std::string(yylval.token->value); }
  					;
 
-literal				: INT_VALUE		{p(" ");} {}
-					| REAL_VALUE	{p(" ");} {}
-					| HEXA_VALUE	{p(" ");} {}
-					| BOOL_VALUE	{p(" ");} {}
-					| STRING_VALUE	{p(" ");} {}
+literal				: INT_VALUE	{}
+					| REAL_VALUE {}
+					| HEXA_VALUE {}
+					| BOOL_VALUE {}
+					| STRING_VALUE {}
 					;
 
 atomic				: literal {}
 					| id {}
 					;
 
-id					: ID {p("");} idaux {}
+id					: ID idaux {}
 					;
 
-idaux				: '[' {p("[ ");} expressionlist ']' {p("] ");} {}
-					| '.' {p(".");} id {}
-					| '(' {p("( ");} idauxexpraux {}
-					| {printf(" ");}
+idaux				: '[' expressionlist ']' {}
+					| '.' id {}
+					| '(' idauxexpraux {}
+					|
 					;
 					
-idauxexpraux		: expressionlist ')' {p(") ");} {}
-					| ')' {p(") ");} {}
+idauxexpraux		: expressionlist ')' {}
+					| ')' {}
 					;	
 			
 atomiclist  		: atomic atomiclistaux {}
 					;
 				
-atomiclistaux		: ',' {p(", ");} atomic atomiclistaux {}
+atomiclistaux		: ',' atomic atomiclistaux {}
 					| {}
 					;
 		
@@ -363,34 +382,26 @@ void success() {
 	exit(1);
 }
 
-void add_tab(){
-	scopo++;
-}
-void rem_tab(){
-	scopo--;
-}
-
-void placeTab(){
-	int i;
-	for (i = 0; i < scopo; i++){
-		printf("\t");
-	}
-}
-
-int main() {
-	scopo = 0;
-	return yyparse();
-}
-
-void p(char *s){
-	printf("%s%s", yylval.token->value, s);
-	yylval.token->value = "";
-}
-
 void yyerror (char *s) {
-	//fprintf(stderr,"%s:", s);
-	//fprintf(stderr,"%d:%d: No expected '%s'\n", yylval.token->line, yylval.token->column, yylval.token->value);
 	printf("\n%s:", s);
 	printf("%d:%d: No expected '%s'\n", yylval.token->line, yylval.token->column, yylval.token->value);
 	exit(1); 
+}
+
+int main() {
+	currentScope = -1;
+	scopesTable[++currentScope] = Scope(currentScope, std::vector<Symbol>());
+	return yyparse();
+}
+
+void addTable(std::string type) {
+	std::cout << "Scope: " << currentScope << std::endl;
+	
+	for(auto it = prevSymbols.begin(); it != prevSymbols.end(); it++) {
+		Symbol sym(*it, type);
+		scopesTable[currentScope].symbolsTable.push_back(sym);
+		std::cout << sym.name << ": " << sym.type << std::endl;
+	}
+	std::cout << std::endl;
+	prevSymbols.clear();
 }

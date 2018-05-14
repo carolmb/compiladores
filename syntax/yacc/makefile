@@ -1,5 +1,5 @@
 yacc: lex.yy.c y.tab.c
-	gcc -g lex.yy.c y.tab.c -o yacc_syn -lfl
+	g++ -std=c++11 -g -Wno-write-strings lex.yy.c y.tab.c -o yacc_syn -lfl 
 
 lex.yy.c: y.tab.c ../../lex/yacc_analyzer.lex
 	lex ../../lex/yacc_analyzer.lex

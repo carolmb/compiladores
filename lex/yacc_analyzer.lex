@@ -1,13 +1,12 @@
 %{
 	//LIBRARY
     #include "../../token.c"
+    #include <string>
     #include "y.tab.h"
+
     #include <stdlib.h>
-    //DEFINE
-    //#define YY_DECL Token* yylex(void)
     
 	//VARIABLES
-	//int yylex();
     int lines = 1;
     int column = 1;
 
@@ -16,14 +15,11 @@
 %}
 
 %{
-	//FUNCTIONS AND PROCEDURES
-    // int baseBlock ( int caracter ) {
-    //return caracter;
-    //}
     
 	int baseBlock ( int token_id, const char* name) {
 	    
-	    Token *t = malloc(sizeof(Token));
+	    //Token *t = malloc(sizeof(Token));
+	    Token *t = new Token();
 	    
 	    t->key = token_id;
 	    t->name = name;
@@ -137,8 +133,8 @@ SCOMMENT        \*\*.*
 
 "(*"                 BEGIN(COMMENT2);
 <COMMENT2>[^)*\n]+
-<COMMENT2>\n            ++lines;
-<COMMENT2><<EOF>>    yyerror("EOF in comment");
+<COMMENT2>\n         ++lines;
+<COMMENT2><<EOF>>    yyerror((char *)"EOF in comment");
 <COMMENT2>"*)"       BEGIN(INITIAL);
 <COMMENT2>[*)] 
 
@@ -351,10 +347,6 @@ SCOMMENT        \*\*.*
 .           { 	fprintf(stderr,"lexical error:%d:%d: No expected '%s'\n", lines, column, yytext); exit(1); }
 
 %%
-
-//Token* getToken(){
-//    return yylex();
-//}
 
 void openFile(int argc, char **argv){
     ++argv, --argc;  /* skip over program name */

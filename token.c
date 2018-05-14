@@ -5,7 +5,7 @@
 
 //STRUCTS
 typedef struct {
-    KEYWORD key;
+    int key;
     const char* name;
     const char* value;
     int line;
