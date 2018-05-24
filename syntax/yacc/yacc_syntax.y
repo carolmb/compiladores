@@ -12,31 +12,17 @@
 void yyerror (char *s); 
 int yylex();
 void success();
-void initTable();
 std::string get_type(std::string label);
 void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool is_const);
-void initTable();
-void addScope();
-void removeScope();
+
 void yyerrorDuplicateIdentifier (std::string sym_name);
-
-// TYPES --------------
-
-std::map<std::string, UserType> userTypes;
 
 // SCOPES --------------
 
-struct Symbol {
-	std::string name;
-	std::vector<Symbol*> simbolos;
-	std::string type;
-	Symbol(std::string n, std::string t) : name(n), type(t) {}
-};
-
 struct Scope {
 	//Scope* parent
-	std::map<std::string, Symbol> symbolsTable;
-	Scope(std::vector<Symbol> st) : symbolsTable(st) {}
+	std::map<std::string, Symbol*> symbolsTable;
+	Scope(std::map<std::string, Symbol*> st) : symbolsTable(st) {}
 	Scope(){}
 };
 
@@ -48,9 +34,7 @@ void initTable();
 
 // VARS --------------
 
-std::vector<std::string> prevSymbols;
-std::string prevType;
-void addTable(std::string type);
+void addTable(std::string label, Symbol *sym);
 
 %}
 
@@ -67,7 +51,7 @@ void addTable(std::string type);
 %start program
 
 %type <varDec> vardec constdec
-%type <typeName> type varconstruction arraydec
+%type <typeName> type varconstruction arraydec typedecauxrange literal
 %type <symbolType> typedecaux typedec
 %type <structFields> vardeclist vardeclistaux
 %type <idList> idlist idlistaux
@@ -92,17 +76,17 @@ prevdec  			: declaration ';' prevdec {}
 		  			| {}
 					;
 
-declaration  		: vardec { std::cout << "VARDEC" << std::endl; addVarDecList($1, false); }
+declaration  		: vardec { std::cout << "VARDEC" << std::endl; addVarDecList(*$1, false); }
 			  		| usertype { std::cout << "USERTYPE" << std::endl; }
 			  		| labeldec {}
-			  		| constdec { std::cout << "USERTYPE" << std::endl; addVarDecList($1, true); }
+			  		| constdec { std::cout << "USERTYPE" << std::endl; addVarDecList(*$1, true); }
 			  		| abstractiondec { std::cout << "ABSTRACTIONDEC" << std::endl; }
 					;
 
-arraydec  			: VECTOR '[' rangelist ']' OF type arraydecaux { $$ = new std::string("vetor"); // adiciona o vetor c nome vxx na tabela e só retorna seu nome (verifica tipos) }
+arraydec  			: VECTOR '[' rangelist ']' OF type arraydecaux { $$ = new std::string("vetor"); /*adiciona o vetor c nome vxx na tabela e só retorna seu nome (verifica tipos) */ }
 					;
 
-arraydecaux  		: '=' '(' expressionlist ')' { // retorna tamanho e tipo}
+arraydecaux  		: '=' '(' expressionlist ')' { /* retorna tamanho e tipo */ }
 			  		| {}
 					;
 
@@ -116,7 +100,7 @@ rangelistaux  		: ',' range rangelistaux {}
 range  				: atomic DOUBLEDOT atomic {}
 					;
 
-vardec  			: VAR idlist ':' varconstruction { $$ = std::make_pair($2, $4); }
+vardec  			: VAR idlist ':' varconstruction { *$$ = std::make_pair(*$2, *$4); }
 					;
 
 varconstruction  	: type decwithassign { $$ = $1; }
@@ -130,52 +114,52 @@ decwithassign  		: '=' expr {}
 usertype  			: TYPE ID CASSIGN typedec {}
 					;
 
-typedec  			: arraydec { // cria o Type }
-		  			| typedecaux { // já é Type $$ = $1;}
+typedec  			: arraydec { /* cria o Type*/ }
+		  			| typedecaux { /* já é Type $$ = $1; */ }
 					;
 
 typedecaux  		: STRUCT vardeclist END { $$ = new UserType();  }
-			  		| literal DOUBLEDOT literal { if( $1!=$3 || $1!="int") { yyerror("literal error"); } else { $$ = new RangeType(); } }
-			  		| id typedecauxrange { if($2 == "") { // pega tipo da variavel na tabela de símbolos } else { $$ = new RangeType(); } }
+			  		| literal DOUBLEDOT literal { $$ = new RangeType(); }
+			  		| id typedecauxrange { $$ = new RangeType(); }
 			  		;
 
-typedecauxrange		: DOUBLEDOT id { $$ = id; }
-					| { $$ = ""; }
+typedecauxrange		: DOUBLEDOT id { $$ = new std::string(""); }
+					| { $$ = new std::string(""); }
 					;
 
 vardeclist  		: vardec vardeclistaux {}
 					;
 
 vardeclistaux  		: ';' vardec vardeclistaux {}
-			  		| { $$ = }
+			  		| {}
 					;
 
 labeldec  			: LABEL idlist {}
 					;
 
-constdec  			: CONST idlist ':' type '=' expr { $$ = std::make_pair($2, $4); }
+constdec  			: CONST idlist ':' type '=' expr { *$$ = std::make_pair(*$2, *$4); }
 					;
 
 abstractiondec  	: procdec {}
 				  	| funcdec {}
 					;
 
-procdec  			: PROC { addScope(); } ID '(' parameters ')' { addTable($2, AbstractionSymbol("", $4)); } prevdec block { removeScope(); } 
+procdec  			: PROC { addScope(); } ID '(' parameters ')' { Symbol *ab = new AbstractionSymbol("", *$4); addTable($2.token->value, ab); } prevdec block { removeScope(); } 
 					;
 
-funcdec  			: FUNC { addScope(); } ID '(' parameters ')' ':' type { addTable($2, AbstractionSymbol($7, $4)); } prevdec block { removeScope(); }
+funcdec  			: FUNC { addScope(); } ID '(' parameters ')' ':' type { Symbol *ab = new AbstractionSymbol("", *$4); addTable($2.token->value, ab); } prevdec block { removeScope(); }
 					;
 
 parameters  		: paramsaux { $$ = $1; }
-			  		| { $$ = std::vector<Field>(); }
+			  		| { $$ = new std::vector<Field>(); }
 					;
 
-paramsaux  			: ID ':' type paramslist { $4.insert($4.begin(), Field($1, $3)); $$ = $4; }
-		  			| REF ID ':' type paramslist { $4.insert($4.begin(), Field($1, $3)); $$ = $4; }
+paramsaux  			: ID ':' type paramslist { $$ = $4; $4->insert($4->begin(), Field($1.token->value, *$3)); }
+		  			| REF ID ':' type paramslist { $$ = $5; $5->insert($5->begin(), Field($2.token->value, *$4)); }
 					;
 
 paramslist  		: ',' paramsaux { $$ = $2; }
-			  		| { $$ = std::vector<Field>(); }
+			  		| { $$ = new std::vector<Field>(); }
 					;
 
 
@@ -361,10 +345,10 @@ optbracket			: '(' expr ')' {}
 					| atomic {}
 					;
 
-idlist 				: ID idlistaux { $$ = $2; $$->insert($$->begin(), $1->token->value); } 
+idlist 				: ID idlistaux { $$ = $2; $$->insert($$->begin(), $1.token->value); } 
 					;
 
-idlistaux 			: ',' ID idlistaux  { $$ = $3; $$->insert($$->begin(), $2->token->value); // vai dar ruim aqui} 
+idlistaux 			: ',' ID idlistaux  { $$ = $3; $$->insert($$->begin(), $2.token->value); } 
 		 			| { $$ = new std::vector<std::string>(); }
 					;
 
@@ -372,7 +356,7 @@ type 				: INT { $$ = new std::string("int"); }
  					| REAL { $$ = new std::string("real"); }
 					| BOOL { $$ = new std::string("bool"); }
  					| STRING { $$ = new std::string("str"); }
- 					| ID { $$ = new std::string(yylval.token->value); // TODO verify if label is a valid user type }
+ 					| ID { $$ = new std::string(yylval.token->value); /* TODO verify if label is a valid user type */ }
  					;
 
 literal				: INT_VALUE	{ $$ = new std::string("int"); }
@@ -414,7 +398,7 @@ void success() {
 }
 
 void addScope() {
-	Scope new_scope = Scope(std::vector<Symbol>()); 
+	Scope new_scope = Scope(std::map<std::string, Symbol*>()); 
 	scopesTable.push_back(new_scope);
 }
 
@@ -435,47 +419,49 @@ void yyerrorDuplicateIdentifier (std::string sym_name) {
 }
 
 void initTable(){
-//TODO
+ /* TODO */
 }
 
 int main() {
 	initTable();
-	scopesTable.push_back(Scope(std::vector<Symbol>()));
+	scopesTable.push_back(Scope(std::map<std::string, Symbol*>()));
 	return yyparse();
 }
 
 void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool is_const) { 
-	std::vector<std::string> idlist = vardeclist->first;
-	std::string type_name = vardeclist->second;
-	VariableSymbol var(type_name, is_const);
+	std::vector<std::string> idlist = vardeclist.first;
+	std::string type_name = vardeclist.second;
+	Symbol *var = new VariableSymbol(type_name, is_const);
 	for(auto id = idlist.begin(); id != idlist.begin(); id++) {
-		addTable(id, var);
+		addTable(*id, var);
 	}
 }
 
 std::string get_type(std::string label) {
-	std::map<std::string, Symbol> symbolsTable = scopesTable[currentScope].symbolsTable;
+	int currentScope = scopesTable.size()-1;
+	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
 	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-		if(itSym->first == label && itSym->second.meaning == "variable") {
-			return itSym->second;
+		if(itSym->first == label && itSym->second->get_meaning() == "variable") {
+			Symbol *bla = itSym->second;
+			VariableSymbol *var = dynamic_cast<VariableSymbol*>(bla);
+			return var->get_varType();
 		}
 	}
 }
 
-void addTable(std::string label, Symbol sym) {
+void addTable(std::string label, Symbol *sym) {
+	int currentScope = scopesTable.size()-1;
 	std::cout << "Scope: " << currentScope << std::endl;
 	
-	// avoid label redeclaration
-	std::map<std::string, Symbol> symbolsTable = scopesTable[currentScope].symbolsTable;
+	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
 	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
 		if(itSym->first == label){
-			yyerrorDuplicateIdentifier(itSym->name);
+			yyerrorDuplicateIdentifier(label);
 		}
 	}
 	
-	// put the symbol into the symbolsTable
 	symbolsTable[label] = sym;
 	scopesTable[currentScope].symbolsTable = symbolsTable;
 	
-	std::cout << "Symbol added: " << label << ": " << sym.type << std::endl;
+	std::cout << "Symbol added: " << label << ": " << sym->get_meaning() << std::endl;
 }

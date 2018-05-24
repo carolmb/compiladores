@@ -10,20 +10,24 @@
 // Field --------------------------------------------
 	
 class Field {
-	std::string fieldName;
-	std::string typeField;
-	bool isConst;
-	Field() {}
-	Field(std::string n, std::string t) : fieldName(n), typeField(t), isConst(false) {}
-	Field(std::string n, std::string t, bool c) : fieldName(n), typeField(t), isConst(c) {}
+	private:
+		std::string fieldName;
+		std::string typeField;
+		bool isConst;
+	
+	public:
+		Field() {}
+		Field(std::string n, std::string t) : fieldName(n), typeField(t), isConst(false) {}
+		Field(std::string n, std::string t, bool c) : fieldName(n), typeField(t), isConst(c) {}
 };
 
 // Symbol -------------------------------------------
 
 class Symbol {
-	public:
+	private:
 		std::string meaning;
 		
+	public:
 		Symbol(){}
 		Symbol(std::string m) : meaning(m) {}
 		
@@ -35,47 +39,51 @@ class Symbol {
 		}
 		
 		std::string get_meaning() { return meaning; }
+		virtual ~Symbol() = default;
 };
 
 class AbstractionSymbol : public Symbol {
-	public:
-		AbstractionSymbol() { 
-			this->meaning = "abstraction";
-		}
-		AbstractionSymbol(std::string rt, std::vector<Field> p) { 
-			this->meaning = "abstraction";
-			this->returnType = rt;
-			this->parameters = p;
-		}
+	private:
 		std::string returnType;
 		std::vector<Field> parameters;
+
+	public:
+		AbstractionSymbol() : Symbol("abstraction") {}
+
+		AbstractionSymbol(std::string rt, std::vector<Field> p) 
+			: Symbol("abstraction"), returnType(rt), parameters(p) {}
 		
 		std::string get_returnType() { return returnType; }
 		std::vector<Field> get_parameters() { return parameters; }
 };
 
 class VariableSymbol : public Symbol {
-	public:	
-		VariableSymbol(std::string t, bool c) : Symbol("variable"), varType(t), isConst(c) {}
+	private:
 		std::string varType;
 		bool isConst;
+		
+	public:	
+		VariableSymbol(std::string t, bool c) : Symbol("variable"), varType(t), isConst(c) {}
 		std::string get_varType() { return varType; }
 };
 
 // Type ---------------------------------------------
 
 class Type : public Symbol {
-	public:
+	protected: 
 		std::string name;
-		Type(std::string n) : Symbol("type"), name(n) {}
 		
+	public:
+		Type(std::string n) : Symbol("type"), name(n) {}
+	
 		bool compareType(Type other) {
-			if(name == other.name) {
+			if(this->name == other.get_name()) {
 				return true;
 			} else {
 				return false;
 			}
 		}
+		std::string get_name() { return name; }
 };
 
 class PrimitiveType : public Type {
@@ -83,7 +91,7 @@ class PrimitiveType : public Type {
 		PrimitiveType(std::string n) : Type(n) {}
 		
 		bool compareType(Type other) {
-			if(name == other.name) {
+			if(this->name == other.get_name()) {
 				return true; // ver cast 
 			}
 			return false;
@@ -91,42 +99,40 @@ class PrimitiveType : public Type {
 };
 
 class VectorType : public Type {
-	public:
+	private:
 		std::string fieldType;
 		int size;
 		
+	public:
 		VectorType() : Type("vector") {}
-		VectorType(Type fieldType) : Type("vector"), fieldType(fieldType) {}
-		
-		bool compareType(Type other) {
-			if(fieldType == other.fieldType && size == other.size) {
-				return true;
-			}
-			return false;
-		}
+		VectorType(std::string t, int s) : Type("vector"), fieldType(t), size() {}
 };
 
 class UserType : public Type {
-	public: 
+	private: 
 		std::vector<Field> fields;
-		
-		UserType() {}
+
+	public:
+		UserType() : Type("temp") {} 
 		UserType(std::string n, std::vector<Field> f) : Type(n), fields(f) {}
 };
 
 class EnumType : public Type {
-	public:
+	private:
 		std::vector<std::string> fieldNames;
-		EnumType(std::vector fs) : fieldNames(fs) {}
+	
+	public:
+		EnumType(std::string n, std::vector<std::string> fs) : Type(n), fieldNames(fs) {}
 };
 
 class RangeType : public Type {
-	public:
+	private:
 		std::string father; // inteiro ou EnumType
 		std::string begin;
 		std::string end;
 		
-		RangeType() : {}
+	public:
+		RangeType() : Type("rangeTemp") {}
 		RangeType(std::string n, std::string f, std::string b, std::string e) : 
 			Type(n), father(f), begin(b), end(e) {}
 };
