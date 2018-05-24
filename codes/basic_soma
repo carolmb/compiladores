@@ -1,9 +1,28 @@
 prog basic_soma
 ;
 
-var x, y, soma : inteiro;
+func bla(var b : int) : int  
+	var a : real
+inicio 
+
+tipo TDU := registro 
+    var nome : texto; 
+    var idade : inteiro;
+    var tdu : TDU2
+fim;  
+
+** VAR DECLARATION 
+var tdu : TDU;
+var nome : texto;
+
+fim
+
+var a, x, y, soma : inteiro;
 
 inicio
+	nome = tdu.nome;
+
+	bla(2);
 	x = 5;
 	escreva(x)
 fim

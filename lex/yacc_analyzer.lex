@@ -2,6 +2,10 @@
 	//LIBRARY
     #include "../../token.c"
     #include <string>
+    #include <vector>
+    #include <utility>
+    
+    #include "../../utilities.h"
     #include "y.tab.h"
 
     #include <stdlib.h>
