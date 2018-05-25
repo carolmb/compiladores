@@ -31,15 +31,15 @@ class Symbol {
 		Symbol(){}
 		Symbol(std::string m) : meaning(m) {}
 		
-		bool compare(Symbol other) {
-			if(this->meaning == other.get_meaning()){
-				return true;
-			}	
-			return false;
-		}
-		
-		std::string get_meaning() { return meaning; }
+		std::string get_meaning() const { return meaning; }
 		virtual ~Symbol() = default;
+
+		virtual std::string to_string() const = 0;
+
+		friend std::ostream &operator<<(std::ostream &os, Symbol const &s) {
+			os << "Meaning: " << s.get_meaning() << " " << s.to_string() << std::endl;
+			return os;
+		}
 };
 
 class AbstractionSymbol : public Symbol {
@@ -55,6 +55,10 @@ class AbstractionSymbol : public Symbol {
 		
 		std::string get_returnType() { return returnType; }
 		std::vector<Field> get_parameters() { return parameters; }
+
+		std::string to_string() {
+			return "Abstraction: return type: " + returnType + " Params number: " + std::to_string(parameters.size());
+		}
 };
 
 class VariableSymbol : public Symbol {
@@ -65,6 +69,10 @@ class VariableSymbol : public Symbol {
 	public:	
 		VariableSymbol(std::string t, bool c) : Symbol("variable"), varType(t), isConst(c) {}
 		std::string get_varType() { return varType; }
+
+		std::string to_string() const {
+			return "Variable: type: " + varType;
+		}
 };
 
 // Type ---------------------------------------------
@@ -76,22 +84,27 @@ class Type : public Symbol {
 	public:
 		Type(std::string n) : Symbol("type"), name(n) {}
 	
-		bool compareType(Type other) {
-			if(this->name == other.get_name()) {
+		bool compareType(Type *other) {
+			if(this->name == other->get_name()) {
 				return true;
 			} else {
 				return false;
 			}
 		}
-		std::string get_name() { return name; }
+
+		std::string get_name() const { return name; }
+
+		std::string to_string() const {
+			return "Variable dec: name: " + get_name();
+		}
 };
 
 class PrimitiveType : public Type {
 	public:
 		PrimitiveType(std::string n) : Type(n) {}
 		
-		bool compareType(Type other) {
-			if(this->name == other.get_name()) {
+		bool compareType(Type *other) {
+			if(this->name == other->get_name()) {
 				return true; // ver cast 
 			}
 			return false;

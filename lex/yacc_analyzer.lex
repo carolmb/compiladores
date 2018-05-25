@@ -4,6 +4,7 @@
     #include <string>
     #include <vector>
     #include <utility>
+    #include <string.h>
     
     #include "../../utilities.h"
     #include "y.tab.h"
@@ -22,12 +23,11 @@
     
 	int baseBlock ( int token_id, const char* name) {
 	    
-	    //Token *t = malloc(sizeof(Token));
 	    Token *t = new Token();
 	    
 	    t->key = token_id;
 	    t->name = name;
-	    t->value = yytext;
+	    t->value = strdup(yytext);
 	    t->line = lines;
 	    t->column = column;
 	    
@@ -319,7 +319,7 @@ SCOMMENT        \*\*.*
  
 {SEMICOMMA}	{ return yytext[0];} 
  
-{COMMA}		{return yytext[0]; } 
+{COMMA}		{ return yytext[0]; } 
  
 {COLON}		{return yytext[0];} 
  

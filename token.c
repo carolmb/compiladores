@@ -1,6 +1,7 @@
 #ifndef _TOKEN_
 #define _TOKEN_
 
+#include <string>
 #include "constants.h"
 
 //STRUCTS

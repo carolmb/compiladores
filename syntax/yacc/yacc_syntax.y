@@ -100,7 +100,7 @@ rangelistaux  		: ',' range rangelistaux {}
 range  				: atomic DOUBLEDOT atomic {}
 					;
 
-vardec  			: VAR idlist ':' varconstruction { *$$ = std::make_pair(*$2, *$4); }
+vardec  			: VAR idlist ':' varconstruction { $$ = new std::pair<std::vector<std::string>, std::string>(*$2, *$4); }
 					;
 
 varconstruction  	: type decwithassign { $$ = $1; }
@@ -144,18 +144,18 @@ abstractiondec  	: procdec {}
 				  	| funcdec {}
 					;
 
-procdec  			: PROC { addScope(); } ID '(' parameters ')' { Symbol *ab = new AbstractionSymbol("", *$4); addTable($2.token->value, ab); } prevdec block { removeScope(); } 
+procdec  			: PROC { addScope(); } ID '(' parameters ')' { /* Symbol *ab = new AbstractionSymbol("", *$4); addTable($2.token->value, ab);*/ } prevdec block { removeScope(); } 
 					;
 
-funcdec  			: FUNC { addScope(); } ID '(' parameters ')' ':' type { Symbol *ab = new AbstractionSymbol("", *$4); addTable($2.token->value, ab); } prevdec block { removeScope(); }
+funcdec  			: FUNC { addScope(); } ID '(' parameters ')' ':' type { /* Symbol *ab = new AbstractionSymbol("", *$4); addTable($2.token->value, ab);*/ } prevdec block { removeScope(); }
 					;
 
 parameters  		: paramsaux { $$ = $1; }
 			  		| { $$ = new std::vector<Field>(); }
 					;
 
-paramsaux  			: ID ':' type paramslist { $$ = $4; $4->insert($4->begin(), Field($1.token->value, *$3)); }
-		  			| REF ID ':' type paramslist { $$ = $5; $5->insert($5->begin(), Field($2.token->value, *$4)); }
+paramsaux  			: ID ':' type paramslist { $4->insert($4->begin(), Field($1.token->value, *$3)); $$ = $4; }
+		  			| REF ID ':' type paramslist { $5->insert($5->begin(), Field($2.token->value, *$4)); $$ = $5; }
 					;
 
 paramslist  		: ',' paramsaux { $$ = $2; }
@@ -348,7 +348,7 @@ optbracket			: '(' expr ')' {}
 idlist 				: ID idlistaux { $$ = $2; $$->insert($$->begin(), $1.token->value); } 
 					;
 
-idlistaux 			: ',' ID idlistaux  { $$ = $3; $$->insert($$->begin(), $2.token->value); } 
+idlistaux 			: ',' ID idlistaux { $$ = $3; $$->insert($$->begin(), $2.token->value); } 
 		 			| { $$ = new std::vector<std::string>(); }
 					;
 
@@ -397,15 +397,6 @@ void success() {
 	exit(1);
 }
 
-void addScope() {
-	Scope new_scope = Scope(std::map<std::string, Symbol*>()); 
-	scopesTable.push_back(new_scope);
-}
-
-void removeScope() {
-	scopesTable.pop_back();
-}
-
 void yyerror (char *s) {
 	printf("\n%s:", s);
 	printf("%d:%d: No expected '%s'\n", yylval.token->line, yylval.token->column, yylval.token->value);
@@ -418,21 +409,34 @@ void yyerrorDuplicateIdentifier (std::string sym_name) {
 	exit(1); 
 }
 
+/*
+	SCOPES
+*/
+void addScope() {
+	Scope new_scope = Scope(std::map<std::string, Symbol*>()); 
+	scopesTable.push_back(new_scope);
+}
+
+void removeScope() {
+	scopesTable.pop_back();
+}
+
 void initTable(){
- /* TODO */
+	/* TODO */
+	scopesTable.push_back(Scope(std::map<std::string, Symbol*>()));
 }
 
 int main() {
 	initTable();
-	scopesTable.push_back(Scope(std::map<std::string, Symbol*>()));
 	return yyparse();
 }
 
 void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool is_const) { 
+	std::cout << "aqui" << std::endl;
 	std::vector<std::string> idlist = vardeclist.first;
 	std::string type_name = vardeclist.second;
 	Symbol *var = new VariableSymbol(type_name, is_const);
-	for(auto id = idlist.begin(); id != idlist.begin(); id++) {
+	for(auto id = idlist.begin(); id != idlist.end(); id++) {
 		addTable(*id, var);
 	}
 }
@@ -449,6 +453,16 @@ std::string get_type(std::string label) {
 	}
 }
 
+void print_table() {
+	std::cout << "print_table begin" << std::endl;
+	int currentScope = scopesTable.size()-1;
+	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
+	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
+		std::cout << itSym->first << " " << itSym->second << std::endl;
+	}
+	std::cout << "print_table end" << std::endl;
+}
+
 void addTable(std::string label, Symbol *sym) {
 	int currentScope = scopesTable.size()-1;
 	std::cout << "Scope: " << currentScope << std::endl;
@@ -463,5 +477,5 @@ void addTable(std::string label, Symbol *sym) {
 	symbolsTable[label] = sym;
 	scopesTable[currentScope].symbolsTable = symbolsTable;
 	
-	std::cout << "Symbol added: " << label << ": " << sym->get_meaning() << std::endl;
+	std::cout << "Symbol added called '" << label << "' (" << sym->get_meaning() << ")" << std::endl;
 }
