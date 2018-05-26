@@ -52,7 +52,7 @@ class Symbol {
 		virtual std::string to_string() const = 0;
 
 		friend std::ostream &operator<<(std::ostream &os, Symbol const &s) {
-			os << "Meaning: " << s.getMeaning() << " " << s.to_string() << std::endl;
+			os << "[Symbol] " << s.to_string();
 			return os;
 		}
 
@@ -74,7 +74,7 @@ class AbstractionSymbol : public Symbol {
 		std::vector<Field> getParameters() { return parameters; }
 
 		std::string to_string() {
-			return "Abstraction: return type: " + returnType + " Params number: " + std::to_string(parameters.size());
+			return "(Abstraction) return type: " + returnType + " params number: " + std::to_string(parameters.size());
 		}
 
 		bool compare(Symbol *s) {
@@ -93,7 +93,7 @@ class VariableSymbol : public Symbol {
 		std::string getVarType() { return varType; }
 
 		std::string to_string() const {
-			return "Variable: type: " + varType;
+			return "(Variable) type: " + varType;
 		}
 
 		bool getIsConst() { return isConst; }
@@ -131,7 +131,7 @@ class Type : public Symbol {
 		std::string getName() const { return name; }
 
 		std::string to_string() const {
-			return "Type declaration " + getName();
+			return "(Type declaration) nameType: " + getName();
 		}
 };
 
@@ -167,7 +167,7 @@ class UserType : public Type {
 		std::vector<Field> fields;
 
 	public:
-		UserType() : Type("temp") {} 
+		UserType() : Type("userType") {} 
 		UserType(std::string n, std::vector<Field> f) : Type(n), fields(f) {}
 };
 

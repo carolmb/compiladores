@@ -1,9 +1,10 @@
 prog basic_soma
 ;
 
-var a, x, y, soma : inteiro;
-
 tipo arr1 := vetor[4 .. 10] de texto;
+
+var a : arr1;
+var b : vetor[4 .. 10] de texto;
 
 inicio
 fim

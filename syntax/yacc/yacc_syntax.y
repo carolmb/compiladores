@@ -38,12 +38,14 @@ std::string searchElementInTableBySymbol(Symbol *symbol);
 
 // VARS --------------
 
-int v_index = 0;
+int vIndex = 0;
 
 void addSymbol(std::string label, Symbol *sym);
 void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool is_const);
 std::string addVec(int size, std::string expectedType, std::vector<std::string> *initTypes);
 int rangeSize(TypeValue *first, TypeValue *second);
+void addUserType(std::string label, std::string name);
+std::string verifyUsertype(std::string label);
 
 %}
 
@@ -61,7 +63,7 @@ int rangeSize(TypeValue *first, TypeValue *second);
 %start program
 
 %type <varDec> vardec constdec
-%type <typeName> type varconstruction arraydec typedecauxrange expr typedec typedecaux
+%type <typeName> type varconstruction arraydec typedecauxrange expr
 %type <structFields> vardeclist vardeclistaux
 %type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux
 %type <fields> paramslist paramsaux parameters
@@ -87,11 +89,11 @@ prevdec  			: declaration ';' prevdec {}
 		  			| {}
 					;
 
-declaration  		: vardec { addVarDecList(*$1, false); }
-			  		| usertype { std::cout << "USERTYPE" << std::endl; }
+declaration  		: { std::cout << "VARDEC" << std::endl; } vardec { addVarDecList(*$2, false); }
+			  		| { std::cout << "USERTYPE" << std::endl; } usertype 
 			  		| labeldec {}
-			  		| constdec { addVarDecList(*$1, true); }
-			  		| abstractiondec { std::cout << "ABSTRACTIONDEC" << std::endl; }
+			  		| { std::cout << "CONST" << std::endl; } constdec { addVarDecList(*$2, true); }
+			  		| { std::cout << "ABSTRACTIONDEC" << std::endl; } abstractiondec
 					;
 
 arraydec  			: VECTOR '[' rangelist ']' OF type arraydecaux { std::string v = addVec($3, *$6, $7); $$ = new std::string(v); }
@@ -101,11 +103,11 @@ arraydecaux  		: '=' '(' expressionlist ')' { $$ = $3; }
 			  		| { $$ = nullptr; }
 					;
 
-rangelist  			: range rangelistaux { $$ = $$*$2; }
+rangelist  			: range rangelistaux { $$ = ($1 + 1)*$2; }
 					;
 
-rangelistaux  		: ',' range rangelistaux { $$ = $$*$3; }
-			  		| {$$ = 0;}
+rangelistaux  		: ',' range rangelistaux { $$ = ($2 + 1)*$3; }
+			  		| {$$ = 1;}
 					;
 
 range  				: atomic DOUBLEDOT atomic { $$ = rangeSize($1, $3); }
@@ -122,17 +124,11 @@ decwithassign  		: '=' expr {}
 			  		| {}
 					;
 
-usertype  			: TYPE ID CASSIGN typedec {}
+usertype  			: TYPE ID CASSIGN arraydec { addUserType($2.token->value, *$4); }
+					| TYPE ID CASSIGN STRUCT vardeclist END {}
+					| TYPE ID CASSIGN literal DOUBLEDOT literal { }
+					| TYPE ID CASSIGN id typedecauxrange {}
 					;
-
-typedec  			: arraydec { $$ = $1; }
-		  			| typedecaux { $$ = $1; }
-					;
-
-typedecaux  		: STRUCT vardeclist END { }
-			  		| literal DOUBLEDOT literal { }
-			  		| id typedecauxrange { }
-			  		;
 
 typedecauxrange		: DOUBLEDOT id { $$ = new std::string(""); }
 					| { $$ = new std::string(""); }
@@ -367,7 +363,7 @@ type 				: INT { $$ = new std::string("int"); }
  					| REAL { $$ = new std::string("real"); }
 					| BOOL { $$ = new std::string("bool"); }
  					| STRING { $$ = new std::string("str"); }
- 					| ID { $$ = new std::string(yylval.token->value); /* TODO verify if label is a valid user type */ }
+ 					| ID { $$ = new std::string(verifyUsertype(yylval.token->value)); }
  					;
 
 literal				: INT_VALUE	{ $$ = new TypeValue("int", std::stoi($1.token->value)); }
@@ -408,27 +404,33 @@ void success() {
 	exit(1);
 }
 
-void yyerror (char *s) {
+void yyerror(char *s) {
 	printf("\n%s:", s);
 	printf("%d:%d: No expected '%s'\n", yylval.token->line, yylval.token->column, yylval.token->value);
 	exit(1); 
 }
 
-void yyerrorDuplicateIdentifier (std::string sym_name) {
+void yyerrorDuplicateIdentifier(std::string sym_name) {
 	printf("(%d:%d) Error: Duplicate identifier \"", yylval.token->line, yylval.token->column);
 	std::cout << sym_name << '"' << std::endl;
 	exit(1); 
 }
 
-void yyerrorSize (int expSize, int currentSize) {
-	printf("(%d:%d) Error: Incompatible sizes of array \"", yylval.token->line, yylval.token->column);
+void yyerrorSize(int expSize, int currentSize) {
+	printf("(%d:%d) Error: Incompatible sizes of array \t", yylval.token->line, yylval.token->column);
 	std::cout << "Expected size " << std::to_string(expSize) <<  " and current size " << std::to_string(currentSize) << std::endl;
 	exit(1); 
 }
 
-void yyerrorType (std::string expType, std::string currentType) {
-	printf("(%d:%d) Error: Incompatible types \"", yylval.token->line, yylval.token->column);
+void yyerrorType(std::string expType, std::string currentType) {
+	printf("(%d:%d) Error: Incompatible types \t", yylval.token->line, yylval.token->column);
 	std::cout << "Expected type " << expType <<  " and current type " << currentType << std::endl;
+	exit(1); 
+}
+
+void yyerrorUnknownType(std::string label) {
+	printf("(%d:%d) Error: Unknown type \t", yylval.token->line, yylval.token->column);
+	std::cout << "There is no type called " << label << std::endl;
 	exit(1); 
 }
 
@@ -456,7 +458,6 @@ int main() {
 }
 
 void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool is_const) { 
-	std::cout << "aqui" << std::endl;
 	std::vector<std::string> idlist = vardeclist.first;
 	std::string type_name = vardeclist.second;
 	Symbol *var = new VariableSymbol(type_name, is_const);
@@ -523,24 +524,28 @@ void addSymbol(std::string label, Symbol *sym) {
 	symbolsTable[label] = sym;
 	scopesTable[currentScope].symbolsTable = symbolsTable;
 	
-	std::cout << "Symbol added called '" << label << "' (" << sym->getMeaning() << ")" << std::endl;
+	std::cout << "Symbol added called '" << label << "' (" << *sym << ")" << std::endl;
 }
 
 std::string addVec(int size, std::string expectedType, std::vector<std::string> *initTypes) {
-	if (initTypes != nullptr && size != initTypes->size()) {
-		yyerrorSize(size, initTypes->size());
-	}
-	for(auto it = initTypes->begin(); it != initTypes->end(); it++) {
-		if(*it != expectedType) {
-			yyerrorType (expectedType, *it);
+	if (initTypes != nullptr) {
+		if (size != initTypes->size()) {
+			yyerrorSize(size, initTypes->size());
+		}
+		for(auto it = initTypes->begin(); it != initTypes->end(); it++) {
+			if(*it != expectedType) {
+				yyerrorType (expectedType, *it);
+			}
 		}
 	}
+
 	VectorType *vec = new VectorType(expectedType, size); 
 	std::string label = searchElementInTableBySymbol(vec);
 	if (label != "") {
 		return label;
 	} else {
-		std::string vecName = "-v" + std::to_string(v_index);
+		std::string vecName = "-v" + std::to_string(vIndex);
+		vIndex++;
 		addSymbol(vecName, vec);
 		return vecName;
 	}
@@ -560,4 +565,26 @@ int rangeSize(TypeValue *first, TypeValue *second) {
 		yyerrorType ("int", currentType);
 	}
 	return 0;
+}
+
+void addUserType(std::string label, std::string name) {
+	Field field(name, name);
+	std::vector<Field> fields;
+	fields.push_back(field);
+	UserType *userType = new UserType(label, fields);
+	addSymbol(label, userType);
+}
+
+std::string verifyUsertype(std::string label) {
+	Symbol* sym = searchElementInTableByLabel(label);
+
+	if (sym == nullptr) 
+		yyerrorUnknownType(label);
+
+	UserType *userType = dynamic_cast<UserType*>(sym);
+
+	if (userType == nullptr) 
+		yyerrorUnknownType(label);
+
+	return label;
 }
