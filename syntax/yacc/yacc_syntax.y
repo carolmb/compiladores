@@ -12,10 +12,12 @@
 void yyerror (char *s); 
 int yylex();
 void success();
-std::string get_type(std::string label);
-void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool is_const);
+std::string getType(std::string label);
+
 
 void yyerrorDuplicateIdentifier (std::string sym_name);
+void yyerrorSize (int expSize, int currentSize);
+void yyerrorType (std::string expType, std::string currenType);
 
 // SCOPES --------------
 
@@ -31,31 +33,40 @@ std::vector<Scope> scopesTable;
 void addScope();
 void removeScope();
 void initTable();
+Symbol* searchElementInTableByLabel(std::string label);
+std::string searchElementInTableBySymbol(Symbol *symbol);
 
 // VARS --------------
 
-void addTable(std::string label, Symbol *sym);
+int v_index = 0;
+
+void addSymbol(std::string label, Symbol *sym);
+void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool is_const);
+std::string addVec(int size, std::string expectedType, std::vector<std::string> *initTypes);
+int rangeSize(TypeValue *first, TypeValue *second);
 
 %}
 
 %union { 
 	std::string *typeName;
+	int size;
 	Token *token; 
-	Type *symbolType; 
 	std::vector<Field> *structFields;
-	std::vector<std::string> *idList;
+	std::vector<std::string> *list; /*it can be idlist, expressionlist and so on... */
 	std::pair<std::vector<std::string>, std::string> *varDec;
 	std::vector<Field> *fields;
+	TypeValue *var;
 }
 
 %start program
 
 %type <varDec> vardec constdec
-%type <typeName> type varconstruction arraydec typedecauxrange literal
-%type <symbolType> typedecaux typedec
+%type <typeName> type varconstruction arraydec typedecauxrange expr typedec typedecaux
 %type <structFields> vardeclist vardeclistaux
-%type <idList> idlist idlistaux
+%type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux
 %type <fields> paramslist paramsaux parameters
+%type <size> rangelistaux rangelist range
+%type <var> atomic literal
 
 /*Terminals*/
 %token HEXA_VALUE INT_VALUE REAL_VALUE FINAL BOOL_VALUE CONTINUE 
@@ -76,51 +87,51 @@ prevdec  			: declaration ';' prevdec {}
 		  			| {}
 					;
 
-declaration  		: vardec { std::cout << "VARDEC" << std::endl; addVarDecList(*$1, false); }
+declaration  		: vardec { addVarDecList(*$1, false); }
 			  		| usertype { std::cout << "USERTYPE" << std::endl; }
 			  		| labeldec {}
-			  		| constdec { std::cout << "USERTYPE" << std::endl; addVarDecList(*$1, true); }
+			  		| constdec { addVarDecList(*$1, true); }
 			  		| abstractiondec { std::cout << "ABSTRACTIONDEC" << std::endl; }
 					;
 
-arraydec  			: VECTOR '[' rangelist ']' OF type arraydecaux { $$ = new std::string("vetor"); /*adiciona o vetor c nome vxx na tabela e só retorna seu nome (verifica tipos) */ }
+arraydec  			: VECTOR '[' rangelist ']' OF type arraydecaux { std::string v = addVec($3, *$6, $7); $$ = new std::string(v); }
 					;
 
-arraydecaux  		: '=' '(' expressionlist ')' { /* retorna tamanho e tipo */ }
-			  		| {}
+arraydecaux  		: '=' '(' expressionlist ')' { $$ = $3; }
+			  		| { $$ = nullptr; }
 					;
 
-rangelist  			: range rangelistaux {}
+rangelist  			: range rangelistaux { $$ = $$*$2; }
 					;
 
-rangelistaux  		: ',' range rangelistaux {}
-			  		| {}
+rangelistaux  		: ',' range rangelistaux { $$ = $$*$3; }
+			  		| {$$ = 0;}
 					;
 
-range  				: atomic DOUBLEDOT atomic {}
+range  				: atomic DOUBLEDOT atomic { $$ = rangeSize($1, $3); }
 					;
 
 vardec  			: VAR idlist ':' varconstruction { $$ = new std::pair<std::vector<std::string>, std::string>(*$2, *$4); }
 					;
 
 varconstruction  	: type decwithassign { $$ = $1; }
-				  	| arraydec { $$ = new std::string("vector"); }
+				  	| arraydec { $$ = $1; }
 					;
 
 decwithassign  		: '=' expr {}
 			  		| {}
 					;
 
-usertype  			: TYPE ID CASSIGN typedec {}
+usertype  			: TYPE ID CASSIGN arraydec {}
 					;
 
-typedec  			: arraydec { /* cria o Type*/ }
-		  			| typedecaux { /* já é Type $$ = $1; */ }
+typedec  			: arraydec { $$ = $1; }
+		  			| typedecaux { $$ = $1; }
 					;
 
-typedecaux  		: STRUCT vardeclist END { $$ = new UserType();  }
-			  		| literal DOUBLEDOT literal { $$ = new RangeType(); }
-			  		| id typedecauxrange { $$ = new RangeType(); }
+typedecaux  		: STRUCT vardeclist END { }
+			  		| literal DOUBLEDOT literal { }
+			  		| id typedecauxrange { }
 			  		;
 
 typedecauxrange		: DOUBLEDOT id { $$ = new std::string(""); }
@@ -137,17 +148,17 @@ vardeclistaux  		: ';' vardec vardeclistaux {}
 labeldec  			: LABEL idlist {}
 					;
 
-constdec  			: CONST idlist ':' type '=' expr { *$$ = std::make_pair(*$2, *$4); }
+constdec  			: CONST idlist ':' type '=' expr { $$ = new std::pair<std::vector<std::string>, std::string>(*$2, *$4); }
 					;
 
 abstractiondec  	: procdec {}
 				  	| funcdec {}
 					;
 
-procdec  			: PROC { addScope(); } ID '(' parameters ')' { /* Symbol *ab = new AbstractionSymbol("", *$4); addTable($2.token->value, ab);*/ } prevdec block { removeScope(); } 
+procdec  			: PROC { addScope(); } ID '(' parameters ')' { /* Symbol *ab = new AbstractionSymbol("", *$4); addSymbol($2.token->value, ab);*/ } prevdec block { removeScope(); } 
 					;
 
-funcdec  			: FUNC { addScope(); } ID '(' parameters ')' ':' type { /* Symbol *ab = new AbstractionSymbol("", *$4); addTable($2.token->value, ab);*/ } prevdec block { removeScope(); }
+funcdec  			: FUNC { addScope(); } ID '(' parameters ')' ':' type { /* Symbol *ab = new AbstractionSymbol("", *$4); addSymbol($2.token->value, ab);*/ } prevdec block { removeScope(); }
 					;
 
 parameters  		: paramsaux { $$ = $1; }
@@ -275,11 +286,11 @@ caselistaux2  		: caseclause caselistaux {}
 caseclause  		: atomiclist ':' callcommand {}
 					;
 
-expressionlist  	: expr expressionlistaux {}
+expressionlist  	: expr expressionlistaux { $$ = $2; $$->insert($$->begin(), *$1); }
 					;
 
-expressionlistaux  	: ',' expr expressionlistaux {}
-				  	| {}
+expressionlistaux  	: ',' expr expressionlistaux { $$ = $3; $$->insert($$->begin(), *$2); }
+				  	| { $$ = new std::vector<std::string>(); }
 					;
 	
 expr				: andfact orfact {}
@@ -359,14 +370,14 @@ type 				: INT { $$ = new std::string("int"); }
  					| ID { $$ = new std::string(yylval.token->value); /* TODO verify if label is a valid user type */ }
  					;
 
-literal				: INT_VALUE	{ $$ = new std::string("int"); }
-					| REAL_VALUE { $$ = new std::string("real"); }
-					| HEXA_VALUE { $$ = new std::string("int"); }
-					| BOOL_VALUE { $$ = new std::string("bool"); }
-					| STRING_VALUE { $$ = new std::string("str"); }
+literal				: INT_VALUE	{ $$ = new TypeValue("int", std::stoi($1.token->value)); }
+					| REAL_VALUE { $$ = new TypeValue("real"); }
+					| HEXA_VALUE { $$ = new TypeValue("int", std::stoi($1.token->value)); }
+					| BOOL_VALUE { $$ = new TypeValue("bool"); }
+					| STRING_VALUE { $$ = new TypeValue("str"); }
 					;
 
-atomic				: literal {}
+atomic				: literal { $$ = $1; }
 					| id {}
 					;
 
@@ -409,6 +420,19 @@ void yyerrorDuplicateIdentifier (std::string sym_name) {
 	exit(1); 
 }
 
+void yyerrorSize (int expSize, int currentSize) {
+	printf("(%d:%d) Error: Incompatible sizes of array \"", yylval.token->line, yylval.token->column);
+	std::cout << "Expected size " << std::to_string(expSize) <<  " and current size " << std::to_string(currentSize) << std::endl;
+	exit(1); 
+}
+
+void yyerrorType (std::string expType, std::string currentType) {
+	printf("(%d:%d) Error: Incompatible types \"", yylval.token->line, yylval.token->column);
+	std::cout << "Expected type " << expType <<  " and current type " << currentType << std::endl;
+	exit(1); 
+}
+
+
 /*
 	SCOPES
 */
@@ -437,45 +461,103 @@ void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, 
 	std::string type_name = vardeclist.second;
 	Symbol *var = new VariableSymbol(type_name, is_const);
 	for(auto id = idlist.begin(); id != idlist.end(); id++) {
-		addTable(*id, var);
+		addSymbol(*id, var);
 	}
 }
 
-std::string get_type(std::string label) {
+std::string getType(std::string label) {
 	int currentScope = scopesTable.size()-1;
 	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
 	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-		if(itSym->first == label && itSym->second->get_meaning() == "variable") {
-			Symbol *bla = itSym->second;
-			VariableSymbol *var = dynamic_cast<VariableSymbol*>(bla);
-			return var->get_varType();
+		Symbol *sym = itSym->second;
+		if(itSym->first == label && sym->getMeaning() == "variable") {
+			VariableSymbol *var = dynamic_cast<VariableSymbol*>(sym);
+			return var->getVarType();
 		}
 	}
 }
 
-void print_table() {
-	std::cout << "print_table begin" << std::endl;
+void printTable() {
+	std::cout << "printTable begin" << std::endl;
 	int currentScope = scopesTable.size()-1;
 	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
 	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
 		std::cout << itSym->first << " " << itSym->second << std::endl;
 	}
-	std::cout << "print_table end" << std::endl;
+	std::cout << "printTable end" << std::endl;
 }
 
-void addTable(std::string label, Symbol *sym) {
+Symbol* searchElementInTableByLabel(std::string label) {
 	int currentScope = scopesTable.size()-1;
-	std::cout << "Scope: " << currentScope << std::endl;
-	
 	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
 	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
 		if(itSym->first == label){
-			yyerrorDuplicateIdentifier(label);
+			return itSym->second;
 		}
 	}
-	
+	return nullptr;
+}
+
+std::string searchElementInTableBySymbol(Symbol *symbol) {
+	int currentScope = scopesTable.size()-1;
+	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
+	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
+		if(itSym->second->compare(symbol)){
+			return itSym->first;
+		}
+	}
+	return "";
+}
+
+void addSymbol(std::string label, Symbol *sym) {
+	Symbol* element = searchElementInTableByLabel(label);
+
+	if(element != nullptr) {
+		yyerrorDuplicateIdentifier(label);
+	}
+
+	int currentScope = scopesTable.size()-1;
+	std::cout << "Scope: " << currentScope << std::endl;
+
+	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
 	symbolsTable[label] = sym;
 	scopesTable[currentScope].symbolsTable = symbolsTable;
 	
-	std::cout << "Symbol added called '" << label << "' (" << sym->get_meaning() << ")" << std::endl;
+	std::cout << "Symbol added called '" << label << "' (" << sym->getMeaning() << ")" << std::endl;
+}
+
+std::string addVec(int size, std::string expectedType, std::vector<std::string> *initTypes) {
+	if (initTypes != nullptr && size != initTypes->size()) {
+		yyerrorSize(size, initTypes->size());
+	}
+	for(auto it = initTypes->begin(); it != initTypes->end(); it++) {
+		if(*it != expectedType) {
+			yyerrorType (expectedType, *it);
+		}
+	}
+	VectorType *vec = new VectorType(expectedType, size); 
+	std::string label = searchElementInTableBySymbol(vec);
+	if (label != "") {
+		return label;
+	} else {
+		std::string vecName = "-v" + std::to_string(v_index);
+		addSymbol(vecName, vec);
+		return vecName;
+	}
+}
+
+int rangeSize(TypeValue *first, TypeValue *second) {
+	int value = 0;
+	if(first->nameType == "int" && second->nameType == "int") {
+		if (second->value > first->value) {
+			return second->value - first->value;
+		}
+	} else {
+		/* incompatible type */
+		std::string currentType = first->nameType;
+		if(currentType == "int")
+			currentType = second->nameType;
+		yyerrorType ("int", currentType);
+	}
+	return 0;
 }

@@ -6,6 +6,15 @@
 #include <iostream>
 
 
+// Var ----------------------------------------------
+
+struct TypeValue {
+	std::string nameType;
+	int value;
+	TypeValue(std::string n, int v) : nameType(n), value(v) {}	
+	TypeValue(std::string n) : nameType(n) {}	
+};
+
 
 // Field --------------------------------------------
 	
@@ -19,6 +28,12 @@ class Field {
 		Field() {}
 		Field(std::string n, std::string t) : fieldName(n), typeField(t), isConst(false) {}
 		Field(std::string n, std::string t, bool c) : fieldName(n), typeField(t), isConst(c) {}
+
+		std::string getFieldName() const { return fieldName; }
+		std::string getTypeField() const { return typeField; }
+		bool operator ==(const Field &b) const {
+			return fieldName == b.getFieldName() && typeField == b.getTypeField();
+		}
 };
 
 // Symbol -------------------------------------------
@@ -31,15 +46,17 @@ class Symbol {
 		Symbol(){}
 		Symbol(std::string m) : meaning(m) {}
 		
-		std::string get_meaning() const { return meaning; }
+		std::string getMeaning() const { return meaning; }
 		virtual ~Symbol() = default;
 
 		virtual std::string to_string() const = 0;
 
 		friend std::ostream &operator<<(std::ostream &os, Symbol const &s) {
-			os << "Meaning: " << s.get_meaning() << " " << s.to_string() << std::endl;
+			os << "Meaning: " << s.getMeaning() << " " << s.to_string() << std::endl;
 			return os;
 		}
+
+		virtual bool compare(Symbol *sym) = 0;
 };
 
 class AbstractionSymbol : public Symbol {
@@ -53,11 +70,16 @@ class AbstractionSymbol : public Symbol {
 		AbstractionSymbol(std::string rt, std::vector<Field> p) 
 			: Symbol("abstraction"), returnType(rt), parameters(p) {}
 		
-		std::string get_returnType() { return returnType; }
-		std::vector<Field> get_parameters() { return parameters; }
+		std::string getReturnType() { return returnType; }
+		std::vector<Field> getParameters() { return parameters; }
 
 		std::string to_string() {
 			return "Abstraction: return type: " + returnType + " Params number: " + std::to_string(parameters.size());
+		}
+
+		bool compare(Symbol *s) {
+			AbstractionSymbol *sym = dynamic_cast<AbstractionSymbol*>(s);
+			return sym != nullptr && returnType == sym->getReturnType() && parameters == sym->getParameters();
 		}
 };
 
@@ -68,10 +90,17 @@ class VariableSymbol : public Symbol {
 		
 	public:	
 		VariableSymbol(std::string t, bool c) : Symbol("variable"), varType(t), isConst(c) {}
-		std::string get_varType() { return varType; }
+		std::string getVarType() { return varType; }
 
 		std::string to_string() const {
 			return "Variable: type: " + varType;
+		}
+
+		bool getIsConst() { return isConst; }
+
+		bool compare(Symbol *v) {
+			VariableSymbol *var = dynamic_cast<VariableSymbol*>(v);
+			return var != nullptr && varType == var->getVarType() && isConst == var->getIsConst(); 
 		}
 };
 
@@ -84,30 +113,34 @@ class Type : public Symbol {
 	public:
 		Type(std::string n) : Symbol("type"), name(n) {}
 	
+		bool compare(Symbol *sym) {
+			Type *type = dynamic_cast<Type*>(sym);
+			if (type != nullptr)
+				return compareType(type);
+			return false;
+		}
+
 		bool compareType(Type *other) {
-			if(this->name == other->get_name()) {
+			if(this->name == other->getName()) {
 				return true;
 			} else {
 				return false;
 			}
 		}
 
-		std::string get_name() const { return name; }
+		std::string getName() const { return name; }
 
 		std::string to_string() const {
-			return "Variable dec: name: " + get_name();
+			return "Type declaration " + getName();
 		}
 };
 
 class PrimitiveType : public Type {
 	public:
 		PrimitiveType(std::string n) : Type(n) {}
-		
-		bool compareType(Type *other) {
-			if(this->name == other->get_name()) {
-				return true; // ver cast 
-			}
-			return false;
+		bool compareType(Type *o) {
+			PrimitiveType *other = dynamic_cast<PrimitiveType*>(o);
+			return other != nullptr && this->name == other->getName();
 		}
 };
 
@@ -118,7 +151,15 @@ class VectorType : public Type {
 		
 	public:
 		VectorType() : Type("vector") {}
-		VectorType(std::string t, int s) : Type("vector"), fieldType(t), size() {}
+		VectorType(std::string t, int s) : Type("vector"), fieldType(t), size(s) {}
+
+		bool compareType(Type *o) {
+			VectorType *other = dynamic_cast<VectorType*>(o);
+			return other != nullptr && size == other->getSize() && fieldType == other->getFieldType();
+		}
+
+		std::string getFieldType() { return fieldType; }
+		int getSize() { return size; }
 };
 
 class UserType : public Type {
