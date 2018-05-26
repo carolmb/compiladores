@@ -122,7 +122,7 @@ decwithassign  		: '=' expr {}
 			  		| {}
 					;
 
-usertype  			: TYPE ID CASSIGN arraydec {}
+usertype  			: TYPE ID CASSIGN typedec {}
 					;
 
 typedec  			: arraydec { $$ = $1; }
