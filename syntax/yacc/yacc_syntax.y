@@ -45,7 +45,10 @@ void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, 
 std::string addVec(int size, std::string expectedType, std::vector<std::string> *initTypes);
 int rangeSize(TypeValue *first, TypeValue *second);
 void addUserType(std::string label, std::string name);
+void addUserType(std::string label, std::vector<Field> fields);
+void addUserType(std::string label, TypeValue begin, TypeValue end);
 std::string verifyUsertype(std::string label);
+void insertVarDec(std::vector<Field> *fields, std::pair<std::vector<std::string>, std::string> *varDec);
 
 %}
 
@@ -53,7 +56,6 @@ std::string verifyUsertype(std::string label);
 	std::string *typeName;
 	int size;
 	Token *token; 
-	std::vector<Field> *structFields;
 	std::vector<std::string> *list; /*it can be idlist, expressionlist and so on... */
 	std::pair<std::vector<std::string>, std::string> *varDec;
 	std::vector<Field> *fields;
@@ -64,9 +66,8 @@ std::string verifyUsertype(std::string label);
 
 %type <varDec> vardec constdec
 %type <typeName> type varconstruction arraydec typedecauxrange expr
-%type <structFields> vardeclist vardeclistaux
 %type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux
-%type <fields> paramslist paramsaux parameters
+%type <fields> paramslist paramsaux parameters vardeclist vardeclistaux
 %type <size> rangelistaux rangelist range
 %type <var> atomic literal
 
@@ -125,8 +126,8 @@ decwithassign  		: '=' expr {}
 					;
 
 usertype  			: TYPE ID CASSIGN arraydec { addUserType($2.token->value, *$4); }
-					| TYPE ID CASSIGN STRUCT vardeclist END {}
-					| TYPE ID CASSIGN literal DOUBLEDOT literal { }
+					| TYPE ID CASSIGN STRUCT vardeclist END { addUserType($2.token->value, *$5); }
+					| TYPE ID CASSIGN literal DOUBLEDOT literal { addUserType($2.token->value, *$4, *$6); }
 					| TYPE ID CASSIGN id typedecauxrange {}
 					;
 
@@ -134,11 +135,11 @@ typedecauxrange		: DOUBLEDOT id { $$ = new std::string(""); }
 					| { $$ = new std::string(""); }
 					;
 
-vardeclist  		: vardec vardeclistaux {}
+vardeclist  		: vardec vardeclistaux { $$ = $2; insertVarDec($$, $1); }
 					;
 
-vardeclistaux  		: ';' vardec vardeclistaux {}
-			  		| {}
+vardeclistaux  		: ';' vardec vardeclistaux { $$ = $3; insertVarDec($$, $2); }
+			  		| { $$ = new std::vector<Field>(); }
 					;
 
 labeldec  			: LABEL idlist {}
@@ -410,9 +411,9 @@ void yyerror(char *s) {
 	exit(1); 
 }
 
-void yyerrorDuplicateIdentifier(std::string sym_name) {
+void yyerrorDuplicateIdentifier(std::string symName) {
 	printf("(%d:%d) Error: Duplicate identifier \"", yylval.token->line, yylval.token->column);
-	std::cout << sym_name << '"' << std::endl;
+	std::cout << symName << '"' << std::endl;
 	exit(1); 
 }
 
@@ -455,15 +456,6 @@ void initTable(){
 int main() {
 	initTable();
 	return yyparse();
-}
-
-void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool is_const) { 
-	std::vector<std::string> idlist = vardeclist.first;
-	std::string type_name = vardeclist.second;
-	Symbol *var = new VariableSymbol(type_name, is_const);
-	for(auto id = idlist.begin(); id != idlist.end(); id++) {
-		addSymbol(*id, var);
-	}
 }
 
 std::string getType(std::string label) {
@@ -527,6 +519,17 @@ void addSymbol(std::string label, Symbol *sym) {
 	std::cout << "Symbol added called '" << label << "' (" << *sym << ")" << std::endl;
 }
 
+
+void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool is_const) { 
+	std::vector<std::string> idlist = vardeclist.first;
+	
+	std::string type_name = vardeclist.second;
+	Symbol *var = new VariableSymbol(type_name, is_const);
+	for(auto id = idlist.begin(); id != idlist.end(); id++) {
+		addSymbol(*id, var); /* if there is some repetition the addSymbol will emit error */
+	}
+}
+
 std::string addVec(int size, std::string expectedType, std::vector<std::string> *initTypes) {
 	if (initTypes != nullptr) {
 		if (size != initTypes->size()) {
@@ -587,4 +590,49 @@ std::string verifyUsertype(std::string label) {
 		yyerrorUnknownType(label);
 
 	return label;
+}
+
+void insertVarDec(std::vector<Field> *fields, std::pair<std::vector<std::string>, std::string> *varDec) {
+	std::vector<std::string> idlist = varDec->first;
+	std::string type = varDec->second;
+	
+	/* identify if user used the same label more than one time */
+	for(auto it1 = idlist.begin(); it1 != idlist.end(); it1++) {
+		for(auto it2 = std::next(it1); it2 != idlist.end(); it2++) {
+			if (*it1 == *it2) 
+				yyerrorDuplicateIdentifier(*it1);
+		}
+	}
+
+	/* identify if label is already used in previously usertype fields defined */
+	for(auto it1 = idlist.begin(); it1 != idlist.end(); it1++) {
+		for(auto it2 = fields->begin(); it2 != fields->end(); it2++) {
+			if(*it1 == it2->getFieldName())
+				yyerrorDuplicateIdentifier(*it1);
+		}
+	}
+
+	for(auto it = idlist.begin(); it != idlist.end(); it++) {
+		Field f(*it, type);
+		fields->insert(fields->begin(), f);
+	}
+}
+
+void addUserType(std::string label, std::vector<Field> fields) {
+	UserType *userType = new UserType(label, fields);
+	addSymbol(label, userType);
+}
+
+void addUserType(std::string label, TypeValue begin, TypeValue end) {
+	
+	if(begin.nameType != "int" || end.nameType != "int") {
+		/* incompatible type */
+		std::string currentType = begin.nameType;
+		if(currentType == "int")
+			currentType = end.nameType;
+		yyerrorType ("int", currentType);
+	}
+
+	RangeType *range = new RangeType(label, "int", std::to_string(begin.value), std::to_string(end.value));
+	addSymbol(label, range);
 }

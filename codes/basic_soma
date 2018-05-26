@@ -6,5 +6,15 @@ tipo arr1 := vetor[4 .. 10] de texto;
 var a : arr1;
 var b : vetor[4 .. 10] de texto;
 
+** STRUCT DECLARATION
+tipo TDU := registro 
+        var nome : texto; 
+        var idade : inteiro
+    fim;
+
+var c : TDU;
+
+tipo range1 := 1 .. 10;
+
 inicio
 fim
