@@ -507,13 +507,24 @@ std::vector<EnumType*> getEnums() {
 
 Symbol* searchElementInTableByLabel(std::string label) {
 	/*TODO: recursive in scopes and verify labels in enums*/
-	int currentScope = scopesTable.size()-1;
-	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
-	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-		if(itSym->first == label){
-			return itSym->second;
+	
+	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
+	for (; scope != scopesTable.rend(); ++scope) {
+		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
+		for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
+			if(itSym->first == label){
+				return itSym->second;
+			}
 		}
 	}
+
+	//int currentScope = scopesTable.size()-1;
+	//std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
+	//for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
+	//	if(itSym->first == label){
+	//		return itSym->second;
+	//	}
+	//}
 
 	std::vector<EnumType*> enums = getEnums();
 	for(auto it = enums.begin(); it != enums.end(); it++) {
