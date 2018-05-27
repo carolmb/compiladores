@@ -18,6 +18,8 @@ std::string getType(std::string label);
 void yyerrorDuplicateIdentifier (std::string sym_name);
 void yyerrorSize (int expSize, int currentSize);
 void yyerrorType (std::string expType, std::string currenType);
+void yyerrorUnknownType(std::string label);
+void yyerrorInvalidType(std::string label);
 
 // SCOPES --------------
 
@@ -46,10 +48,12 @@ std::string addVec(int size, std::string expectedType, std::vector<std::string> 
 int rangeSize(TypeValue *first, TypeValue *second);
 void addUserType(std::string label, std::string name);
 void addUserType(std::string label, std::vector<Field> fields);
-void addUserType(std::string label, TypeValue begin, TypeValue end);
+void addUserType(std::string label, std::string t1, std::string t2);
+void addUserType(std::string label, std::vector<std::string> idlist);
 std::string verifyUsertype(std::string label);
 void insertVarDec(std::vector<Field> *fields, std::pair<std::vector<std::string>, std::string> *varDec);
-
+std::vector<EnumType*> getEnums();
+bool isEnumType(std::string t);
 %}
 
 %union { 
@@ -66,7 +70,7 @@ void insertVarDec(std::vector<Field> *fields, std::pair<std::vector<std::string>
 
 %type <varDec> vardec constdec
 %type <typeName> type varconstruction arraydec typedecauxrange expr
-%type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux
+%type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux idaux id idauxexpraux
 %type <fields> paramslist paramsaux parameters vardeclist vardeclistaux
 %type <size> rangelistaux rangelist range
 %type <var> atomic literal
@@ -90,10 +94,10 @@ prevdec  			: declaration ';' prevdec {}
 		  			| {}
 					;
 
-declaration  		: { std::cout << "VARDEC" << std::endl; } vardec { addVarDecList(*$2, false); }
-			  		| { std::cout << "USERTYPE" << std::endl; } usertype 
+declaration  		: vardec { addVarDecList(*$1, false); }
+			  		| usertype {}
 			  		| labeldec {}
-			  		| { std::cout << "CONST" << std::endl; } constdec { addVarDecList(*$2, true); }
+			  		| constdec { addVarDecList(*$1, true); }
 			  		| { std::cout << "ABSTRACTIONDEC" << std::endl; } abstractiondec
 					;
 
@@ -127,11 +131,12 @@ decwithassign  		: '=' expr {}
 
 usertype  			: TYPE ID CASSIGN arraydec { addUserType($2.token->value, *$4); }
 					| TYPE ID CASSIGN STRUCT vardeclist END { addUserType($2.token->value, *$5); }
-					| TYPE ID CASSIGN literal DOUBLEDOT literal { addUserType($2.token->value, *$4, *$6); }
-					| TYPE ID CASSIGN id typedecauxrange {}
+					| TYPE ID CASSIGN literal DOUBLEDOT literal { addUserType($2.token->value, $4->nameType, $6->nameType); }
+					| TYPE ID CASSIGN id typedecauxrange { addUserType($2.token->value, $4->front(), *$5); }
+					| TYPE ID CASSIGN '(' idlist ')' { addUserType($2.token->value, *$5); }
 					;
 
-typedecauxrange		: DOUBLEDOT id { $$ = new std::string(""); }
+typedecauxrange		: DOUBLEDOT id { $$ = new std::string($2->front()); }
 					| { $$ = new std::string(""); }
 					;
 
@@ -378,17 +383,17 @@ atomic				: literal { $$ = $1; }
 					| id {}
 					;
 
-id					: ID idaux {}
+id					: ID idaux { $$ = $2; /* add $1 and generate type */ }
 					;
 
-idaux				: '[' expressionlist ']' {}
-					| '.' id {}
-					| '(' idauxexpraux {}
-					|
+idaux				: '[' expressionlist ']' { $$ = $2; }
+					| '.' id { $$ = $2; }
+					| '(' idauxexpraux { $$ = $2; }
+					| { $$ = new std::vector<std::string>(); }
 					;
 					
-idauxexpraux		: expressionlist ')' {}
-					| ')' {}
+idauxexpraux		: expressionlist ')' { int size = $1->size(); $$ = $1; $$->insert($$->begin(), std::to_string(size)); /*verificar ordem dos argumentos*/ }
+					| ')' { $$ = new std::vector<std::string>(); $$->push_back("0"); }
 					;	
 			
 atomiclist  		: atomic atomiclistaux {}
@@ -436,6 +441,12 @@ void yyerrorUnknownType(std::string label) {
 }
 
 
+void yyerrorInvalidType(std::string label) {
+	printf("(%d:%d) Error: Invalid type \t", yylval.token->line, yylval.token->column);
+	std::cout << label << " is not a valid type in current context" << std::endl;
+	exit(1); 
+}
+
 /*
 	SCOPES
 */
@@ -480,7 +491,22 @@ void printTable() {
 	std::cout << "printTable end" << std::endl;
 }
 
+std::vector<EnumType*> getEnums() {
+	std::vector<EnumType*> enums;
+
+	int currentScope = scopesTable.size()-1;
+	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
+	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
+		EnumType *enumType = dynamic_cast<EnumType*>(itSym->second);
+		if(enumType != nullptr)
+			enums.push_back(enumType);
+	}
+
+	return enums;
+}
+
 Symbol* searchElementInTableByLabel(std::string label) {
+	/*TODO: recursive in scopes and verify labels in enums*/
 	int currentScope = scopesTable.size()-1;
 	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
 	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
@@ -488,6 +514,18 @@ Symbol* searchElementInTableByLabel(std::string label) {
 			return itSym->second;
 		}
 	}
+
+	std::vector<EnumType*> enums = getEnums();
+	for(auto it = enums.begin(); it != enums.end(); it++) {
+		std::vector<std::string> fields = (*it)->getFieldNames();
+		for(auto field = fields.begin(); field != fields.end(); field++) {
+			if(*field == label) {
+			Symbol *sym = *it;
+				return sym;
+			}
+		}
+	}
+
 	return nullptr;
 }
 
@@ -518,7 +556,6 @@ void addSymbol(std::string label, Symbol *sym) {
 	
 	std::cout << "Symbol added called '" << label << "' (" << *sym << ")" << std::endl;
 }
-
 
 void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool is_const) { 
 	std::vector<std::string> idlist = vardeclist.first;
@@ -623,16 +660,43 @@ void addUserType(std::string label, std::vector<Field> fields) {
 	addSymbol(label, userType);
 }
 
-void addUserType(std::string label, TypeValue begin, TypeValue end) {
-	
-	if(begin.nameType != "int" || end.nameType != "int") {
-		/* incompatible type */
-		std::string currentType = begin.nameType;
-		if(currentType == "int")
-			currentType = end.nameType;
-		yyerrorType ("int", currentType);
+bool isEnumType(std::string t) {
+	std::vector<EnumType*> enums = getEnums();
+	for(auto e = enums.begin(); e != enums.end(); e++) {
+		std::vector<std::string> fields = (*e)->getFieldNames();
+		for(auto f = fields.begin(); f != fields.end(); f++) {
+			if(*f == t)
+				return true;
+		}
+	}
+	return false;
+}
+
+void addUserType(std::string label, std::string t1, std::string t2) {
+	if(t2 == "") {
+		NamedType *namedType = new NamedType(label, t1);
 	}
 
-	RangeType *range = new RangeType(label, "int", std::to_string(begin.value), std::to_string(end.value));
-	addSymbol(label, range);
+	if(t1 != t2) {
+		/* incompatible type */
+		yyerrorType (t1, t2);
+	}
+
+	if(t1 == "int" || isEnumType(t1)) {
+		RangeType *range = new RangeType(label, t1);
+		addSymbol(label, range);
+	} else {
+		yyerrorInvalidType(t1);
+	}
+}
+
+void addUserType(std::string label, std::vector<std::string> idlist) {
+	/* Enum */
+	for(auto it = idlist.begin(); it != idlist.end(); it++) {
+		Symbol* sym = searchElementInTableByLabel(*it);
+		if (sym != nullptr) 
+			yyerrorDuplicateIdentifier(*it);
+	}
+	EnumType *enumType = new EnumType(label, idlist);
+	addSymbol(label, enumType);
 }

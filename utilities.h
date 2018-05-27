@@ -177,18 +177,26 @@ class EnumType : public Type {
 	
 	public:
 		EnumType(std::string n, std::vector<std::string> fs) : Type(n), fieldNames(fs) {}
+		std::vector<std::string> getFieldNames() { return fieldNames; }
 };
 
 class RangeType : public Type {
 	private:
 		std::string father; // inteiro ou EnumType
-		std::string begin;
-		std::string end;
+		// std::string begin;
+		// std::string end;
 		
 	public:
-		RangeType() : Type("rangeTemp") {}
-		RangeType(std::string n, std::string f, std::string b, std::string e) : 
-			Type(n), father(f), begin(b), end(e) {}
+		// RangeType(std::string n, std::string f, std::string b, std::string e) : 
+		// 	Type(n), father(f), begin(b), end(e) {}
+		RangeType(std::string n, std::string f) : Type(n), father(f) {}
+};
+
+class NamedType : public Type {
+	private:
+		std::string father;
+	public:
+		NamedType(std::string nameType, std::string father) : Type(nameType), father(father) {}
 };
 
 #endif
