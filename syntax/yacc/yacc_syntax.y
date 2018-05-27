@@ -470,42 +470,57 @@ int main() {
 }
 
 std::string getType(std::string label) {
-	int currentScope = scopesTable.size()-1;
-	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
-	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-		Symbol *sym = itSym->second;
-		if(itSym->first == label && sym->getMeaning() == "variable") {
-			VariableSymbol *var = dynamic_cast<VariableSymbol*>(sym);
-			return var->getVarType();
+	//int currentScope = scopesTable.size()-1;
+	//std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
+	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
+	for (; scope != scopesTable.rend(); ++scope) {
+		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
+		for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
+			Symbol *sym = itSym->second;
+			if(itSym->first == label && sym->getMeaning() == "variable") {
+				VariableSymbol *var = dynamic_cast<VariableSymbol*>(sym);
+				return var->getVarType();
+			}
 		}
 	}
 }
 
 void printTable() {
-	std::cout << "printTable begin" << std::endl;
-	int currentScope = scopesTable.size()-1;
-	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
-	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-		std::cout << itSym->first << " " << itSym->second << std::endl;
+	std::cout << "-----printTable begin-----" << std::endl;
+	//int currentScope = scopesTable.size()-1;
+	//std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
+	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
+	int scop = scopesTable.size()-1;
+	for (; scope != scopesTable.rend(); ++scope) {
+		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
+		for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
+			std::cout  << "Scope " << scop << ", " << itSym->first << " " << itSym->second->getMeaning() << std::endl;
+		}
+		scop--;
 	}
-	std::cout << "printTable end" << std::endl;
+	std::cout << "-----printTable end-----" << std::endl;
 }
 
 std::vector<EnumType*> getEnums() {
 	std::vector<EnumType*> enums;
 
-	int currentScope = scopesTable.size()-1;
-	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
-	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-		EnumType *enumType = dynamic_cast<EnumType*>(itSym->second);
-		if(enumType != nullptr)
-			enums.push_back(enumType);
+	//int currentScope = scopesTable.size()-1;
+	//std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
+	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
+	for (; scope != scopesTable.rend(); ++scope) {
+		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
+		for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
+			EnumType *enumType = dynamic_cast<EnumType*>(itSym->second);
+			if(enumType != nullptr)
+				enums.push_back(enumType);
+		}
 	}
 
 	return enums;
 }
 
 Symbol* searchElementInTableByLabel(std::string label) {
+	printTable();
 	/*TODO: recursive in scopes and verify labels in enums*/
 	
 	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
@@ -541,11 +556,15 @@ Symbol* searchElementInTableByLabel(std::string label) {
 }
 
 std::string searchElementInTableBySymbol(Symbol *symbol) {
-	int currentScope = scopesTable.size()-1;
-	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
-	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-		if(itSym->second->compare(symbol)){
-			return itSym->first;
+	//int currentScope = scopesTable.size()-1;
+	//std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
+	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
+	for (; scope != scopesTable.rend(); ++scope) {
+		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
+		for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
+			if(itSym->second->compare(symbol)){
+				return itSym->first;
+			}
 		}
 	}
 	return "";
