@@ -139,8 +139,6 @@ class Type : public Symbol {
 		std::string to_string() const {
 			return "(Type declaration) nameType: " + getType();
 		}
-
-		virtual std::string getFieldType(std::string label) = 0;
 };
 
 class PrimitiveType : public Type {
@@ -150,8 +148,6 @@ class PrimitiveType : public Type {
 			PrimitiveType *other = dynamic_cast<PrimitiveType*>(o);
 			return other != nullptr && this->name == other->getType();
 		}
-
-		std::string getFieldType(std::string label) { return ""; /* primitive types do not have fields */}
 };
 
 class VectorType : public Type {
@@ -169,7 +165,6 @@ class VectorType : public Type {
 		}
 
 		int getSize() { return size; }
-		std::string getFieldType(std::string label) { return fieldType; }
 };
 
 class UserType : public Type {
@@ -216,15 +211,6 @@ class RangeType : public Type {
 		// RangeType(std::string n, std::string f, std::string b, std::string e) : 
 		// 	Type(n), father(f), begin(b), end(e) {}
 		RangeType(std::string n, std::string f) : Type(n), father(f) {}
-		std::string getFieldType(std::string label) { return father; }
-};
-
-class NamedType : public Type {
-	private:
-		std::string father;
-	public:
-		NamedType(std::string nameType, std::string father) : Type(nameType), father(father) {}
-		std::string getFieldType(std::string label) { return father; }
 };
 
 #endif

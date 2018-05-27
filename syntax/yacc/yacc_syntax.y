@@ -378,8 +378,54 @@ atomiclistaux		: ',' atomic atomiclistaux {}
 		
 %%                     /* C code */
 
+/*
+	SCOPES
+*/
+void addScope() {
+	Scope new_scope = Scope(std::map<std::string, Symbol*>()); 
+	scopesTable.push_back(new_scope);
+}
+
+void removeScope() {
+	scopesTable.pop_back();
+}
+
+void initTable(){
+	/* TODO */
+	std::map<std::string, Symbol*> table = std::map<std::string, Symbol*>();
+	table["int"] = new PrimitiveType("int");
+	table["real"] = new PrimitiveType("real");
+	table["str"] = new PrimitiveType("str");
+	table["bool"] = new PrimitiveType("bool");
+	
+	Scope scope = Scope(table);
+	scopesTable.push_back(scope);
+}
+
+int main() {
+	initTable();
+	return yyparse();
+}
+
+void printTable() {
+	std::cout << "-----printTable begin-----" << std::endl;
+	
+	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
+	int scop = scopesTable.size()-1;
+	for (; scope != scopesTable.rend(); ++scope) {
+		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
+		std::cout << "Current scope: " << scop << std::endl;
+		for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
+			std::cout  << "\t- " << itSym->first << " (" << *itSym->second << ")" << std::endl;
+		}
+		scop--;
+	}
+	std::cout << "-----printTable end-----" << std::endl;
+}
+
 void success() {
 	printf("\n\033[0;32mparse success\033[0m\n"); 
+	printTable();
 	exit(1);
 }
 
@@ -429,49 +475,4 @@ void yyerrorInvalidArgs(std::string label) {
 	printf("(%d:%d) Error: Invalid list of arguments \t", yylval.token->line, yylval.token->column);
 	std::cout << label << " parameters and arguments not compatible" << std::endl;
 	exit(1); 
-}
-
-/*
-	SCOPES
-*/
-void addScope() {
-	Scope new_scope = Scope(std::map<std::string, Symbol*>()); 
-	scopesTable.push_back(new_scope);
-}
-
-void removeScope() {
-	scopesTable.pop_back();
-}
-
-void initTable(){
-	/* TODO */
-	std::map<std::string, Symbol*> table = std::map<std::string, Symbol*>();
-	table["int"] = new PrimitiveType("int");
-	table["real"] = new PrimitiveType("real");
-	table["str"] = new PrimitiveType("str");
-	table["bool"] = new PrimitiveType("bool");
-	
-	Scope scope = Scope(table);
-	scopesTable.push_back(scope);
-}
-
-int main() {
-	initTable();
-	return yyparse();
-}
-
-void printTable() {
-	std::cout << "-----printTable begin-----" << std::endl;
-	//int currentScope = scopesTable.size()-1;
-	//std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
-	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
-	int scop = scopesTable.size()-1;
-	for (; scope != scopesTable.rend(); ++scope) {
-		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
-		for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-			std::cout  << "Scope " << scop << ", " << itSym->first << " " << itSym->second->getMeaning() << std::endl;
-		}
-		scop--;
-	}
-	std::cout << "-----printTable end-----" << std::endl;
 }

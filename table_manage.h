@@ -229,7 +229,7 @@ bool isEnumType(std::string t) {
 
 void addUserType(std::string label, std::string t1, std::string t2) {
 	if(t2 == "") {
-		NamedType *namedType = new NamedType(label, t1);
+		RangeType *range = new RangeType(label, t1);
 	}
 
 	if(t1 != t2) {
@@ -278,12 +278,12 @@ std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::str
 	}
 
 	/*First try if the current step is a field in user type */
-	Type *type = dynamic_cast<Type*>(currentSymbol);
-	if(type != nullptr) {
-		std::string fieldType = type->getFieldType(path[index]);
+	UserType *userType = dynamic_cast<UserType*>(searchElementInTableByLabel(currentSymbol->getType()));
+	if(userType != nullptr) {
+		std::string fieldType = userType->getFieldType(path[index]);
 		if(fieldType != "") {
-			Symbol *type = searchElementInTableByLabel(fieldType);
-			return getTypeByPath(type, index + 1, path);
+			Symbol *userType = searchElementInTableByLabel(fieldType);
+			return getTypeByPath(userType, index + 1, path);
 		} else {
 			yyerrorUnknownLabel(path[index]);
 		}
