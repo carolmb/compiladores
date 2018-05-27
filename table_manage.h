@@ -111,11 +111,11 @@ void addSymbol(std::string label, Symbol *sym) {
 	std::cout << "Symbol added called '" << label << "' (" << *sym << ")" << std::endl;
 }
 
-void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool is_const) { 
+void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, bool isConst) { 
 	std::vector<std::string> idlist = vardeclist.first;
 	
-	std::string type_name = vardeclist.second;
-	Symbol *var = new VariableSymbol(type_name, is_const);
+	std::string typeName = vardeclist.second;
+	Symbol *var = new VariableSymbol(typeName, isConst);
 	for(auto id = idlist.begin(); id != idlist.end(); id++) {
 		addSymbol(*id, var); /* if there is some repetition the addSymbol will emit error */
 	}
@@ -258,60 +258,70 @@ void addUserType(std::string label, std::vector<std::string> idlist) {
 }
 
 std::string getTypeByPath(std::vector<std::string> path) {
+	// for(auto it = path.begin(); it != path.end(); it++) {
+	// 	std::cout << *it << " ";
+	// } 
+	// std::cout << std::endl;
+
 	Symbol *sym = searchElementInTableByLabel(path[0]);
 	if(sym == nullptr) {
-		yyerrorUnknownVar(path[0]);
+		yyerrorUnknownLabel(path[0]);
 	}
-	VariableSymbol *var = dynamic_cast<VariableSymbol*>(sym);
-	if(var == nullptr) {
-		yyerrorType("primitive or user type", sym->getMeaning());
-	}
-
-	std::string nameType = var->getVarType();
-	Symbol *type = searchElementInTableByLabel(nameType);
-	return getTypeByPath(type, 1, path);
+	
+	return getTypeByPath(sym, 1, path);
 }
 
-std::string getTypeByPath(Symbol *currentType, int index, std::vector<std::string> path) {
+std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::string> path) {
 	/* TODO: when it is a vector acess or abstraction call */
-
 	if(index >= path.size()) {
-		return dynamic_cast<Type*>(currentType)->getName();
+		return currentSymbol->getType();
 	}
 
-	Type *type = dynamic_cast<Type*>(currentType);
+	/*First try if the current step is a field in user type */
+	Type *type = dynamic_cast<Type*>(currentSymbol);
 	if(type != nullptr) {
-    	std::string fieldType = type->getFieldType(path[index]);
-    	if(fieldType != "") {
-    		Symbol *type = searchElementInTableByLabel(fieldType);
-    		return getTypeByPath(type, index + 1, path);
-    	} else {
-    		yyerrorUnknownVar(path[index]);
-    	}
+		std::string fieldType = type->getFieldType(path[index]);
+		if(fieldType != "") {
+			Symbol *type = searchElementInTableByLabel(fieldType);
+			return getTypeByPath(type, index + 1, path);
+		} else {
+			yyerrorUnknownLabel(path[index]);
+		}
 	}
-	AbstractionSymbol *abs = dynamic_cast<AbstractionSymbol*>(currentType);
+
+	/* Try abstraction call, in this case, the next type is the returned type */
+	AbstractionSymbol *abs = dynamic_cast<AbstractionSymbol*>(currentSymbol);
 	if(abs != nullptr) {
-        int step = std::stoi(path[index]);
-        std::vector<std::string> args;
-        for(int i = index+1; i < index+1+step; i++) {
-            args.push_back(path[i]);
-        }
-        std::vector<Field> params = abs->getParameters();
-        if(args.size() == params.size()) {
-            for(int i = 0; i < args.size(); i++) {
-                if(args[i] != params[i].getTypeField()) {
-                    yyerrorType(params[i].getTypeField(), args[i]);
-                } 
-            }
-        } else {
-            yyerrorInvalidArgs(path[index-1]);
-        }
+		int step = std::stoi(path[index]);
+		std::vector<std::string> args;
+		for(int i = index+1; i < index + 1 + step; i++) {
+			args.push_back(path[i]);
+		}
+		std::vector<Field> params = abs->getParameters();
+		if(args.size() == params.size()) {
+			for(int i = 0; i < args.size(); i++) {
+		    	if(args[i] != params[i].getTypeField()) {
+		        	yyerrorType(params[i].getTypeField(), args[i]);
+		    	} 
+			}
+			std::string returnType = abs->getType();
+			if(returnType == "") {
+				yyerrorUnknownLabel("\"\"[void]");
+			}
+			Symbol *type = searchElementInTableByLabel(returnType);
+			return getTypeByPath(type, index + 1 + step, path);
+		} else {
+		   yyerrorInvalidArgs(path[index-1]);
+		}
 	}
 }
 
 /*Adiciona parametros de uma função como novos símbolos na tabela de símbolos*/
-void addParams(std::vector<Field> params) {
+void addParams(std::string absLabel, std::vector<Field> params) {
 	for(auto f = params.begin(); f != params.end(); f++) {
+		if(absLabel == f->getFieldName()) {
+			yyerrorDuplicateIdentifier(absLabel);
+		}
 		Symbol *var = new VariableSymbol(f->getTypeField(), f->isConstant());
 		addSymbol(f->getFieldName(), var);
 	}

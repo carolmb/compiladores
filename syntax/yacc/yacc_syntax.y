@@ -9,6 +9,7 @@
 #include "../../utilities.h"
 #include "../../errors.h"
 #include "../../table_manage.h"
+#include "../../type_verification.h"
 #include <iostream>
 #include <map>
 
@@ -26,7 +27,6 @@ std::string searchElementInTableBySymbol(Symbol *symbol);
 
 // VARS --------------
 
-void addParams(std::vector<Field> params);
 %}
 
 %union { 
@@ -42,11 +42,11 @@ void addParams(std::vector<Field> params);
 %start program
 
 %type <varDec> vardec constdec
-%type <typeName> type varconstruction arraydec typedecauxrange expr
+%type <typeName> type varconstruction arraydec typedecauxrange expr atomic orfact andfact andfactaux notfact expreq expreqaux numericexpr exprsum exprmul exprmulaux simpleexpr optrange optbracket
 %type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux idaux id idauxexpraux
 %type <fields> paramslist paramsaux parameters vardeclist vardeclistaux
 %type <size> rangelistaux rangelist range
-%type <var> atomic literal
+%type <var> literal
 
 /*Terminals*/
 %token HEXA_VALUE INT_VALUE REAL_VALUE FINAL BOOL_VALUE CONTINUE 
@@ -88,7 +88,7 @@ rangelistaux  		: ',' range rangelistaux { $$ = ($2 + 1)*$3; }
 			  		| {$$ = 1;}
 					;
 
-range  				: atomic DOUBLEDOT atomic { $$ = rangeSize($1, $3); }
+range  				: literal DOUBLEDOT literal { $$ = rangeSize($1, $3); }
 					;
 
 vardec  			: VAR idlist ':' varconstruction { $$ = new std::pair<std::vector<std::string>, std::string>(*$2, *$4); }
@@ -130,10 +130,10 @@ abstractiondec  	: procdec {}
 				  	| funcdec {}
 					;
 
-procdec  			: PROC ID '(' parameters ')' { Symbol *ab = new AbstractionSymbol("", *$4); addSymbol($2.token->value, ab); addScope(); addParams(*$4);/* add parameters in current scope */ } prevdec block { removeScope(); } 
+procdec  			: PROC ID '(' parameters ')' { Symbol *ab = new AbstractionSymbol("", *$4); addSymbol($2.token->value, ab); addScope(); addParams($2.token->value, *$4); } prevdec block { removeScope(); } 
 					;
 
-funcdec  			: FUNC ID '(' parameters ')' ':' type { Symbol *ab = new AbstractionSymbol(*$7, *$4); addSymbol($2.token->value, ab); addScope(); addParams(*$4); } prevdec block { removeScope(); }
+funcdec  			: FUNC ID '(' parameters ')' ':' type { Symbol *ab = new AbstractionSymbol(*$7, *$4); addSymbol($2.token->value, ab); addScope(); addParams($2.token->value, *$4); } prevdec block { removeScope(); }
 					;
 
 parameters  		: paramsaux { $$ = $1;}
@@ -268,67 +268,67 @@ expressionlistaux  	: ',' expr expressionlistaux { $$ = $3; $$->insert($$->begin
 				  	| { $$ = new std::vector<std::string>(); }
 					;
 	
-expr				: andfact orfact {}
+expr				: andfact orfact { $$ = verifyLogicExprType(*$1, *$2); }
 					;
 
-orfact				: OR andfact orfact {}
-					| {}
+orfact				: OR andfact orfact { $$ = verifyLogicExprType(*$2, *$3); }
+					| { $$ = new std::string(""); }
 					;
 
-andfact				: notfact andfactaux {}
+andfact				: notfact andfactaux { $$ = verifyLogicExprType(*$1, *$2); }
 					;
 		
-andfactaux			: AND notfact andfactaux {}
-					| {}
+andfactaux			: AND notfact andfactaux { $$ = verifyLogicExprType(*$2, *$3); }
+					| { $$ = new std::string(""); }
 					;
 
-notfact				: '!' expreq {}
-					| expreq {}
+notfact				: '!' expreq { if(*$2 == "bool") { $$ = $2; } else { yyerrorInvalidType(*$2); } }
+					| expreq { $$ = $1; }
 					;
 
-expreq				: numericexpr expreqaux {}
+expreq				: numericexpr expreqaux { $$ = verifyRelationalExprType(*$1, *$2); }
 					;
 
-expreqaux			: EQUAL numericexpr expreqaux {}
-					| NOTEQ numericexpr expreqaux {}
-					| '>' numericexpr expreqaux {}
-					| '<' numericexpr expreqaux {}
-					| LESSEQ numericexpr expreqaux {}
-					| GREATEQ numericexpr expreqaux {}
-					| {}
+expreqaux			: EQUAL numericexpr expreqaux { $$ = verifyRelationalExprType(*$2, *$3); }
+					| NOTEQ numericexpr expreqaux { $$ = verifyRelationalExprType(*$2, *$3); }
+					| '>' numericexpr expreqaux { $$ = verifyRelationalExprType(*$2, *$3); }
+					| '<' numericexpr expreqaux { $$ = verifyRelationalExprType(*$2, *$3); }
+					| LESSEQ numericexpr expreqaux { $$ = verifyRelationalExprType(*$2, *$3); }
+					| GREATEQ numericexpr expreqaux { $$ = verifyRelationalExprType(*$2, *$3); }
+					| { $$ = new std::string(""); }
 					;
 			
-numericexpr			: exprmul exprsum {}
+numericexpr			: exprmul exprsum { $$ = verifyArithmeticExprType(*$1, *$2); }
 					;
 
-exprsum				: '+' exprmul exprsum {}
-					| '-' exprmul exprsum {}
-					| {}
+exprsum				: '+' exprmul exprsum { $$ = verifyArithmeticExprType(*$2, *$3); }
+					| '-' exprmul exprsum { $$ = verifyArithmeticExprType(*$2, *$3); }
+					| { $$ = new std::string(""); }
 					;
 
-exprmul				: simpleexpr exprmulaux {}
+exprmul				: simpleexpr exprmulaux { $$ = verifyArithmeticExprType(*$1, *$2); }
 					;
 			
-exprmulaux			: '*' simpleexpr exprmulaux {}
-					| '/' simpleexpr exprmulaux {}
-					| {}
+exprmulaux			: '*' simpleexpr exprmulaux { $$ = verifyArithmeticExprType(*$2, *$3); }
+					| '/' simpleexpr exprmulaux { $$ = verifyArithmeticExprType(*$2, *$3); } 
+					| { $$ = new std::string(""); }
 					;
 			
-simpleexpr			: atomic optrange {}
-					| optunary optbracket {}
-					| '(' expr ')' {}
+simpleexpr			: atomic optrange { if(*$2 == "") { $$ = $1; } else { /* getRangeType(*$1, *$2); */} }
+					| optunary optbracket { $$ = $2; }
+					| '(' expr ')' { $$ = $2; }
 					;
        	
-optrange			: DOUBLEDOT atomic {}
-					| {}
+optrange			: DOUBLEDOT atomic { $$ = $2; }
+					| { $$ = new std::string(""); }
 					;
-        		
+
 optunary			: '-' {}
 					| '+' {}
 					;
 			
-optbracket			: '(' expr ')' {}
-					| atomic {}
+optbracket			: '(' expr ')' { $$ = $2; }
+					| atomic { $$ = $1;}
 					;
 
 idlist 				: ID idlistaux { $$ = $2; $$->insert($$->begin(), $1.token->value); } 
@@ -352,8 +352,8 @@ literal				: INT_VALUE	{ $$ = new TypeValue("int", std::stoi($1.token->value)); 
 					| STRING_VALUE { $$ = new TypeValue("str"); }
 					;
 
-atomic				: literal { $$ = $1; }
-					| id { $$ = new TypeValue(getTypeByPath(*$1)); }
+atomic				: literal { $$ = new std::string($1->nameType); }
+					| id { $$ = new std::string(getTypeByPath(*$1)); }
 					;
 
 id					: ID idaux { $$ = $2; $$->insert($$->begin(), $1.token->value); }
@@ -365,7 +365,7 @@ idaux				: '[' expressionlist ']' { $$ = $2;}
 					| { $$ = new std::vector<std::string>(); }
 					;
 					
-idauxexpraux		: expressionlist ')' { int size = $1->size(); $$ = $1; $$->insert($$->begin(), std::to_string(size)); /*verificar ordem dos argumentos*/ }
+idauxexpraux		: expressionlist ')' { int size = $1->size(); $$ = $1; $$->insert($$->begin(), std::to_string(size)); }
 					| ')' { $$ = new std::vector<std::string>(); $$->push_back("0"); }
 					;	
 			
@@ -419,8 +419,8 @@ void yyerrorInvalidType(std::string label) {
 	exit(1); 
 }
 
-void yyerrorUnknownVar(std::string label) {
-	printf("(%d:%d) Error: Unknown variable \t", yylval.token->line, yylval.token->column);
+void yyerrorUnknownLabel(std::string label) {
+	printf("(%d:%d) Error: Unknown label \t", yylval.token->line, yylval.token->column);
 	std::cout << label << " is not a valid variable in current context" << std::endl;
 	exit(1); 
 }
@@ -447,6 +447,10 @@ void initTable(){
 	/* TODO */
 	std::map<std::string, Symbol*> table = std::map<std::string, Symbol*>();
 	table["int"] = new PrimitiveType("int");
+	table["real"] = new PrimitiveType("real");
+	table["str"] = new PrimitiveType("str");
+	table["bool"] = new PrimitiveType("bool");
+	
 	Scope scope = Scope(table);
 	scopesTable.push_back(scope);
 }

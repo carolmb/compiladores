@@ -57,6 +57,7 @@ class Symbol {
 			return os;
 		}
 
+		virtual std::string getType() const = 0; 
 		virtual bool compare(Symbol *sym) = 0;
 };
 
@@ -71,16 +72,20 @@ class AbstractionSymbol : public Symbol {
 		AbstractionSymbol(std::string rt, std::vector<Field> p) 
 			: Symbol("abstraction"), returnType(rt), parameters(p) {}
 		
-		std::string getReturnType() { return returnType; }
+		std::string getType() const { return returnType; }
 		std::vector<Field> getParameters() { return parameters; }
 
 		std::string to_string() const {
-			return "(Abstraction) return type: " + returnType + " params number: " + std::to_string(parameters.size());
+			std::string toString = "(Abstraction) [return]: " + returnType + " [params]: ";
+			for(auto it = parameters.begin(); it != parameters.end(); it++) {
+				toString += it->getTypeField() + " ";
+			}
+			return toString;
 		}
 
 		bool compare(Symbol *s) {
 			AbstractionSymbol *sym = dynamic_cast<AbstractionSymbol*>(s);
-			return sym != nullptr && returnType == sym->getReturnType() && parameters == sym->getParameters();
+			return sym != nullptr && returnType == sym->getType() && parameters == sym->getParameters();
 		}
 };
 
@@ -91,7 +96,7 @@ class VariableSymbol : public Symbol {
 		
 	public:	
 		VariableSymbol(std::string t, bool c) : Symbol("variable"), varType(t), isConst(c) {}
-		std::string getVarType() { return varType; }
+		std::string getType() const { return varType; }
 
 		std::string to_string() const {
 			return "(Variable) type: " + varType;
@@ -101,7 +106,7 @@ class VariableSymbol : public Symbol {
 
 		bool compare(Symbol *v) {
 			VariableSymbol *var = dynamic_cast<VariableSymbol*>(v);
-			return var != nullptr && varType == var->getVarType() && isConst == var->getIsConst(); 
+			return var != nullptr && varType == var->getType() && isConst == var->getIsConst(); 
 		}
 };
 
@@ -122,17 +127,17 @@ class Type : public Symbol {
 		}
 
 		bool compareType(Type *other) {
-			if(this->name == other->getName()) {
+			if(this->name == other->getType()) {
 				return true;
 			} else {
 				return false;
 			}
 		}
 
-		std::string getName() const { return name; }
+		std::string getType() const { return name; }
 
 		std::string to_string() const {
-			return "(Type declaration) nameType: " + getName();
+			return "(Type declaration) nameType: " + getType();
 		}
 
 		virtual std::string getFieldType(std::string label) = 0;
@@ -143,7 +148,7 @@ class PrimitiveType : public Type {
 		PrimitiveType(std::string n) : Type(n) {}
 		bool compareType(Type *o) {
 			PrimitiveType *other = dynamic_cast<PrimitiveType*>(o);
-			return other != nullptr && this->name == other->getName();
+			return other != nullptr && this->name == other->getType();
 		}
 
 		std::string getFieldType(std::string label) { return ""; /* primitive types do not have fields */}
@@ -160,12 +165,10 @@ class VectorType : public Type {
 
 		bool compareType(Type *o) {
 			VectorType *other = dynamic_cast<VectorType*>(o);
-			return other != nullptr && size == other->getSize() && fieldType == other->getFieldType();
+			return other != nullptr && size == other->getSize() && fieldType == other->getType();
 		}
 
-		std::string getFieldType() { return fieldType; }
 		int getSize() { return size; }
-
 		std::string getFieldType(std::string label) { return fieldType; }
 };
 
@@ -196,7 +199,7 @@ class EnumType : public Type {
 		std::string getFieldType(std::string label) {
 			for(auto it = fieldNames.begin(); it != fieldNames.end(); it++) {
 				if(*it == label) {
-					return getName();
+					return getType();
 				}
 			}
 			return ""; 

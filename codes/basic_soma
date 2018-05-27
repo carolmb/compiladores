@@ -1,10 +1,10 @@
 prog basic_soma
 ;
 
-tipo arr1 := vetor[4 .. 10] de texto;
+** tipo arr1 := vetor[4 .. 10] de texto;
 
-var a : arr1;
-var b : vetor[4 .. 10] de texto;
+** var a : arr1;
+** var b : vetor[4 .. 10] de texto;
 
 ** STRUCT DECLARATION
 tipo TDU := registro 
@@ -15,12 +15,19 @@ tipo TDU := registro
 var c : TDU;
 
 var bla : inteiro; 
-var ble : inteiro;
+var ble : texto;
 
 tipo range1 := bla .. c.idade;
 
+** TEST FUNCTION 
+func op(n1 : inteiro, op1 : texto) : inteiro 
+inicio
+
+fim;
+
 ** ENUM DECLARATION
-tipo enum := (jan, fev, mar);
+** tipo enum := (jan, fev, mar);
 
 inicio
+	op(op(bla, ble), ble)
 fim
