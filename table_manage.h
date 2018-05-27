@@ -49,6 +49,7 @@ Symbol* searchElementInCurrentTableByLabel(std::string label) {
 	return nullptr;
 }
 
+/*Veirificar na pilha de tabela de símbolos se o nome da variável foi declarado*/
 Symbol* searchElementInTableByLabel(std::string label) {
 	/*printTable();*/
 	/*TODO: recursive in scopes and verify labels in enums*/
@@ -77,6 +78,7 @@ Symbol* searchElementInTableByLabel(std::string label) {
 	return nullptr;
 }
 
+/*Veirificar na pilha de tabela de símbolos se o símbolo foi utiutilizizadda*/
 std::string searchElementInTableBySymbol(Symbol *symbol) {
 	//int currentScope = scopesTable.size()-1;
 	//std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
@@ -243,6 +245,7 @@ void addUserType(std::string label, std::string t1, std::string t2) {
 	}
 }
 
+/*Adiciona tipo de usuário na tabela de símbolos*/
 void addUserType(std::string label, std::vector<std::string> idlist) {
 	/* Enum */
 	for(auto it = idlist.begin(); it != idlist.end(); it++) {
@@ -277,16 +280,36 @@ std::string getTypeByPath(Symbol *currentType, int index, std::vector<std::strin
 	}
 
 	Type *type = dynamic_cast<Type*>(currentType);
-	std::string fieldType = type->getFieldType(path[index]);
-	if(fieldType != "") {
-		Symbol *type = searchElementInTableByLabel(fieldType);
-		return getTypeByPath(type, index + 1, path);
-	} else {
-		yyerrorUnknownVar(path[index]);
+	if(type != nullptr) {
+    	std::string fieldType = type->getFieldType(path[index]);
+    	if(fieldType != "") {
+    		Symbol *type = searchElementInTableByLabel(fieldType);
+    		return getTypeByPath(type, index + 1, path);
+    	} else {
+    		yyerrorUnknownVar(path[index]);
+    	}
 	}
-
+	AbstractionSymbol *abs = dynamic_cast<AbstractionSymbol*>(currentType);
+	if(abs != nullptr) {
+        int step = std::stoi(path[index]);
+        std::vector<std::string> args;
+        for(int i = index+1; i < index+1+step; i++) {
+            args.push_back(path[i]);
+        }
+        std::vector<Field> params = abs->getParameters();
+        if(args.size() == params.size()) {
+            for(int i = 0; i < args.size(); i++) {
+                if(args[i] != params[i].getTypeField()) {
+                    yyerrorType(params[i].getTypeField(), args[i]);
+                } 
+            }
+        } else {
+            yyerrorInvalidArgs(path[index-1]);
+        }
+	}
 }
 
+/*Adiciona parametros de uma função como novos símbolos na tabela de símbolos*/
 void addParams(std::vector<Field> params) {
 	for(auto f = params.begin(); f != params.end(); f++) {
 		Symbol *var = new VariableSymbol(f->getTypeField(), f->isConstant());

@@ -359,7 +359,7 @@ atomic				: literal { $$ = $1; }
 id					: ID idaux { $$ = $2; $$->insert($$->begin(), $1.token->value); }
 					;
 
-idaux				: '[' expressionlist ']' { $$ = $2; }
+idaux				: '[' expressionlist ']' { $$ = $2;}
 					| '.' id { $$ = $2; }
 					| '(' idauxexpraux { $$ = $2; }
 					| { $$ = new std::vector<std::string>(); }
@@ -422,6 +422,12 @@ void yyerrorInvalidType(std::string label) {
 void yyerrorUnknownVar(std::string label) {
 	printf("(%d:%d) Error: Unknown variable \t", yylval.token->line, yylval.token->column);
 	std::cout << label << " is not a valid variable in current context" << std::endl;
+	exit(1); 
+}
+
+void yyerrorInvalidArgs(std::string label) {
+	printf("(%d:%d) Error: Invalid list of arguments \t", yylval.token->line, yylval.token->column);
+	std::cout << label << " parameters and arguments not compatible" << std::endl;
 	exit(1); 
 }
 
