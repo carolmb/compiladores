@@ -10,7 +10,7 @@ inicio
 	n2 = fim_vet - pivo;
 
 	para (i = 0; i <= n1-1; i = i+1) faca inicio
-		esquerda[i] = minha_lista[ini_vet+i]
+		esquerda[1] = minha_lista[ini_vet+i]
 	fim;
 	
 

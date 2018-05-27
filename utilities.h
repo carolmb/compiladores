@@ -23,14 +23,15 @@ class Field {
 		std::string fieldName;
 		std::string typeField;
 		bool isConst;
-	
 	public:
+		
 		Field() {}
 		Field(std::string n, std::string t) : fieldName(n), typeField(t), isConst(false) {}
 		Field(std::string n, std::string t, bool c) : fieldName(n), typeField(t), isConst(c) {}
 
 		std::string getFieldName() const { return fieldName; }
 		std::string getTypeField() const { return typeField; }
+		bool isConstant() { return isConst; }
 		bool operator ==(const Field &b) const {
 			return fieldName == b.getFieldName() && typeField == b.getTypeField();
 		}
@@ -73,7 +74,7 @@ class AbstractionSymbol : public Symbol {
 		std::string getReturnType() { return returnType; }
 		std::vector<Field> getParameters() { return parameters; }
 
-		std::string to_string() {
+		std::string to_string() const {
 			return "(Abstraction) return type: " + returnType + " params number: " + std::to_string(parameters.size());
 		}
 

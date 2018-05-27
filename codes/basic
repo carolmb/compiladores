@@ -15,7 +15,7 @@ tipo TDU := registro
 
 ** VAR DECLARATION 
 var tdu : TDU;
-var blo,blu : logico;
+var blo : logico;
 var blu, pla : texto;
 var ple : texto = 'oi';
 var pli : real = 4 + 20;

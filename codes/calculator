@@ -1,6 +1,7 @@
 prog Calculator;
 
 func sum(n1: real , n2 : real) : real 
+var op : texto;
 inicio
 	retorne n1 + n2
 fim;
