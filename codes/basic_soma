@@ -14,7 +14,10 @@ tipo TDU := registro
 
 var c : TDU;
 
-tipo range1 := 1 .. 10;
+var bla : inteiro; 
+var ble : inteiro;
+
+tipo range1 := bla .. c.idade;
 
 ** ENUM DECLARATION
 tipo enum := (jan, fev, mar);

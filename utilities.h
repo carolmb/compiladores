@@ -133,6 +133,8 @@ class Type : public Symbol {
 		std::string to_string() const {
 			return "(Type declaration) nameType: " + getName();
 		}
+
+		virtual std::string getFieldType(std::string label) = 0;
 };
 
 class PrimitiveType : public Type {
@@ -142,6 +144,8 @@ class PrimitiveType : public Type {
 			PrimitiveType *other = dynamic_cast<PrimitiveType*>(o);
 			return other != nullptr && this->name == other->getName();
 		}
+
+		std::string getFieldType(std::string label) { return ""; /* primitive types do not have fields */}
 };
 
 class VectorType : public Type {
@@ -160,6 +164,8 @@ class VectorType : public Type {
 
 		std::string getFieldType() { return fieldType; }
 		int getSize() { return size; }
+
+		std::string getFieldType(std::string label) { return fieldType; }
 };
 
 class UserType : public Type {
@@ -169,6 +175,14 @@ class UserType : public Type {
 	public:
 		UserType() : Type("userType") {} 
 		UserType(std::string n, std::vector<Field> f) : Type(n), fields(f) {}
+		std::string getFieldType(std::string label) { 
+			for(auto it = fields.begin(); it != fields.end(); it++) {
+				if(it->getFieldName() == label) {
+					return it->getTypeField();
+				}
+			}
+			return ""; 
+		}
 };
 
 class EnumType : public Type {
@@ -178,6 +192,14 @@ class EnumType : public Type {
 	public:
 		EnumType(std::string n, std::vector<std::string> fs) : Type(n), fieldNames(fs) {}
 		std::vector<std::string> getFieldNames() { return fieldNames; }
+		std::string getFieldType(std::string label) {
+			for(auto it = fieldNames.begin(); it != fieldNames.end(); it++) {
+				if(*it == label) {
+					return getName();
+				}
+			}
+			return ""; 
+		}
 };
 
 class RangeType : public Type {
@@ -190,6 +212,7 @@ class RangeType : public Type {
 		// RangeType(std::string n, std::string f, std::string b, std::string e) : 
 		// 	Type(n), father(f), begin(b), end(e) {}
 		RangeType(std::string n, std::string f) : Type(n), father(f) {}
+		std::string getFieldType(std::string label) { return father; }
 };
 
 class NamedType : public Type {
@@ -197,6 +220,7 @@ class NamedType : public Type {
 		std::string father;
 	public:
 		NamedType(std::string nameType, std::string father) : Type(nameType), father(father) {}
+		std::string getFieldType(std::string label) { return father; }
 };
 
 #endif

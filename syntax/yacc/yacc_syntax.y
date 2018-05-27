@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <iterator>
 #include "../../utilities.h"
 #include <iostream>
 #include <map>
@@ -12,8 +13,6 @@
 void yyerror (char *s); 
 int yylex();
 void success();
-std::string getType(std::string label);
-
 
 void yyerrorDuplicateIdentifier (std::string sym_name);
 void yyerrorSize (int expSize, int currentSize);
@@ -54,6 +53,8 @@ std::string verifyUsertype(std::string label);
 void insertVarDec(std::vector<Field> *fields, std::pair<std::vector<std::string>, std::string> *varDec);
 std::vector<EnumType*> getEnums();
 bool isEnumType(std::string t);
+std::string getTypeByPath(std::vector<std::string> path);
+std::string getTypeByPath(Symbol *currentType, int index, std::vector<std::string> path);
 %}
 
 %union { 
@@ -132,11 +133,11 @@ decwithassign  		: '=' expr {}
 usertype  			: TYPE ID CASSIGN arraydec { addUserType($2.token->value, *$4); }
 					| TYPE ID CASSIGN STRUCT vardeclist END { addUserType($2.token->value, *$5); }
 					| TYPE ID CASSIGN literal DOUBLEDOT literal { addUserType($2.token->value, $4->nameType, $6->nameType); }
-					| TYPE ID CASSIGN id typedecauxrange { addUserType($2.token->value, $4->front(), *$5); }
+					| TYPE ID CASSIGN id typedecauxrange { addUserType($2.token->value, getTypeByPath(*$4), *$5); }
 					| TYPE ID CASSIGN '(' idlist ')' { addUserType($2.token->value, *$5); }
 					;
 
-typedecauxrange		: DOUBLEDOT id { $$ = new std::string($2->front()); }
+typedecauxrange		: DOUBLEDOT id { $$ = new std::string(getTypeByPath(*$2)); }
 					| { $$ = new std::string(""); }
 					;
 
@@ -380,10 +381,10 @@ literal				: INT_VALUE	{ $$ = new TypeValue("int", std::stoi($1.token->value)); 
 					;
 
 atomic				: literal { $$ = $1; }
-					| id {}
+					| id { $$ = new TypeValue(getTypeByPath(*$1)); }
 					;
 
-id					: ID idaux { $$ = $2; /* add $1 and generate type */ }
+id					: ID idaux { $$ = $2; $$->insert($$->begin(), $1.token->value); }
 					;
 
 idaux				: '[' expressionlist ']' { $$ = $2; }
@@ -440,10 +441,15 @@ void yyerrorUnknownType(std::string label) {
 	exit(1); 
 }
 
-
 void yyerrorInvalidType(std::string label) {
 	printf("(%d:%d) Error: Invalid type \t", yylval.token->line, yylval.token->column);
 	std::cout << label << " is not a valid type in current context" << std::endl;
+	exit(1); 
+}
+
+void yyerrorUnknownVar(std::string label) {
+	printf("(%d:%d) Error: Unknown variable \t", yylval.token->line, yylval.token->column);
+	std::cout << label << " is not a valid variable in current context" << std::endl;
 	exit(1); 
 }
 
@@ -461,24 +467,15 @@ void removeScope() {
 
 void initTable(){
 	/* TODO */
-	scopesTable.push_back(Scope(std::map<std::string, Symbol*>()));
+	std::map<std::string, Symbol*> table = std::map<std::string, Symbol*>();
+	table["int"] = new PrimitiveType("int");
+	Scope scope = Scope(table);
+	scopesTable.push_back(scope);
 }
 
 int main() {
 	initTable();
 	return yyparse();
-}
-
-std::string getType(std::string label) {
-	int currentScope = scopesTable.size()-1;
-	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
-	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-		Symbol *sym = itSym->second;
-		if(itSym->first == label && sym->getMeaning() == "variable") {
-			VariableSymbol *var = dynamic_cast<VariableSymbol*>(sym);
-			return var->getVarType();
-		}
-	}
 }
 
 void printTable() {
@@ -630,6 +627,7 @@ std::string verifyUsertype(std::string label) {
 }
 
 void insertVarDec(std::vector<Field> *fields, std::pair<std::vector<std::string>, std::string> *varDec) {
+	/* get usertype fields to create UserType */
 	std::vector<std::string> idlist = varDec->first;
 	std::string type = varDec->second;
 	
@@ -699,4 +697,37 @@ void addUserType(std::string label, std::vector<std::string> idlist) {
 	}
 	EnumType *enumType = new EnumType(label, idlist);
 	addSymbol(label, enumType);
+}
+
+std::string getTypeByPath(std::vector<std::string> path) {
+	Symbol *sym = searchElementInTableByLabel(path[0]);
+	if(sym == nullptr) {
+		yyerrorUnknownVar(path[0]);
+	}
+	VariableSymbol *var = dynamic_cast<VariableSymbol*>(sym);
+	if(var == nullptr) {
+		yyerrorType("primitive or user type", sym->getMeaning());
+	}
+
+	std::string nameType = var->getVarType();
+	Symbol *type = searchElementInTableByLabel(nameType);
+	return getTypeByPath(type, 1, path);
+}
+
+std::string getTypeByPath(Symbol *currentType, int index, std::vector<std::string> path) {
+	/* TODO: when it is a vector acess or abstraction call */
+
+	if(index >= path.size()) {
+		return dynamic_cast<Type*>(currentType)->getName();
+	}
+
+	Type *type = dynamic_cast<Type*>(currentType);
+	std::string fieldType = type->getFieldType(path[index]);
+	if(fieldType != "") {
+		Symbol *type = searchElementInTableByLabel(fieldType);
+		return getTypeByPath(type, index + 1, path);
+	} else {
+		yyerrorUnknownVar(path[index]);
+	}
+
 }
