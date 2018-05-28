@@ -208,8 +208,6 @@ class RangeType : public Type {
 		// std::string end;
 		
 	public:
-		// RangeType(std::string n, std::string f, std::string b, std::string e) : 
-		// 	Type(n), father(f), begin(b), end(e) {}
 		RangeType(std::string n, std::string f) : Type(n), father(f) {}
 };
 

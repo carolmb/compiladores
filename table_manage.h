@@ -314,6 +314,8 @@ std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::str
 		   yyerrorInvalidArgs(path[index-1]);
 		}
 	}
+
+	/*TODO: vector access */
 }
 
 /*Adiciona parametros de uma função como novos símbolos na tabela de símbolos*/

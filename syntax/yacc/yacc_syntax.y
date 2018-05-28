@@ -42,8 +42,8 @@ std::string searchElementInTableBySymbol(Symbol *symbol);
 %start program
 
 %type <varDec> vardec constdec
-%type <typeName> type varconstruction arraydec typedecauxrange expr atomic orfact andfact andfactaux notfact expreq expreqaux numericexpr exprsum exprmul exprmulaux simpleexpr optrange optbracket
-%type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux idaux id idauxexpraux
+%type <typeName> type varconstruction arraydec typedecauxrange expr atomic orfact andfact andfactaux notfact expreq expreqaux numericexpr exprsum exprmul exprmulaux simpleexpr optrange optbracket decwithassign atomiclistaux atomiclist caseclause
+%type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux idaux id idauxexpraux caselist caselistaux caselistaux2
 %type <fields> paramslist paramsaux parameters vardeclist vardeclistaux
 %type <size> rangelistaux rangelist range
 %type <var> literal
@@ -71,7 +71,7 @@ declaration  		: vardec { addVarDecList(*$1, false); }
 			  		| usertype {}
 			  		| labeldec {}
 			  		| constdec { addVarDecList(*$1, true); }
-			  		| { std::cout << "ABSTRACTIONDEC" << std::endl; } abstractiondec
+			  		| abstractiondec
 					;
 
 arraydec  			: VECTOR '[' rangelist ']' OF type arraydecaux { std::string v = addVec($3, *$6, $7); $$ = new std::string(v); }
@@ -94,12 +94,12 @@ range  				: literal DOUBLEDOT literal { $$ = rangeSize($1, $3); }
 vardec  			: VAR idlist ':' varconstruction { $$ = new std::pair<std::vector<std::string>, std::string>(*$2, *$4); }
 					;
 
-varconstruction  	: type decwithassign { $$ = $1; }
+varconstruction  	: type decwithassign { if(*$2 == "") { $$ = $1; } else if(*$1 == *$2) { $$ = $1; } else { yyerrorInvalidType(*$2); } }
 				  	| arraydec { $$ = $1; }
 					;
 
-decwithassign  		: '=' expr {}
-			  		| {}
+decwithassign  		: '=' expr { $$ = $2; }
+			  		| { $$ = new std::string(""); }
 					;
 
 usertype  			: TYPE ID CASSIGN arraydec { addUserType($2.token->value, *$4); }
@@ -180,7 +180,7 @@ callidbegin  		: ':' callcommand {}
 calllabel  			: JUMP ID
 					;
 
-write  				: WRITE '(' expressionlist ')'
+write  				: WRITE '(' expressionlist ')' { for(auto it = $3->begin(); it != $3->end(); it++) { if (*it != "str") { yyerrorType("texto", *it); }}}
 					;
 
 read  				: READ '(' expressionlist ')'
@@ -197,17 +197,17 @@ loop  				: forloop {}
 forloop  			: FOR '(' forstruct ')' DO callcommand 
 					;
 
-forstruct  			: prevfor ';' expr ';' posfor {}
+forstruct  			: prevfor ';' expr ';' posfor { if(*$3 != "bool") { yyerrorType("bool", *$3); } }
 					;
 
 prevfor 			: varassignlist {}
 		  			| {}
 					;
 
-varassignlist  		: ID '=' expr varassignlistaux {}
+varassignlist  		: ID '=' expr varassignlistaux { verifyTypeAssign($1.token->value, *$3); }
 					;
 
-varassignlistaux  	: ',' ID '=' expr varassignlistaux {}
+varassignlistaux  	: ',' ID '=' expr varassignlistaux { verifyTypeAssign($2.token->value, *$4); }
 				  	| {}
 					;
 
@@ -222,17 +222,17 @@ posforaux2  		: ',' commands posforaux2 {}
 			  		| {}
 					;
 
-whileloop  			: WHILE '(' expr ')' DO callcommand 
+whileloop  			: WHILE '(' expr ')' { if(*$3 != "bool") { yyerrorType("bool", *$3); } } DO callcommand 
 					;
 
-repeatloop  		: REPEAT commands UNTIL expr {}
+repeatloop  		: REPEAT commands UNTIL expr { if(*$4 != "bool") { yyerrorType("bool", *$4); } }
 					;
 
 conditional  		: ifcond {}
 			 		| casecond {}
 					;
 
-ifcond  			: IF '(' expr ')' THEN callcommand ifcondaux {}
+ifcond  			: IF '(' expr ')' { if(*$3 != "bool") { yyerrorType("bool", *$3); } }  THEN callcommand ifcondaux {}
 					;
 
 ifcondaux  			: ELSE callcommand 
@@ -240,25 +240,25 @@ ifcondaux  			: ELSE callcommand
 					;
 					
 					
-casecond  			:  CASE '(' expr ')' BE caselist casecondaux 
+casecond  			:  CASE '(' expr ')' BE caselist casecondaux { verifyCaseList(*$3, *$6); }
 					;
 
 casecondaux  		: END {}
 			  		| ELSE commands END {}
 					;
 
-caselist  			: caseclause caselistaux {}
+caselist  			: caseclause caselistaux { $2->insert($2->begin(), *$1); $$ = $2; }
 					;
 
-caselistaux  		: ';' caselistaux2 {}
-			  		| {}
+caselistaux  		: ';' caselistaux2 { $$ = $2; }
+			  		| { $$ = new std::vector<std::string>(); }
 					;
 
-caselistaux2  		: caseclause caselistaux {}
-			  		| {}
+caselistaux2  		: caseclause caselistaux { $$ = $2; $$->insert($$->begin(), *$1); }
+			  		| { $$ = new std::vector<std::string>(); }
 					;
 
-caseclause  		: atomiclist ':' callcommand {}
+caseclause  		: atomiclist ':' callcommand { $$ = $1; }
 					;
 
 expressionlist  	: expr expressionlistaux { $$ = $2; $$->insert($$->begin(), *$1); }
@@ -368,12 +368,12 @@ idaux				: '[' expressionlist ']' { $$ = $2;}
 idauxexpraux		: expressionlist ')' { int size = $1->size(); $$ = $1; $$->insert($$->begin(), std::to_string(size)); }
 					| ')' { $$ = new std::vector<std::string>(); $$->push_back("0"); }
 					;	
-			
-atomiclist  		: atomic atomiclistaux {}
+
+atomiclist  		: atomic atomiclistaux { if (*$2 == "" || *$1 == *$2) { $$ = $1; } else { yyerrorType(*$1, *$2); } }
 					;
 				
-atomiclistaux		: ',' atomic atomiclistaux {}
-					| {}
+atomiclistaux		: ',' atomic atomiclistaux { if (*$3 == "" || *$2 == *$3) { $$ = $2; } else { yyerrorType(*$2, *$3); } }
+					| { $$ = new std::string(""); }
 					;
 		
 %%                     /* C code */
