@@ -125,7 +125,7 @@ class Type : public Symbol {
 				return compareType(type);
 			return false;
 		}
-
+	
 		bool compareType(Type *other) {
 			if(this->name == other->getType()) {
 				return true;
@@ -153,27 +153,39 @@ class PrimitiveType : public Type {
 class VectorType : public Type {
 	private:
 		std::string fieldType;
-		int size;
+		int dim;
 		
 	public:
 		VectorType() : Type("vector") {}
-		VectorType(std::string t, int s) : Type("vector"), fieldType(t), size(s) {}
-
-		bool compareType(Type *o) {
-			VectorType *other = dynamic_cast<VectorType*>(o);
-			return other != nullptr && size == other->getSize() && fieldType == other->getType();
+		VectorType(std::string t, int d) : Type("vector"), fieldType(t), dim(d) {
+			std::cout << "";
 		}
 
-		int getSize() { return size; }
+		bool compare(Symbol *sym) {
+			VectorType *type = dynamic_cast<VectorType*>(sym);
+			if (type != nullptr)
+				return compareType(type);
+			return false;
+		}
+		
+		bool compareType(Type *o) {
+			VectorType *other = dynamic_cast<VectorType*>(o);
+			return other != nullptr && dim == other->getDim() && fieldType == other->getFieldType();
+		}
+
+		std::string getFieldType() { return fieldType; } 
+
+		int getDim() { return dim; }
 };
 
 class UserType : public Type {
 	private: 
 		std::vector<Field> fields;
-
+		bool vec;
 	public:
 		UserType() : Type("userType") {} 
-		UserType(std::string n, std::vector<Field> f) : Type(n), fields(f) {}
+		UserType(std::string n, std::vector<Field> f) : Type(n), fields(f), vec(false) {}
+		UserType(std::string n, std::vector<Field> f, bool v) : Type(n), fields(f), vec(v) {}
 		std::string getFieldType(std::string label) { 
 			for(auto it = fields.begin(); it != fields.end(); it++) {
 				if(it->getFieldName() == label) {
@@ -182,6 +194,8 @@ class UserType : public Type {
 			}
 			return ""; 
 		}
+		bool isVec() { return vec; }
+		std::string getFieldType() { if(isVec()) { return fields[0].getTypeField(); } return ""; }
 };
 
 class EnumType : public Type {
@@ -197,7 +211,7 @@ class EnumType : public Type {
 					return getType();
 				}
 			}
-			return ""; 
+			return "";
 		}
 };
 

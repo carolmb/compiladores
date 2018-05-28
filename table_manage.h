@@ -16,13 +16,13 @@ struct Scope {
 };
 
 std::vector<Scope> scopesTable; 
-int vIndex = 0;
+int vIndex;
 
 std::string getTypeByPath(std::vector<std::string> path);
 std::string getTypeByPath(Symbol *currentType, int index, std::vector<std::string> path);
 
-std::vector<EnumType*> getEnums() {
-	std::vector<EnumType*> enums;
+template <class T> std::vector<T*> getByType() {
+	std::vector<T*> enums;
 
 	//int currentScope = scopesTable.size()-1;
 	//std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
@@ -30,7 +30,7 @@ std::vector<EnumType*> getEnums() {
 	for (; scope != scopesTable.rend(); ++scope) {
 		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
 		for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-			EnumType *enumType = dynamic_cast<EnumType*>(itSym->second);
+			T *enumType = dynamic_cast<T*>(itSym->second);
 			if(enumType != nullptr)
 				enums.push_back(enumType);
 		}
@@ -65,7 +65,7 @@ Symbol* searchElementInTableByLabel(std::string label) {
 		}
 	}
 
-	std::vector<EnumType*> enums = getEnums();
+	std::vector<EnumType*> enums = getByType<EnumType>();
 	for(auto it = enums.begin(); it != enums.end(); it++) {
 		std::vector<std::string> fields = (*it)->getFieldNames();
 		for(auto field = fields.begin(); field != fields.end(); field++) {
@@ -122,11 +122,8 @@ void addVarDecList(std::pair<std::vector<std::string>, std::string> vardeclist, 
 	}
 }
 
-std::string addVec(int size, std::string expectedType, std::vector<std::string> *initTypes) {
+std::string addVec(int dim, std::string expectedType, std::vector<std::string> *initTypes) {
 	if (initTypes != nullptr) {
-		if (size != initTypes->size()) {
-			yyerrorSize(size, initTypes->size());
-		}
 		for(auto it = initTypes->begin(); it != initTypes->end(); it++) {
 			if(*it != expectedType) {
 				yyerrorType (expectedType, *it);
@@ -134,7 +131,7 @@ std::string addVec(int size, std::string expectedType, std::vector<std::string> 
 		}
 	}
 
-	VectorType *vec = new VectorType(expectedType, size); 
+	VectorType *vec = new VectorType(expectedType, dim); 
 	std::string label = searchElementInTableBySymbol(vec);
 	if (label != "") {
 		return label;
@@ -150,23 +147,22 @@ int rangeSize(TypeValue *first, TypeValue *second) {
 	int value = 0;
 	if(first->nameType == "int" && second->nameType == "int") {
 		if (second->value > first->value) {
-			return second->value - first->value;
+			return 1;
 		}
-	} else {
-		/* incompatible type */
-		std::string currentType = first->nameType;
-		if(currentType == "int")
-			currentType = second->nameType;
-		yyerrorType ("int", currentType);
 	}
-	return 0;
+	/* incompatible type */
+	std::string currentType = first->nameType;
+	if(currentType == "int")
+		currentType = second->nameType;
+	yyerrorType ("int", currentType);
 }
 
 void addUserType(std::string label, std::string name) {
+	std::cout << "addUserType name " << name << std::endl;
 	Field field(name, name);
 	std::vector<Field> fields;
 	fields.push_back(field);
-	UserType *userType = new UserType(label, fields);
+	UserType *userType = new UserType(label, fields, true);
 	addSymbol(label, userType);
 }
 
@@ -216,8 +212,10 @@ void addUserType(std::string label, std::vector<Field> fields) {
 	addSymbol(label, userType);
 }
 
-bool isEnumType(std::string t) {
-	std::vector<EnumType*> enums = getEnums();
+template<class T>
+bool isType(std::string t) {
+	std::cout << "bbbbbbbbbbbbbbbbb " << t << std::endl;
+	std::vector<T*> enums = getByType<T>();
 	for(auto e = enums.begin(); e != enums.end(); e++) {
 		if((*e)->getType() == t) {
 			return true;
@@ -236,7 +234,7 @@ void addUserType(std::string label, std::string t1, std::string t2) {
 		yyerrorType (t1, t2);
 	}
 	
-	if(t1 == "int" || isEnumType(t1)) {
+	if(t1 == "int" || isType<EnumType>(t1)) {
 		RangeType *range = new RangeType(label, t1);
 		addSymbol(label, range);
 	} else {
@@ -257,11 +255,11 @@ void addUserType(std::string label, std::vector<std::string> idlist) {
 }
 
 std::string getTypeByPath(std::vector<std::string> path) {
-	// for(auto it = path.begin(); it != path.end(); it++) {
-	// 	std::cout << *it << " ";
-	// } 
-	// std::cout << std::endl;
-
+	for(auto it = path.begin(); it != path.end(); it++) {
+		std::cout << *it << " ";
+	} 
+	std::cout << std::endl;
+	
 	Symbol *sym = searchElementInTableByLabel(path[0]);
 	if(sym == nullptr) {
 		yyerrorUnknownLabel(path[0]);
@@ -273,12 +271,20 @@ std::string getTypeByPath(std::vector<std::string> path) {
 std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::string> path) {
 	/* TODO: when it is a vector acess or abstraction call */
 	if(index >= path.size()) {
+		if (currentSymbol == nullptr) {
+			return "";
+		}
 		return currentSymbol->getType();
 	}
 
 	/*First try if the current step is a field in user type */
 	UserType *userType = dynamic_cast<UserType*>(searchElementInTableByLabel(currentSymbol->getType()));
 	if(userType != nullptr) {
+		if(userType->isVec()) {
+			std::cout << "aaaaaaaaaaaaaaaaaaaa";
+			Symbol *vec = searchElementInTableByLabel(userType->getFieldType());
+			return getTypeByPath(vec, index, path);
+		}
 		std::string fieldType = userType->getFieldType(path[index]);
 		if(fieldType != "") {
 			Symbol *userType = searchElementInTableByLabel(fieldType);
@@ -290,6 +296,7 @@ std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::str
 
 	/* Try abstraction call, in this case, the next type is the returned type */
 	AbstractionSymbol *abs = dynamic_cast<AbstractionSymbol*>(currentSymbol);
+
 	if(abs != nullptr) {
 		int step = std::stoi(path[index]);
 		std::vector<std::string> args;
@@ -304,9 +311,7 @@ std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::str
 		    	} 
 			}
 			std::string returnType = abs->getType();
-			if(returnType == "") {
-				yyerrorUnknownLabel("\"\"[void]");
-			}
+			
 			Symbol *type = searchElementInTableByLabel(returnType);
 			return getTypeByPath(type, index + 1 + step, path);
 		} else {
@@ -314,7 +319,30 @@ std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::str
 		}
 	}
 
-	/*TODO: vector access */
+	/* vector access */
+	VectorType *vec = dynamic_cast<VectorType*>(currentSymbol);
+	if(vec != nullptr) {
+		int step = std::stoi(path[index]);
+		std::cout << "step: " << step << " ";
+		std::vector<std::string> args;
+		for(int i = index+1; i < index + 1 + step; i++) {
+			std::cout << path[i] << " ";
+			args.push_back(path[i]);
+		}
+		int dim = vec->getDim();
+		if(dim == step) {
+			for(int i = 0; i < args.size(); i++) {
+		    	if(args[i] != "int") {
+		        	yyerrorType("int", args[i]);
+		    	} 
+			}
+			std::string returnType = vec->getFieldType();
+			Symbol *type = searchElementInTableByLabel(returnType);
+			return getTypeByPath(type, index + 1 + step, path);
+		} else {
+		   yyerrorInvalidArgs(path[index-1]);
+		}
+	}
 }
 
 /*Adiciona parametros de uma função como novos símbolos na tabela de símbolos*/

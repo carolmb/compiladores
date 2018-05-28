@@ -14,7 +14,7 @@ tipo TDU := registro
     fim;  
     
 ** ARRAY DECLARATION
-tipo arr1 := vetor[4 .. 10] de texto;
+tipo arr1 := vetor[3 .. 5] de texto;
 tipo arr2 := vetor[1 .. 5] de real = ( 1.0, 2.0, 3.0, 4.0, 5.0 );
 
 ** ENUM DECLARATION
@@ -53,7 +53,7 @@ inicio
 		    escreva('4')
 	fim
 	senao se (1 == 2) entao inicio
-		escreva(2)
+		**escreva('2')
 	fim
 fim;
 
@@ -83,7 +83,8 @@ inicio
     
     ** VECTOR TEST
     nome_negocio[0] = 'teste';
-    **nome_vetor[3] = 'teste2';
+    nome_vetor[4] = 'teste2';
+    nome_negocio = nome_vetor; **ERROR
     
     ** LABEL TEST
     salto:
@@ -99,7 +100,7 @@ inicio
 	
 	** FOR TEST
 	para (i = 0; i <= 5; i = i + 1) faca inicio
-        escreva(i)
+        escreva('bla')
     fim;
     
     ** CALL LABEL TEST
@@ -112,6 +113,6 @@ inicio
     
     ** DO TEST
     repita 
-    	leia(pli)
+    	leiaReal(pli)
     ate (2 < 1)
 fim

@@ -1,0 +1,36 @@
+prog Test_Func;
+
+func fun1( n: real): inteiro
+inicio
+fim;
+
+func fun2( ): inteiro
+inicio
+fim;
+
+proc proc1(a : inteiro)
+var n1, n2 : inteiro;
+inicio
+fim;
+
+proc proc2()
+var n1, n2 : inteiro;
+inicio
+fim;
+
+var in_inteiro : inteiro;
+var in_texto : texto;
+var in_logico : logico;
+var in_real : real;
+
+inicio
+    fun1(in_real);
+    fun2();
+    proc1(in_inteiro);
+    proc2();
+    escreva('testando');
+    leiaInteiro( in_inteiro );
+    leiaTexto( in_texto );
+    leiaLogico( in_logico );
+    leiaReal( in_real )
+fim

@@ -83,7 +83,6 @@ void verifyType(std::string t1, std::string t2) {
 }
 
 void verifyLabel(std::string id) {
-	std::cout << "aqui" << std::endl;
 	Symbol *l = searchElementInTableByLabel(id); 
 	VariableSymbol *v = dynamic_cast<VariableSymbol*>(l); 
 	if (v == nullptr) {
@@ -94,4 +93,5 @@ void verifyLabel(std::string id) {
 		yyerrorType("rotulo", v->getType());
 	}
 }
+
 #endif

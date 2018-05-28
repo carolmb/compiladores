@@ -81,11 +81,11 @@ arraydecaux  		: '=' '(' expressionlist ')' { $$ = $3; }
 			  		| { $$ = nullptr; }
 					;
 
-rangelist  			: range rangelistaux { $$ = ($1 + 1)*$2; }
+rangelist  			: range rangelistaux { $$ = $1 + $2; }
 					;
 
-rangelistaux  		: ',' range rangelistaux { $$ = ($2 + 1)*$3; }
-			  		| {$$ = 1;}
+rangelistaux  		: ',' range rangelistaux { $$ = $3 + $2; }
+			  		| {$$ = 0;}
 					;
 
 range  				: literal DOUBLEDOT literal { $$ = rangeSize($1, $3); }
@@ -158,7 +158,7 @@ callcommand  		: BREAK {}
 			  		| block {}
 			  		| return {}
 			  		| CONTINUE {}
-			  		| id callidbegin { if(*$2 == "rotulo") { getTypeByPath(*$1); } if(*$2 != "") verifyType(getTypeByPath(*$1), *$2); }
+			  		| id callidbegin { std::string t = getTypeByPath(*$1); if(*$2 != "") verifyType(t, *$2); }
 			  		| calllabel {}
 			  		| conditional {}
 					;
@@ -351,7 +351,7 @@ atomic				: literal { $$ = new std::string($1->nameType); }
 id					: ID idaux { $$ = $2; $$->insert($$->begin(), $1->value); }
 					;
 
-idaux				: '[' expressionlist ']' { $$ = $2;}
+idaux				: '[' expressionlist ']' { int size = $2->size(); $$ = $2; $$->insert($$->begin(), std::to_string(size)); }
 					| '.' id { $$ = $2; }
 					| '(' idauxexpraux { $$ = $2; }
 					| { $$ = new std::vector<std::string>(); }
@@ -397,19 +397,19 @@ void initTable(){
 	table["escreva"] = new AbstractionSymbol("", paramsEscreva); 
 	
 	std::vector<Field> paramsLeiaInt;
-	paramsEscreva.push_back(Field("arg", "int"));
+	paramsLeiaInt.push_back(Field("arg", "int"));
 	table["leiaInteiro"] = new AbstractionSymbol("", paramsLeiaInt); 
 	
 	std::vector<Field> paramsLeiaReal;
-	paramsEscreva.push_back(Field("arg", "real"));
+	paramsLeiaReal.push_back(Field("arg", "real"));
 	table["leiaReal"] = new AbstractionSymbol("", paramsLeiaReal); 
 	
 	std::vector<Field> paramsLeiaTexto;
-	paramsEscreva.push_back(Field("arg", "texto"));
+	paramsLeiaTexto.push_back(Field("arg", "texto"));
 	table["leiaTexto"] = new AbstractionSymbol("", paramsLeiaTexto); 
 	
 	std::vector<Field> paramsLeiaBool;
-	paramsEscreva.push_back(Field("arg", "bool"));
+	paramsLeiaBool.push_back(Field("arg", "bool"));
 	table["leiaLogico"] = new AbstractionSymbol("", paramsLeiaBool); 
 	
 	Scope scope = Scope(table);
@@ -417,6 +417,7 @@ void initTable(){
 }
 
 int main() {
+	vIndex = 0;
 	initTable();
 	return yyparse();
 }
