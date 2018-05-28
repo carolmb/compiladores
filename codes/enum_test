@@ -1,0 +1,12 @@
+prog meu_programa;
+
+
+** ENUM DECLARATION
+tipo enum := (jan, fev, mar);
+
+** RANGE DECLARATION
+tipo range := jan .. mar;
+
+inicio
+	
+fim

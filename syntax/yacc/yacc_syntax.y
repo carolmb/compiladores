@@ -19,7 +19,7 @@ void success();
 
 // SCOPES --------------
 
-void addScope();
+void addScope(std::string returnType);
 void removeScope();
 void initTable();
 Symbol* searchElementInTableByLabel(std::string label);
@@ -42,19 +42,19 @@ std::string searchElementInTableBySymbol(Symbol *symbol);
 %start program
 
 %type <varDec> vardec constdec
-%type <typeName> type varconstruction arraydec typedecauxrange expr atomic orfact andfact andfactaux notfact expreq expreqaux numericexpr exprsum exprmul exprmulaux simpleexpr optrange optbracket decwithassign atomiclistaux atomiclist caseclause
+%type <typeName> type varconstruction arraydec typedecauxrange expr callidbegin atomic orfact andfact andfactaux notfact expreq expreqaux numericexpr exprsum exprmul exprmulaux simpleexpr optrange optbracket decwithassign atomiclistaux atomiclist caseclause
 %type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux idaux id idauxexpraux caselist caselistaux caselistaux2
 %type <fields> paramslist paramsaux parameters vardeclist vardeclistaux
 %type <size> rangelistaux rangelist range
 %type <var> literal
 
 /*Terminals*/
-%token HEXA_VALUE INT_VALUE REAL_VALUE FINAL BOOL_VALUE CONTINUE 
-ID INT REAL BOOL STRING VECTOR PROG INIT END OF VAR LABEL STRUCT 
+%token REAL_VALUE FINAL BOOL_VALUE CONTINUE 
+INT REAL BOOL STRING VECTOR PROG INIT END OF VAR STRUCT 
 TYPE CONST RETURN JUMP FOR WHILE DO REPEAT UNTIL IF THEN ELSE CASE 
-BE FUNC PROC BREAK 
-REF AND OR LESSEQ GREATEQ EQUAL NOTEQ DOUBLEDOT 
-STRING_VALUE CASSIGN WRITE READ INT REAL BOOL STRING
+BE FUNC PROC BREAK REF AND OR LESSEQ GREATEQ EQUAL NOTEQ DOUBLEDOT 
+STRING_VALUE CASSIGN WRITE READ
+%token <token> ID INT_VALUE HEXA_VALUE LABEL
 %%
 
 program  			: PROG ID ';' prevdec block FINAL { success(); }
@@ -102,11 +102,11 @@ decwithassign  		: '=' expr { $$ = $2; }
 			  		| { $$ = new std::string(""); }
 					;
 
-usertype  			: TYPE ID CASSIGN arraydec { addUserType($2.token->value, *$4); }
-					| TYPE ID CASSIGN STRUCT vardeclist END { addUserType($2.token->value, *$5); }
-					| TYPE ID CASSIGN literal DOUBLEDOT literal { addUserType($2.token->value, $4->nameType, $6->nameType); }
-					| TYPE ID CASSIGN id typedecauxrange { addUserType($2.token->value, getTypeByPath(*$4), *$5); }
-					| TYPE ID CASSIGN '(' idlist ')' { addUserType($2.token->value, *$5); }
+usertype  			: TYPE ID CASSIGN arraydec { addUserType($2->value, *$4); }
+					| TYPE ID CASSIGN STRUCT vardeclist END { addUserType($2->value, *$5); }
+					| TYPE ID CASSIGN literal DOUBLEDOT literal { addUserType($2->value, $4->nameType, $6->nameType); }
+					| TYPE ID CASSIGN id typedecauxrange { addUserType($2->value, getTypeByPath(*$4), *$5); }
+					| TYPE ID CASSIGN '(' idlist ')' { addUserType($2->value, *$5); }
 					;
 
 typedecauxrange		: DOUBLEDOT id { $$ = new std::string(getTypeByPath(*$2)); }
@@ -120,7 +120,7 @@ vardeclistaux  		: ';' vardec vardeclistaux { $$ = $3; insertVarDec($$, $2); }
 			  		| { $$ = new std::vector<Field>(); }
 					;
 
-labeldec  			: LABEL idlist {}
+labeldec  			: LABEL idlist { addVarDecList(std::pair<std::vector<std::string>, std::string>(*$2, $1->value), false); }
 					;
 
 constdec  			: CONST idlist ':' type '=' expr { $$ = new std::pair<std::vector<std::string>, std::string>(*$2, *$4); }
@@ -130,18 +130,18 @@ abstractiondec  	: procdec {}
 				  	| funcdec {}
 					;
 
-procdec  			: PROC ID '(' parameters ')' { Symbol *ab = new AbstractionSymbol("", *$4); addSymbol($2.token->value, ab); addScope(); addParams($2.token->value, *$4); } prevdec block { removeScope(); } 
+procdec  			: PROC ID '(' parameters ')' { Symbol *ab = new AbstractionSymbol("", *$4); addSymbol($2->value, ab); addScope(""); addParams($2->value, *$4); } prevdec block { removeScope(); } 
 					;
 
-funcdec  			: FUNC ID '(' parameters ')' ':' type { Symbol *ab = new AbstractionSymbol(*$7, *$4); addSymbol($2.token->value, ab); addScope(); addParams($2.token->value, *$4); } prevdec block { removeScope(); }
+funcdec  			: FUNC ID '(' parameters ')' ':' type { Symbol *ab = new AbstractionSymbol(*$7, *$4); addSymbol($2->value, ab); addScope(*$7); addParams($2->value, *$4); } prevdec block { removeScope(); }
 					;
 
 parameters  		: paramsaux { $$ = $1;}
 			  		| { $$ = new std::vector<Field>(); }
 					;
 
-paramsaux  			: ID ':' type paramslist { $4->insert($4->begin(), Field($1.token->value, *$3)); $$ = $4; }
-		  			| REF ID ':' type paramslist { $5->insert($5->begin(), Field($2.token->value, *$4)); $$ = $5; }
+paramsaux  			: ID ':' type paramslist { $4->insert($4->begin(), Field($1->value, *$3)); $$ = $4; }
+		  			| REF ID ':' type paramslist { $5->insert($5->begin(), Field($2->value, *$4)); $$ = $5; }
 					;
 
 paramslist  		: ',' paramsaux { $$ = $2; }
@@ -153,14 +153,12 @@ prevcommand  		: commands {}
 			  		| {}
 					;
 
-callcommand  		: BREAK {}		
-			  		| write {}
-			  		| read {}
+callcommand  		: BREAK {}	
 			  		| loop {}
 			  		| block {}
 			  		| return {}
 			  		| CONTINUE {}
-			  		| id callidbegin {}
+			  		| id callidbegin { if(*$2 == "rotulo") { getTypeByPath(*$1); } if(*$2 != "") verifyType(getTypeByPath(*$1), *$2); }
 			  		| calllabel {}
 			  		| conditional {}
 					;
@@ -172,21 +170,15 @@ commandsaux  		: ';' commands {}
 			  		| {}
 					;
 
-callidbegin  		: ':' callcommand {}
-			  		| '=' expr {}
-			  		| {}
+callidbegin  		: ':' callcommand { $$ = new std::string("rotulo"); }
+			  		| '=' expr { $$ = $2; }
+			  		| { $$ = new std::string(""); }
 					;
 
-calllabel  			: JUMP ID
+calllabel  			: JUMP ID { verifyLabel($2->value); }
 					;
-
-write  				: WRITE '(' expressionlist ')' { for(auto it = $3->begin(); it != $3->end(); it++) { if (*it != "str") { yyerrorType("texto", *it); }}}
-					;
-
-read  				: READ '(' expressionlist ')'
-					;
-
-return  			: RETURN expr {}
+					
+return  			: RETURN expr { int currentScope = scopesTable.size()-1; std::string r = scopesTable[currentScope].returnType; verifyType(r, *$2); }
 					;
 
 loop  				: forloop {}
@@ -204,10 +196,10 @@ prevfor 			: varassignlist {}
 		  			| {}
 					;
 
-varassignlist  		: ID '=' expr varassignlistaux { verifyTypeAssign($1.token->value, *$3); }
+varassignlist  		: ID '=' expr varassignlistaux { verifyTypeAssign($1->value, *$3); }
 					;
 
-varassignlistaux  	: ',' ID '=' expr varassignlistaux { verifyTypeAssign($2.token->value, *$4); }
+varassignlistaux  	: ',' ID '=' expr varassignlistaux { verifyTypeAssign($2->value, *$4); }
 				  	| {}
 					;
 
@@ -331,32 +323,32 @@ optbracket			: '(' expr ')' { $$ = $2; }
 					| atomic { $$ = $1;}
 					;
 
-idlist 				: ID idlistaux { $$ = $2; $$->insert($$->begin(), $1.token->value); } 
+idlist 				: ID idlistaux { $$ = $2; $$->insert($$->begin(), $1->value); } 
 					;
 
-idlistaux 			: ',' ID idlistaux { $$ = $3; $$->insert($$->begin(), $2.token->value); } 
+idlistaux 			: ',' ID idlistaux { $$ = $3; $$->insert($$->begin(), $2->value); } 
 		 			| { $$ = new std::vector<std::string>(); }
 					;
 
 type 				: INT { $$ = new std::string("int"); }
  					| REAL { $$ = new std::string("real"); }
 					| BOOL { $$ = new std::string("bool"); }
- 					| STRING { $$ = new std::string("str"); }
- 					| ID { $$ = new std::string(verifyUsertype(yylval.token->value)); }
+ 					| STRING { $$ = new std::string("texto"); }
+ 					| ID { $$ = new std::string(verifyUsertype($1->value)); }
  					;
 
-literal				: INT_VALUE	{ $$ = new TypeValue("int", std::stoi($1.token->value)); }
+literal				: INT_VALUE	{ $$ = new TypeValue("int", std::stoi($1->value)); }
 					| REAL_VALUE { $$ = new TypeValue("real"); }
-					| HEXA_VALUE { $$ = new TypeValue("int", std::stoi($1.token->value)); }
+					| HEXA_VALUE { $$ = new TypeValue("int", std::stoi($1->value)); }
 					| BOOL_VALUE { $$ = new TypeValue("bool"); }
-					| STRING_VALUE { $$ = new TypeValue("str"); }
+					| STRING_VALUE { $$ = new TypeValue("texto"); }
 					;
 
 atomic				: literal { $$ = new std::string($1->nameType); }
 					| id { $$ = new std::string(getTypeByPath(*$1)); }
 					;
 
-id					: ID idaux { $$ = $2; $$->insert($$->begin(), $1.token->value); }
+id					: ID idaux { $$ = $2; $$->insert($$->begin(), $1->value); }
 					;
 
 idaux				: '[' expressionlist ']' { $$ = $2;}
@@ -381,8 +373,9 @@ atomiclistaux		: ',' atomic atomiclistaux { if (*$3 == "" || *$2 == *$3) { $$ = 
 /*
 	SCOPES
 */
-void addScope() {
+void addScope(std::string returnType) {
 	Scope new_scope = Scope(std::map<std::string, Symbol*>()); 
+	new_scope.returnType = returnType;
 	scopesTable.push_back(new_scope);
 }
 
@@ -395,8 +388,29 @@ void initTable(){
 	std::map<std::string, Symbol*> table = std::map<std::string, Symbol*>();
 	table["int"] = new PrimitiveType("int");
 	table["real"] = new PrimitiveType("real");
-	table["str"] = new PrimitiveType("str");
+	table["texto"] = new PrimitiveType("texto");
 	table["bool"] = new PrimitiveType("bool");
+	table["rotulo"] = new PrimitiveType("label");
+	
+	std::vector<Field> paramsEscreva;
+	paramsEscreva.push_back(Field("arg", "texto"));
+	table["escreva"] = new AbstractionSymbol("", paramsEscreva); 
+	
+	std::vector<Field> paramsLeiaInt;
+	paramsEscreva.push_back(Field("arg", "int"));
+	table["leiaInteiro"] = new AbstractionSymbol("", paramsLeiaInt); 
+	
+	std::vector<Field> paramsLeiaReal;
+	paramsEscreva.push_back(Field("arg", "real"));
+	table["leiaReal"] = new AbstractionSymbol("", paramsLeiaReal); 
+	
+	std::vector<Field> paramsLeiaTexto;
+	paramsEscreva.push_back(Field("arg", "texto"));
+	table["leiaTexto"] = new AbstractionSymbol("", paramsLeiaTexto); 
+	
+	std::vector<Field> paramsLeiaBool;
+	paramsEscreva.push_back(Field("arg", "bool"));
+	table["leiaLogico"] = new AbstractionSymbol("", paramsLeiaBool); 
 	
 	Scope scope = Scope(table);
 	scopesTable.push_back(scope);

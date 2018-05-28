@@ -12,19 +12,10 @@ tipo TDU := registro
         var nome : texto; 
         var idade : inteiro
     fim;  
-
-** VAR DECLARATION 
-var tdu : TDU;
-var blo : logico;
-var blu, pla : texto;
-var ple : texto = 'oi';
-var pli : real = 4 + 20;
-var plu : inteiro = 0x0001;
-var nome_negocio : vetor[3..5] de texto = ('aaa', 'bbb', 'ccc'); 
-
+    
 ** ARRAY DECLARATION
 tipo arr1 := vetor[4 .. 10] de texto;
-tipo arr2 := vetor[1 .. 5] de real = ( 1, 2, 3, 4, 5 );
+tipo arr2 := vetor[1 .. 5] de real = ( 1.0, 2.0, 3.0, 4.0, 5.0 );
 
 ** ENUM DECLARATION
 tipo enum := (jan, fev, mar);
@@ -36,6 +27,17 @@ tipo range := jan .. mar;
 rotulo jump;
 rotulo pirueta, salto;
 
+** VAR DECLARATION 
+var tdu : TDU;
+var i : inteiro;
+var blo : logico;
+var blu, pla : texto;
+var nome_vetor : arr1;
+var ple : texto = 'oi';
+var plu : inteiro = 0x0001;
+var pli : real = 4.0 + 20.0;
+var nome_negocio : vetor[3..5] de texto = ('aaa', 'bbb', 'ccc'); 
+
 ** EMPTY PROC 
 proc procedimento() 
 inicio 
@@ -46,12 +48,9 @@ proc procedimento2( ref t1 : texto , i1 : inteiro )
   var p1 : inteiro;
 inicio 
 	** IF TEST
-    se (4 > 1) entao inicio
-		se (1 > 1) entao 
-		    escreva(4)
-		(*senao se (1 == 2) entao inicio
-		    escreva('')
-	    fim*)
+    se ((4 > 1) && (2 <= 3)) entao inicio
+		se ((1 >= 1) || (ble==bli) || (1 != plu)) entao 
+		    escreva('4')
 	fim
 	senao se (1 == 2) entao inicio
 		escreva(2)
@@ -59,8 +58,9 @@ inicio
 fim;
 
 ** EMPTY FUNCTION 
-func funcao() : inteiro
+func funcao(n1 : inteiro) : inteiro
 inicio 
+    retorne 4 * n1
 fim;
 
 ** TEST FUNCTION 
@@ -68,27 +68,31 @@ func operation(n1 : real, op : texto, n2 : real) : real
 inicio
 	** CASE TEST
 	caso (op) seja
-        '+' : retorne sum(n1, n2);
-        '-' : retorne subtraction(n1, n2);
-        '*' : retorne multiplication(n1, n2);
-        '/' : retorne division(n1, n2)
-    fim
+        '+' : retorne n1 + n2;
+        '-' : retorne n1 - n2;
+        '*' : retorne n1 * n2;
+        '/' : retorne n1 / n2
+    fim;
+    retorne 2.0
 fim;
-
 
 (*    MAIN CODE   *)
 inicio
 	** USER TYPE TEST
-    tdu.name = 'teste';
+    tdu.nome = 'teste';
     
     ** VECTOR TEST
-    arr1[0] = 'teste';
+    nome_negocio[0] = 'teste';
+    **nome_vetor[3] = 'teste2';
     
     ** LABEL TEST
     salto:
     
+    ** EXPRESSION TEST
+    plu = (ble*bli)/4 + plu - 200 + funcao(ble);
+    
     ** FUNC CALL TEST
-	pli = operation(4, '+', 3);
+	pli = operation(4.0, '+', 3.0);
 	
 	** PROC CALL TEST
 	procedimento();
@@ -97,6 +101,9 @@ inicio
 	para (i = 0; i <= 5; i = i + 1) faca inicio
         escreva(i)
     fim;
+    
+    ** CALL LABEL TEST
+    pule salto;
     
     ** WHILE TEST
     enquanto (1 == 0) faca inicio

@@ -1,14 +1,17 @@
 prog blu;
 
-const bla, blo : int = 4;
+const bla, bloo : inteiro = 4;
 ** VAR DECLARATION 
-var tdu : TDU;
-var blo,blu : logico;
+var blo,bluu : logico;
 var blu, pla : texto;
 var ple : texto = 'oi';
-var pli : real = 4 + 20;
+var pli : real = 4.0 + 20.0;
 var plu : inteiro = 0x0001;
 var nome_negocio : vetor[3..5] de texto = ('aaa', 'bbb', 'ccc'); 
 
 inicio
+
+**testar expressões loucas
+**testar loops
+**testar case 
 fim

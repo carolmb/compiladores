@@ -60,7 +60,7 @@ VECTOR          vetor
 
 /*KEYWORD*/
 PROG            prog                
-INIT           inicio              
+INIT            inicio              
 END             fim
 OF              de 
 VAR             var

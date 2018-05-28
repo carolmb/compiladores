@@ -9,6 +9,7 @@
 
 struct Scope {
 	//Scope* parent
+	std::string returnType; 
 	std::map<std::string, Symbol*> symbolsTable;
 	Scope(std::map<std::string, Symbol*> st) : symbolsTable(st) {}
 	Scope(){}
@@ -218,10 +219,8 @@ void addUserType(std::string label, std::vector<Field> fields) {
 bool isEnumType(std::string t) {
 	std::vector<EnumType*> enums = getEnums();
 	for(auto e = enums.begin(); e != enums.end(); e++) {
-		std::vector<std::string> fields = (*e)->getFieldNames();
-		for(auto f = fields.begin(); f != fields.end(); f++) {
-			if(*f == t)
-				return true;
+		if((*e)->getType() == t) {
+			return true;
 		}
 	}
 	return false;
@@ -236,7 +235,7 @@ void addUserType(std::string label, std::string t1, std::string t2) {
 		/* incompatible type */
 		yyerrorType (t1, t2);
 	}
-
+	
 	if(t1 == "int" || isEnumType(t1)) {
 		RangeType *range = new RangeType(label, t1);
 		addSymbol(label, range);

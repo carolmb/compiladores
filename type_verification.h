@@ -1,7 +1,6 @@
 #ifndef __TYPE_VERIFICATION__
 #define __TYPE_VERIFICATION__
 
-
 std::string* verifyArithmeticExprType(std::string t1, std::string t2) {
 	if (t2 == "") {
 		return new std::string(t1);
@@ -60,7 +59,7 @@ void verifyTypeAssign(std::string id, std::string t) {
 }
 
 void verifyCaseList(std::string t, std::vector<std::string> clauses) {
-	if (t != "int" && t != "str") {
+	if (t != "int" && t != "texto") {
 		yyerrorType("inteiro or texto", t);
 	}
 
@@ -71,5 +70,28 @@ void verifyCaseList(std::string t, std::vector<std::string> clauses) {
 	}
 }
 
+void verifyType(std::string t1, std::string t2) {
+	if (t1 == t2) {
+		return;
+	}
+	
+	if (t1 == "real" && t2 == "int") {
+		return;
+	}
+	
+	yyerrorType(t1, t2);
+}
 
+void verifyLabel(std::string id) {
+	std::cout << "aqui" << std::endl;
+	Symbol *l = searchElementInTableByLabel(id); 
+	VariableSymbol *v = dynamic_cast<VariableSymbol*>(l); 
+	if (v == nullptr) {
+		yyerrorUnknownLabel(id);
+	}
+	
+	if (v->getType() != "rotulo") {
+		yyerrorType("rotulo", v->getType());
+	}
+}
 #endif
