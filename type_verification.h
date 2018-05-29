@@ -2,6 +2,11 @@
 #define __TYPE_VERIFICATION__
 
 std::string* verifyArithmeticExprType(std::string t1, std::string t2) {
+
+	if ((t1 != t2 || (t1=="texto" && t2=="texto") ) && (t1 == "texto" || t2 == "texto")){
+		return new std::string("texto");
+	}
+
 	if (t2 == "") {
 		return new std::string(t1);
 	}
