@@ -42,7 +42,7 @@ std::string searchElementInTableBySymbol(Symbol *symbol);
 %start program
 
 %type <varDec> vardec constdec
-%type <typeName> type varconstruction arraydec typedecauxrange expr callidbegin atomic orfact andfact andfactaux notfact expreq expreqaux numericexpr exprsum exprmul exprmulaux simpleexpr optrange optbracket decwithassign atomiclistaux atomiclist caseclause
+%type <typeName> type varconstruction arraydec typedecauxrange expr callidbegin atomic orfact andfact andfactaux notfact expreq expreqaux numericexpr exprsum exprmul exprmulaux simpleexpr optbracket decwithassign atomiclistaux atomiclist caseclause
 %type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux idaux id idauxexpraux caselist caselistaux caselistaux2
 %type <fields> paramslist paramsaux parameters vardeclist vardeclistaux
 %type <size> rangelistaux rangelist range
@@ -158,7 +158,7 @@ callcommand  		: BREAK {}
 			  		| block {}
 			  		| return {}
 			  		| CONTINUE {}
-			  		| id callidbegin { std::string t = getTypeByPath(*$1); if(*$2 != "") verifyType(t, *$2); }
+			  		| id callidbegin { std::string t = getTypeByPath(*$1); if(*$2 != "") { verifyType(t, *$2); } }
 			  		| calllabel {}
 			  		| conditional {}
 					;
@@ -260,7 +260,7 @@ expressionlistaux  	: ',' expr expressionlistaux { $$ = $3; $$->insert($$->begin
 				  	| { $$ = new std::vector<std::string>(); }
 					;
 	
-expr				: andfact orfact { $$ = verifyLogicExprType(*$1, *$2); }
+expr				: andfact orfact {  $$ = verifyLogicExprType(*$1, *$2); }
 					;
 
 orfact				: OR andfact orfact { $$ = verifyLogicExprType(*$2, *$3); }
@@ -379,14 +379,32 @@ void removeScope() {
 	scopesTable.pop_back();
 }
 
+void printTable() {
+	std::cout << "-----printTable begin-----" << std::endl;
+	
+	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
+	int scop = scopesTable.size()-1;
+	for (; scope != scopesTable.rend(); ++scope) {
+		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
+		std::cout << "Current scope: " << scop << std::endl;
+		for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
+			std::cout << "\t- " << itSym->first;
+			std::cout << " (" << *itSym->second << ")" << std::endl;
+		}
+		scop--;
+	}
+	std::cout << "-----printTable end-----" << std::endl;
+}
+
 void initTable(){
 	/* TODO */
 	std::map<std::string, Symbol*> table = std::map<std::string, Symbol*>();
-	table["int"] = new PrimitiveType("int");
-	table["real"] = new PrimitiveType("real");
-	table["texto"] = new PrimitiveType("texto");
-	table["bool"] = new PrimitiveType("bool");
-	table["rotulo"] = new PrimitiveType("label");
+	table["int"] = new PrimitiveType(new std::string("int"));
+	table["real"] = new PrimitiveType(new std::string("real"));
+	table["texto"] = new PrimitiveType(new std::string("texto"));
+	table["bool"] = new PrimitiveType(new std::string("bool"));
+	table["rotulo"] = new PrimitiveType(new std::string("label"));
+	table[""] = new PrimitiveType(new std::string(""));
 	
 	std::vector<Field> paramsEscreva;
 	paramsEscreva.push_back(Field("arg", "texto"));
@@ -416,22 +434,6 @@ int main() {
 	vIndex = 0;
 	initTable();
 	return yyparse();
-}
-
-void printTable() {
-	std::cout << "-----printTable begin-----" << std::endl;
-	
-	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
-	int scop = scopesTable.size()-1;
-	for (; scope != scopesTable.rend(); ++scope) {
-		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
-		std::cout << "Current scope: " << scop << std::endl;
-		for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-			std::cout  << "\t- " << itSym->first << " (" << *itSym->second << ")" << std::endl;
-		}
-		scop--;
-	}
-	std::cout << "-----printTable end-----" << std::endl;
 }
 
 void success() {

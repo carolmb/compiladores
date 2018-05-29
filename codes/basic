@@ -80,61 +80,62 @@ inicio
 fim;
 
 ** EMPTY FUNCTION 
-func funcao(n1 : inteiro) : inteiro
-inicio 
-    retorne 4 * n1
-fim;
+**func funcao(n1 : inteiro) : inteiro
+**inicio 
+**    retorne 4 * n1
+**fim;
 
 ** TEST FUNCTION 
-func operation(n1 : real, op : texto, n2 : real) : real 
-inicio
-	** CASE TEST
-	caso (op) seja
-        '+' : retorne n1 + n2;
-        '-' : retorne n1 - n2;
-        '*' : retorne n1 * n2;
-        '/' : retorne n1 / n2
-    fim;
-    retorne 2.0
-fim;
+**func operation(n1 : real, op : texto, n2 : real) : real 
+**inicio
+**	** CASE TEST
+**	caso (op) seja
+**        '+' : retorne n1 + n2;
+**        '-' : retorne n1 - n2;
+**        '*' : retorne n1 * n2;
+**        '/' : retorne n1 / n2
+**    fim;
+**    retorne 2.0
+**fim;
 
 (*    MAIN CODE   *)
 inicio
 	** USER TYPE TEST
-    tdu.nome = 'teste';
+**    tdu.nome = 'teste';
     
     ** VECTOR TEST
     nome_negocio[0] = 'teste';
-    nome_vetor[4] = 'teste2';
-    nome_negocio = nome_vetor; **ERROR
+    
+    nome_vetor[4] = 'teste2'
+**    nome_negocio = nome_vetor **ERROR
     
     ** LABEL TEST
-    salto:
+**    salto:
     
     ** EXPRESSION TEST
-    plu = (ble*bli)/4 + plu - 200 + funcao(ble);
+**    plu = (ble*bli)/4 + plu - 200 + funcao(ble);
     
     ** FUNC CALL TEST
-	pli = operation(4.0, '+', 3.0);
+**	pli = operation(4.0, '+', 3.0);
 	
 	** PROC CALL TEST
-	procedimento();
+**	procedimento();
 	
 	** FOR TEST
-	para (i = 0; i <= 5; i = i + 1) faca inicio
-        escreva('bla')
-    fim;
+**	para (i = 0; i <= 5; i = i + 1) faca inicio
+**        escreva('bla')
+**    fim;
     
     ** CALL LABEL TEST
-    pule salto;
+**    pule salto;
     
     ** WHILE TEST
-    enquanto (1 == 0) faca inicio
-    	escreva('teste')
-    fim;
+**    enquanto (1 == 0) faca inicio
+**    	escreva('teste')
+**    fim;
     
     ** DO TEST
-    repita 
-    	leiaReal(pli)
-    ate (2 < 1)
+**    repita 
+**    	leiaReal(pli)
+**    ate (2 < 1)
 fim

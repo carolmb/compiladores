@@ -73,15 +73,13 @@ void verifyCaseList(std::string t, std::vector<std::string> clauses) {
 void verifyType(std::string t1, std::string t2) {
 	Symbol *symT1 = searchElementInTableByLabel(t1);
 	Symbol *symT2 = searchElementInTableByLabel(t2);
-	if (symT1->compare(symT2)) {
-		return;
+	if (symT1 == nullptr || symT2 == nullptr) {
+		std::cout << "Ops... Type not found." << std::endl;
+		yyerrorInvalidType(t1 + " or " + t2);
 	}
-	
-	if (t1 == "real" && t2 == "int") {
-		return;
+	if (!symT1->compare(symT2) && !(t1 == "real" && t2 == "int")) {
+		yyerrorType(t1, t2);
 	}
-	
-	yyerrorType(t1, t2);
 }
 
 void verifyLabel(std::string id) {

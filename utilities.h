@@ -114,10 +114,10 @@ class VariableSymbol : public Symbol {
 
 class Type : public Symbol {
 	protected: 
-		std::string name;
+		std::string *name;
 		
 	public:
-		Type(std::string n) : Symbol("type"), name(n) {}
+		Type(std::string *n) : Symbol("type"), name(n) {}
 	
 		bool compare(Symbol *sym) {
 			Type *type = dynamic_cast<Type*>(sym);
@@ -127,14 +127,10 @@ class Type : public Symbol {
 		}
 	
 		bool compareType(Type *other) {
-			if(this->name == other->getType()) {
-				return true;
-			} else {
-				return false;
-			}
+			return *(this->name) == other->getType();
 		}
 
-		std::string getType() const { return name; }
+		std::string getType() const { return *name; }
 
 		std::string to_string() const {
 			return "(Type declaration) nameType: " + getType();
@@ -143,10 +139,10 @@ class Type : public Symbol {
 
 class PrimitiveType : public Type {
 	public:
-		PrimitiveType(std::string n) : Type(n) {}
+		PrimitiveType(std::string *n) : Type(n) {}
 		bool compareType(Type *o) {
 			PrimitiveType *other = dynamic_cast<PrimitiveType*>(o);
-			return other != nullptr && this->name == other->getType();
+			return other != nullptr && *(this->name) == other->getType();
 		}
 };
 
@@ -156,10 +152,7 @@ class VectorType : public Type {
 		int dim;
 		
 	public:
-		VectorType() : Type("vector") {}
-		VectorType(std::string t, int d) : Type("vector"), fieldType(t), dim(d) {
-			std::cout << "";
-		}
+		VectorType(std::string t, std::string expt, int d) : Type(new std::string(t)), fieldType(expt), dim(d) {}
 
 		bool compare(Symbol *sym) {
 			VectorType *type = dynamic_cast<VectorType*>(sym);
@@ -183,9 +176,8 @@ class UserType : public Type {
 		std::vector<Field> fields;
 		bool vec;
 	public:
-		UserType() : Type("userType") {} 
-		UserType(std::string n, std::vector<Field> f) : Type(n), fields(f), vec(false) {}
-		UserType(std::string n, std::vector<Field> f, bool v) : Type(n), fields(f), vec(v) {}
+		UserType(std::string *n, std::vector<Field> f) : Type(n), fields(f), vec(false) {}
+		UserType(std::string *n, std::vector<Field> f, bool v) : Type(n), fields(f), vec(v) {}
 		std::string getFieldType(std::string label) { 
 			for(auto it = fields.begin(); it != fields.end(); it++) {
 				if(it->getFieldName() == label) {
@@ -204,7 +196,7 @@ class EnumType : public Type {
 		std::vector<std::string> fieldNames;
 	
 	public:
-		EnumType(std::string n, std::vector<std::string> fs) : Type(n), fieldNames(fs) {}
+		EnumType(std::string *n, std::vector<std::string> fs) : Type(n), fieldNames(fs) {}
 		std::vector<std::string> getFieldNames() { return fieldNames; }
 		std::string getFieldType(std::string label) {
 			for(auto it = fieldNames.begin(); it != fieldNames.end(); it++) {
@@ -223,7 +215,7 @@ class RangeType : public Type {
 		// std::string end;
 		
 	public:
-		RangeType(std::string n, std::string f) : Type(n), father(f) {}
+		RangeType(std::string *n, std::string f) : Type(n), father(f) {}
 };
 
 #endif

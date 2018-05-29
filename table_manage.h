@@ -21,11 +21,10 @@ int vIndex;
 std::string getTypeByPath(std::vector<std::string> path);
 std::string getTypeByPath(Symbol *currentType, int index, std::vector<std::string> path);
 
+void printTable();
+
 template <class T> std::vector<T*> getByType() {
 	std::vector<T*> enums;
-
-	//int currentScope = scopesTable.size()-1;
-	//std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
 	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
 	for (; scope != scopesTable.rend(); ++scope) {
 		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
@@ -42,26 +41,23 @@ template <class T> std::vector<T*> getByType() {
 Symbol* searchElementInCurrentTableByLabel(std::string label) {
     int currentScope = scopesTable.size()-1;
 	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
-	for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-		if(itSym->first == label){
-			return itSym->second;
-		}
+	Symbol *sym = symbolsTable[label];
+	if(sym != nullptr) {
+		return sym;
 	}
 	return nullptr;
 }
 
-/*Veirificar na pilha de tabela de símbolos se o nome da variável foi declarado*/
+/* Veirificar na pilha de tabela de símbolos se o nome da variável foi declarado */
 Symbol* searchElementInTableByLabel(std::string label) {
-	/*printTable();*/
-	/*TODO: recursive in scopes and verify labels in enums*/
 	
 	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
+	
 	for (; scope != scopesTable.rend(); ++scope) {
 		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
-		for(auto itSym = symbolsTable.begin(); itSym != symbolsTable.end(); itSym++) {
-			if(itSym->first == label){
-				return itSym->second;
-			}
+		Symbol *sym = symbolsTable[label];
+		if(sym != nullptr) {
+			return sym;
 		}
 	}
 
@@ -75,14 +71,13 @@ Symbol* searchElementInTableByLabel(std::string label) {
 			}
 		}
 	}
-
+	
 	return nullptr;
 }
 
 /*Veirificar na pilha de tabela de símbolos se o símbolo foi utiutilizizadda*/
 std::string searchElementInTableBySymbol(Symbol *symbol) {
-	//int currentScope = scopesTable.size()-1;
-	//std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
+	
 	std::vector<Scope>::reverse_iterator scope = scopesTable.rbegin();
 	for (; scope != scopesTable.rend(); ++scope) {
 		std::map<std::string, Symbol*> symbolsTable = scope->symbolsTable;
@@ -131,13 +126,15 @@ std::string addVec(int dim, std::string expectedType, std::vector<std::string> *
 		}
 	}
 
-	VectorType *vec = new VectorType(expectedType, dim); 
+	std::string vecName = "-v" + std::to_string(vIndex);
+	vIndex++;
+	
+	VectorType *vec = new VectorType(vecName, expectedType, dim); 
 	std::string label = searchElementInTableBySymbol(vec);
 	if (label != "") {
+		vIndex--;
 		return label;
 	} else {
-		std::string vecName = "-v" + std::to_string(vIndex);
-		vIndex++;
 		addSymbol(vecName, vec);
 		return vecName;
 	}
@@ -161,7 +158,7 @@ void addUserType(std::string label, std::string name) {
 	Field field(name, name);
 	std::vector<Field> fields;
 	fields.push_back(field);
-	UserType *userType = new UserType(label, fields, true);
+	UserType *userType = new UserType(new std::string(label), fields, true);
 	addSymbol(label, userType);
 }
 
@@ -207,7 +204,7 @@ void insertVarDec(std::vector<Field> *fields, std::pair<std::vector<std::string>
 }
 
 void addUserType(std::string label, std::vector<Field> fields) {
-	UserType *userType = new UserType(label, fields);
+	UserType *userType = new UserType(new std::string(label), fields);
 	addSymbol(label, userType);
 }
 
@@ -223,7 +220,7 @@ template<class T> bool isType(std::string t) {
 
 void addUserType(std::string label, std::string t1, std::string t2) {
 	if(t2 == "") {
-		RangeType *range = new RangeType(label, t1);
+		RangeType *range = new RangeType(new std::string(label), t1);
 	}
 
 	if(t1 != t2) {
@@ -232,7 +229,7 @@ void addUserType(std::string label, std::string t1, std::string t2) {
 	}
 	
 	if(t1 == "int" || isType<EnumType>(t1)) {
-		RangeType *range = new RangeType(label, t1);
+		RangeType *range = new RangeType(new std::string(label), t1);
 		addSymbol(label, range);
 	} else {
 		yyerrorInvalidType(t1);
@@ -247,11 +244,12 @@ void addUserType(std::string label, std::vector<std::string> idlist) {
 		if (sym != nullptr) 
 			yyerrorDuplicateIdentifier(*it);
 	}
-	EnumType *enumType = new EnumType(label, idlist);
+	EnumType *enumType = new EnumType(new std::string(label), idlist);
 	addSymbol(label, enumType);
 }
 
 std::string getTypeByPath(std::vector<std::string> path) {
+	// std::cout << "path: ";
 	// for(auto it = path.begin(); it != path.end(); it++) {
 	// 	std::cout << *it << " ";
 	// } 
@@ -262,18 +260,56 @@ std::string getTypeByPath(std::vector<std::string> path) {
 		yyerrorUnknownLabel(path[0]);
 	}
 	
-	return getTypeByPath(sym, 1, path);
+	VariableSymbol *varDec = dynamic_cast<VariableSymbol*>(sym);
+	if(varDec != nullptr) {
+		Symbol *type = searchElementInTableByLabel(varDec->getType());
+		return getTypeByPath(type, 1, path);
+	}
+	
+	AbstractionSymbol *abs = dynamic_cast<AbstractionSymbol*>(sym);
+	if(abs != nullptr) {
+		int index = 1;
+		int step = std::stoi(path[index]);
+		std::vector<std::string> args;
+		for(int i = index+1; i < index + 1 + step; i++) {
+			args.push_back(path[i]);
+		}
+		std::vector<Field> params = abs->getParameters();
+		if(args.size() == params.size()) {
+			for(int i = 0; i < args.size(); i++) {
+		    	if(args[i] != params[i].getTypeField()) {
+		        	yyerrorType(params[i].getTypeField(), args[i]);
+		    	} 
+			}
+			std::string returnType = abs->getType();
+			
+			Symbol *type = searchElementInTableByLabel(returnType);
+			return getTypeByPath(type, index + 1 + step, path);
+		} else {
+		   yyerrorInvalidArgs(path[index-1]);
+		}
+	}
+	
+	if(isType<EnumType>(sym->getType())) {
+		Symbol *type = searchElementInTableByLabel(sym->getType());
+		return getTypeByPath(type, 1, path);
+	}
+	
+	std::cout << "Ops... Esse caso não foi tratado (ver table_manage.h linha 304)" << std::endl;	
+	yyerrorUnknownLabel(path[0]);
 }
 
 std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::string> path) {
 	/* TODO: when it is a vector acess or abstraction call */
+	// std::cout << "index: " << index << " " << *currentSymbol << " size: " << path.size() << std::endl;
+	
 	if(index >= path.size()) {
 		if (currentSymbol == nullptr) {
 			return "";
 		}
 		return currentSymbol->getType();
-	}
-
+	} 
+	
 	/*First try if the current step is a field in user type */
 	UserType *userType = dynamic_cast<UserType*>(searchElementInTableByLabel(currentSymbol->getType()));
 	if(userType != nullptr) {
@@ -292,7 +328,6 @@ std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::str
 
 	/* Try abstraction call, in this case, the next type is the returned type */
 	AbstractionSymbol *abs = dynamic_cast<AbstractionSymbol*>(currentSymbol);
-
 	if(abs != nullptr) {
 		int step = std::stoi(path[index]);
 		std::vector<std::string> args;
@@ -319,14 +354,15 @@ std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::str
 	VectorType *vec = dynamic_cast<VectorType*>(currentSymbol);
 	if(vec != nullptr) {
 		int step = std::stoi(path[index]);
-		std::cout << "step: " << step << " ";
+		// std::cout << "step: " << step << " args: ";
 		std::vector<std::string> args;
 		for(int i = index+1; i < index + 1 + step; i++) {
-			std::cout << path[i] << " ";
+			// std::cout << path[i] << " ";
 			args.push_back(path[i]);
 		}
 		int dim = vec->getDim();
 		if(dim == step) {
+			// std::cout << "dim == step" << std::endl;
 			for(int i = 0; i < args.size(); i++) {
 		    	if(args[i] != "int") {
 		        	yyerrorType("int", args[i]);
@@ -334,11 +370,15 @@ std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::str
 			}
 			std::string returnType = vec->getFieldType();
 			Symbol *type = searchElementInTableByLabel(returnType);
-			return getTypeByPath(type, index + 1 + step, path);
+			// std::cout << *type << std::endl;
+			return getTypeByPath(type, index + step + 1, path);
 		} else {
 		   yyerrorInvalidArgs(path[index-1]);
 		}
 	}
+	
+	std::cout << "Ops... Esse caso não foi tratado (ver table_manage.h linha 388)" << std::endl;	
+	yyerrorUnknownLabel(path[0]);
 }
 
 /*Adiciona parametros de uma função como novos símbolos na tabela de símbolos*/
