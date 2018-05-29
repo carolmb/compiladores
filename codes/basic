@@ -17,6 +17,7 @@ tipo TDU := registro
 tipo arr1 := vetor[3 .. 5] de texto;
 tipo arr2 := vetor[1 .. 5] de real = ( 1.0, 2.0, 3.0, 4.0, 5.0 );
 
+
 ** ENUM DECLARATION
 tipo enum := (jan, fev, mar);
 
@@ -61,7 +62,7 @@ proc procedimento2( ref t1 : texto , i1 : inteiro )
         ** SCOPE VAR REDEFINITION TEST
         p1 = 't';
         a.alelo = ple;
-        a.dna[3] = 'bbc'
+        a.dna[2] = 'bbc'
     fim;
   
 inicio 
@@ -75,7 +76,7 @@ inicio
 		    escreva('4')
 	fim
 	senao se (1 == 2) entao inicio
-		**escreva('2')
+		escreva('3')
 	fim
 fim;
 
@@ -106,7 +107,7 @@ inicio
     ** VECTOR TEST
     nome_negocio[0] = 'teste';
     nome_vetor[4] = 'teste2';
-    nome_negocio = nome_vetor; **ERROR
+    **nome_negocio = nome_vetor; **ERROR
     
     ** LABEL TEST
     salto:
@@ -115,7 +116,7 @@ inicio
     plu = (ble*bli)/4 + plu - 200 + funcao(ble);
     
     ** FUNC CALL TEST
-	pli = operation(4.0, '+', 3.0);
+	pli = 3 + operation(4.0, '+', 3.0);
 	
 	** PROC CALL TEST
 	procedimento();
@@ -136,5 +137,5 @@ inicio
     ** DO TEST
     repita 
     	leiaReal(pli)
-    ate (2 < 1)
+    ate (2 < 1)    
 fim

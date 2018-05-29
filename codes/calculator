@@ -45,6 +45,9 @@ inicio
     leiaTexto(op);
     escreva ('Digite o segundo valor (real): \n');
     leiaReal(n2);
-    resultado = operation(n1,op,n2)
-    ** escreva ('Resultado: ', n1, ' ', ' ', op,' ', n2, ' = ', resultado, '\n')
+    resultado = operation(n1,op,n2);
+    escreva ('Resultado: ' + n1 );
+    escreva ( ' ' + op );
+    escreva (' ' + n2 );
+    escreva (' = ' + operation(n1,op,n2))
 fim
