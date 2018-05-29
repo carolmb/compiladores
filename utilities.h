@@ -194,6 +194,7 @@ class UserType : public Type {
 			}
 			return ""; 
 		}
+		
 		bool isVec() { return vec; }
 		std::string getFieldType() { if(isVec()) { return fields[0].getTypeField(); } return ""; }
 };

@@ -306,13 +306,9 @@ exprmulaux			: '*' simpleexpr exprmulaux { $$ = verifyArithmeticExprType(*$2, *$
 					| { $$ = new std::string(""); }
 					;
 			
-simpleexpr			: atomic optrange { if(*$2 == "") { $$ = $1; } else { /* getRangeType(*$1, *$2); */} }
+simpleexpr			: atomic { $$ = $1; }
 					| optunary optbracket { $$ = $2; }
 					| '(' expr ')' { $$ = $2; }
-					;
-       	
-optrange			: DOUBLEDOT atomic { $$ = $2; }
-					| { $$ = new std::string(""); }
 					;
 
 optunary			: '-' {}

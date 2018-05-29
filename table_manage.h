@@ -158,7 +158,6 @@ int rangeSize(TypeValue *first, TypeValue *second) {
 }
 
 void addUserType(std::string label, std::string name) {
-	std::cout << "addUserType name " << name << std::endl;
 	Field field(name, name);
 	std::vector<Field> fields;
 	fields.push_back(field);
@@ -212,9 +211,7 @@ void addUserType(std::string label, std::vector<Field> fields) {
 	addSymbol(label, userType);
 }
 
-template<class T>
-bool isType(std::string t) {
-	std::cout << "bbbbbbbbbbbbbbbbb " << t << std::endl;
+template<class T> bool isType(std::string t) {
 	std::vector<T*> enums = getByType<T>();
 	for(auto e = enums.begin(); e != enums.end(); e++) {
 		if((*e)->getType() == t) {
@@ -255,10 +252,10 @@ void addUserType(std::string label, std::vector<std::string> idlist) {
 }
 
 std::string getTypeByPath(std::vector<std::string> path) {
-	for(auto it = path.begin(); it != path.end(); it++) {
-		std::cout << *it << " ";
-	} 
-	std::cout << std::endl;
+	// for(auto it = path.begin(); it != path.end(); it++) {
+	// 	std::cout << *it << " ";
+	// } 
+	// std::cout << std::endl;
 	
 	Symbol *sym = searchElementInTableByLabel(path[0]);
 	if(sym == nullptr) {
@@ -281,7 +278,6 @@ std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::str
 	UserType *userType = dynamic_cast<UserType*>(searchElementInTableByLabel(currentSymbol->getType()));
 	if(userType != nullptr) {
 		if(userType->isVec()) {
-			std::cout << "aaaaaaaaaaaaaaaaaaaa";
 			Symbol *vec = searchElementInTableByLabel(userType->getFieldType());
 			return getTypeByPath(vec, index, path);
 		}

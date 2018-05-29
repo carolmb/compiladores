@@ -71,7 +71,9 @@ void verifyCaseList(std::string t, std::vector<std::string> clauses) {
 }
 
 void verifyType(std::string t1, std::string t2) {
-	if (t1 == t2) {
+	Symbol *symT1 = searchElementInTableByLabel(t1);
+	Symbol *symT2 = searchElementInTableByLabel(t2);
+	if (symT1->compare(symT2)) {
 		return;
 	}
 	
@@ -91,6 +93,18 @@ void verifyLabel(std::string id) {
 	
 	if (v->getType() != "rotulo") {
 		yyerrorType("rotulo", v->getType());
+	}
+}
+
+std::string* verifyRangeType(std::string t1, std::string t2) {
+	if(t1 != t2) {
+		yyerrorType (t1, t2);
+	}
+	
+	if(t1 == "int" || isType<EnumType>(t1)) {
+		return new std::string(t1);
+	} else {
+		yyerrorInvalidType(t1);
 	}
 }
 
