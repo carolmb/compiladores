@@ -46,7 +46,29 @@ fim;
 ** TEST PROC 
 proc procedimento2( ref t1 : texto , i1 : inteiro ) 
   var p1 : inteiro;
+  
+  ** SUB PROGRAM DECLARATION INSIDE OTHER TEST
+  proc procedimento( ) 
+  
+    var p1 : texto;
+    tipo tda := registro
+        var dna : vetor[3..5] de texto = ('aaa', 'bbb', 'ccc'); 
+        var alelo : texto
+    fim;
+    var a : tda;
+    
+    inicio
+        ** SCOPE VAR REDEFINITION TEST
+        p1 = 't';
+        a.alelo = ple;
+        a.dna[3] = 'bbc'
+    fim;
+  
 inicio 
+    
+    ** PARENT SCOPE TEST
+    blo = falso;
+    
 	** IF TEST
     se ((4 > 1) && (2 <= 3)) entao inicio
 		se ((1 >= 1) || (ble==bli) || (1 != plu)) entao 

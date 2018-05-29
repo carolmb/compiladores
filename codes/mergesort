@@ -47,7 +47,7 @@ proc mergesort(ref minha_lista : Vetor, ini_vet : inteiro, fim_vet : inteiro)
 var pivo : inteiro;
 inicio
 	se (ini_vet < fim_vet) entao inicio
-		pivo = Trunc((ini_vet + fim_vet)/2);
+		pivo = ((ini_vet + fim_vet)/2);
 		mergesort(minha_lista, ini_vet, pivo);
 		mergesort(minha_lista, pivo+1, fim_vet);
 		merge(minha_lista, ini_vet, pivo, fim_vet)	
@@ -60,13 +60,13 @@ inicio
     len = 6;
     escreva('Insira 6 valores de inteiros:');
     para (i = 0; i <= len-1; i = i + 1) faca inicio
-        leia(lista_ord[i])
+        leiaInteiro(lista_ord[i])
     fim;
 
     mergesort(lista_ord, 0, len-1);
 
     escreva('Lista ordenada:');
     para (i = 0; i <= len-1; i = i + 1) faca inicio
-        escreva(lista_ord[i], ' ')
+        ** escreva(lista_ord[i] + ' ')
     fim
 fim

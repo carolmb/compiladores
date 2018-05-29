@@ -34,16 +34,17 @@ inicio
     fim
 fim;
 
-var n1, n2 : real;
+var n1, n2, resultado : real;
 var op : texto;
 
 inicio
     escreva ('Digite o primeiro valor (real): \n');
-    leia(n1);
+    leiaReal(n1);
     escreva ('Digite a operação (+, -, *, /): ');
-    leia(op);
-    leia(op);
+    leiaTexto(op);
+    leiaTexto(op);
     escreva ('Digite o segundo valor (real): \n');
-    leia(n2);
-    escreva ('Resultado: ', n1, ' ', ' ', op,' ', n2, ' = ', operation(n1,op,n2), '\n')
+    leiaReal(n2);
+    resultado = operation(n1,op,n2)
+    ** escreva ('Resultado: ', n1, ' ', ' ', op,' ', n2, ' = ', resultado, '\n')
 fim

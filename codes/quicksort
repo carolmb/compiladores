@@ -45,13 +45,13 @@ inicio
     escreva('Insira 6 valores de inteiros:');
     len = 6;
     para (i = 0; i <= len-1; i = i + 1) faca inicio
-        leia(lista_ord[i])
+        leiaInteiro(lista_ord[i])
     fim;
 
     quicksort(lista_ord, 0, len-1);
 
-    escreva('Lista ordenada:');
-    para (i = 0; i <= len-1; i = i + 1) faca inicio
-        escreva(lista_ord[i], ' ')
-    fim
+    escreva('Lista ordenada:')
+    ** para (i = 0; i <= len-1; i = i + 1) faca inicio
+       ** escreva(lista_ord[i], ' ')
+    ** fim
 fim
