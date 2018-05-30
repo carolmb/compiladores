@@ -5,6 +5,7 @@ PasC is a compiled language, still under construction, aimed to teach structured
 ### Dependencies
 
 ```bash
+sudo apt install g++
 sudo apt install make
 sudo apt install flex
 
