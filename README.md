@@ -22,11 +22,11 @@ sudo apt-get install bison++
 Execute by passing the input code as a parameter
 
 ```bash
- ./run.sh codes/test_code 
+ ./run.sh codes/basic 
 ```
 #### Where:
 
-```test_code``` is the name of the PasC code that you want to run.
+```basic`` is the name of the PasC code that you want to run.
 
 ## Pascal codes
 
