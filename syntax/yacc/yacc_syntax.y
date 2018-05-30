@@ -43,7 +43,7 @@ std::string searchElementInTableBySymbol(Symbol *symbol);
 
 %type <varDec> vardec constdec
 %type <typeName> type varconstruction arraydec typedecauxrange expr callidbegin atomic orfact andfact andfactaux notfact expreq expreqaux numericexpr exprsum exprmul exprmulaux simpleexpr optbracket decwithassign atomiclistaux atomiclist caseclause
-%type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux idaux id idauxexpraux caselist caselistaux caselistaux2
+%type <list> idlist idlistaux expressionlist expressionlistaux arraydecaux idaux id optid idauxexpraux caselist caselistaux caselistaux2
 %type <fields> paramslist paramsaux parameters vardeclist vardeclistaux
 %type <size> rangelistaux rangelist range
 %type <var> literal
@@ -105,11 +105,11 @@ decwithassign  		: '=' expr { $$ = $2; }
 usertype  			: TYPE ID CASSIGN arraydec { addUserType($2->value, *$4); }
 					| TYPE ID CASSIGN STRUCT vardeclist END { addUserType($2->value, *$5); }
 					| TYPE ID CASSIGN literal DOUBLEDOT literal { addUserType($2->value, $4->nameType, $6->nameType); }
-					| TYPE ID CASSIGN id typedecauxrange { addUserType($2->value, getTypeByPath(*$4), *$5); }
+					| TYPE ID CASSIGN ID typedecauxrange { addUserType($2->value, $4->value, *$5); }
 					| TYPE ID CASSIGN '(' idlist ')' { addUserType($2->value, *$5); }
 					;
 
-typedecauxrange		: DOUBLEDOT id { $$ = new std::string(getTypeByPath(*$2)); }
+typedecauxrange		: DOUBLEDOT ID { $$ = new std::string($2->value); }
 					| { $$ = new std::string(""); }
 					;
 
@@ -330,7 +330,7 @@ type 				: INT { $$ = new std::string("int"); }
  					| REAL { $$ = new std::string("real"); }
 					| BOOL { $$ = new std::string("bool"); }
  					| STRING { $$ = new std::string("texto"); }
- 					| ID { $$ = new std::string(verifyUsertype($1->value)); }
+ 					| ID { $$ = new std::string(verifyValidType($1->value)); }
  					;
 
 literal				: INT_VALUE	{ $$ = new TypeValue("int", std::stoi($1->value)); }
@@ -347,14 +347,18 @@ atomic				: literal { $$ = new std::string($1->nameType); }
 id					: ID idaux { $$ = $2; $$->insert($$->begin(), $1->value); }
 					;
 
-idaux				: '[' expressionlist ']' { int size = $2->size(); $$ = $2; $$->insert($$->begin(), std::to_string(size)); }
+idaux				: '[' expressionlist ']' optid { int size = $2->size(); $$ = $2; $$->insert($$->begin(), std::to_string(size)); $$->insert( $$->end(), $4->begin(), $4->end() ); }
 					| '.' id { $$ = $2; }
 					| '(' idauxexpraux { $$ = $2; }
 					| { $$ = new std::vector<std::string>(); }
 					;
+
+optid				: '.' id { $$ = $2; }
+					| { $$ = new std::vector<std::string>(); }
+					;
 					
-idauxexpraux		: expressionlist ')' { int size = $1->size(); $$ = $1; $$->insert($$->begin(), std::to_string(size)); }
-					| ')' { $$ = new std::vector<std::string>(); $$->push_back("0"); }
+idauxexpraux		: expressionlist ')' optid { int size = $1->size(); $$ = $1; $$->insert($$->begin(), std::to_string(size)); $$->insert( $$->end(), $3->begin(), $3->end() ); }
+					| ')' optid { $$ = new std::vector<std::string>(); $$->push_back("0"); $$->insert( $$->end(), $2->begin(), $2->end() ); }
 					;	
 
 atomiclist  		: atomic atomiclistaux { if (*$2 == "" || *$1 == *$2) { $$ = $1; } else { yyerrorType(*$1, *$2); } }

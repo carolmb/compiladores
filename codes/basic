@@ -7,6 +7,7 @@ prog meu_programa;
 const bla : real = 4;
 const ble,bli : inteiro = 2;
 
+
 ** STRUCT DECLARATION
 tipo TDU := registro 
         var nome : texto; 
@@ -16,13 +17,6 @@ tipo TDU := registro
 ** ARRAY DECLARATION
 tipo arr1 := vetor[3 .. 5] de texto;
 tipo arr2 := vetor[1 .. 5] de real = ( 1.0, 2.0, 3.0, 4.0, 5.0 );
-
-
-** ENUM DECLARATION
-tipo enum := (jan, fev, mar);
-
-** RANGE DECLARATION
-tipo range := jan .. mar;
 
 ** JUMP DECLARATION 
 rotulo jump;
@@ -38,6 +32,7 @@ var ple : texto = 'oi';
 var plu : inteiro = 0x0001;
 var pli : real = 4.0 + 20.0;
 var nome_negocio : vetor[3..5] de texto = ('aaa', 'bbb', 'ccc'); 
+var carol : vetor[1..2,1..2] de TDU;
 
 ** EMPTY PROC 
 proc procedimento() 
@@ -99,8 +94,32 @@ inicio
     retorne 2.0
 fim;
 
+** TEST FUNCTION 
+func felipe() : TDU 
+var tdu : TDU;
+inicio
+    retorne tdu
+fim;
+
+** ENUM DECLARATION
+tipo enum := (jan, fev, mar);
+
+** RANGE DECLARATION
+tipo range := jan .. fev;
+
+var mes1 : range;
+var mes2 : enum;
+
+var felipe_idade : inteiro;
+
 (*    MAIN CODE   *)
 inicio
+	mes1 = mar;
+	mes2 = mar;
+	felipe_idade = felipe().idade;
+	
+	carol[0,0].idade = 10;
+	
 	** USER TYPE TEST
     tdu.nome = 'teste';
     

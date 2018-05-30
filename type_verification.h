@@ -3,7 +3,7 @@
 
 std::string* verifyArithmeticExprType(std::string t1, std::string t2) {
 
-	if ((t1 != t2 || (t1=="texto" && t2=="texto") ) && (t1 == "texto" || t2 == "texto")){
+	if ((t1 != t2 || (t1 == "texto" && t2 == "texto") ) && (t1 == "texto" || t2 == "texto")){
 		return new std::string("texto");
 	}
 
@@ -82,9 +82,16 @@ void verifyType(std::string t1, std::string t2) {
 		std::cout << "Ops... Type not found." << std::endl;
 		yyerrorInvalidType(t1 + " or " + t2);
 	}
-	if (!symT1->compare(symT2) && !(t1 == "real" && t2 == "int")) {
-		yyerrorType(t1, t2);
+	
+	if (symT1->compare(symT2)) {
+		return;
 	}
+
+	if (t1 == "real" && t2 == "int") {
+		return;	
+	}
+
+	yyerrorType(t1, t2);
 }
 
 void verifyLabel(std::string id) {

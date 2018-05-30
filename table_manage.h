@@ -38,6 +38,17 @@ template <class T> std::vector<T*> getByType() {
 	return enums;
 }
 
+template<class T> bool isType(std::string t) {
+	std::vector<T*> enums = getByType<T>();
+	for(auto e = enums.begin(); e != enums.end(); e++) {
+		if((*e)->getType() == t) {
+			return true;
+		}
+	}
+	return false;
+}
+
+
 Symbol* searchElementInCurrentTableByLabel(std::string label) {
     int currentScope = scopesTable.size()-1;
 	std::map<std::string, Symbol*> symbolsTable = scopesTable[currentScope].symbolsTable;
@@ -162,7 +173,7 @@ void addUserType(std::string label, std::string name) {
 	addSymbol(label, userType);
 }
 
-std::string verifyUsertype(std::string label) {
+std::string verifyValidType(std::string label) {
 	Symbol* sym = searchElementInTableByLabel(label);
 
 	if (sym == nullptr) 
@@ -170,9 +181,9 @@ std::string verifyUsertype(std::string label) {
 
 	UserType *userType = dynamic_cast<UserType*>(sym);
 
-	if (userType == nullptr) 
+	if (userType == nullptr && !isType<EnumType>(label) && !isType<RangeType>(label)) {
 		yyerrorUnknownType(label);
-
+	}
 	return label;
 }
 
@@ -208,32 +219,56 @@ void addUserType(std::string label, std::vector<Field> fields) {
 	addSymbol(label, userType);
 }
 
-template<class T> bool isType(std::string t) {
-	std::vector<T*> enums = getByType<T>();
-	for(auto e = enums.begin(); e != enums.end(); e++) {
-		if((*e)->getType() == t) {
-			return true;
+void addUserType(std::string label, std::string t1, std::string t2) {
+	std::cout << label << " " << t1 << " " << t2 << std::endl;
+	if(t1 == "int" && t2 == "int") {
+		RangeType *range = new RangeType(new std::string(label), t1, std::vector<std::string>());
+		addSymbol(label, range);
+		return;
+	} 
+
+	std::vector<EnumType*> enums = getByType<EnumType>();
+	std::string father = "";
+	EnumType *enumFather;
+	for(auto it = enums.begin(); it != enums.end(); it++) {
+		if((*it)->isField(t1)) {
+			father = (*it)->getType();
+			enumFather = *it;
 		}
 	}
-	return false;
-}
-
-void addUserType(std::string label, std::string t1, std::string t2) {
-	if(t2 == "") {
-		RangeType *range = new RangeType(new std::string(label), t1);
-	}
-
-	if(t1 != t2) {
-		/* incompatible type */
-		yyerrorType (t1, t2);
+	
+	if(father != "") {
+		if(enumFather->isField(t2)) {
+			std::vector<std::string> fatherFields = enumFather->getFields();
+			std::vector<std::string> subRange;
+			bool copy = false;
+			for(auto it = fatherFields.begin(); it != fatherFields.end(); it++) {
+				if(*it == t1) {
+					copy = true;
+				}
+				if(copy) { subRange.push_back(*it); 	std::cout << " sub range " << *it;}
+			
+				if(*it == t2) {
+					copy = false;
+				}
+			}
+			RangeType *range = new RangeType(new std::string(label), father, subRange);
+			addSymbol(label, range);
+			return;
+		} else {
+			yyerrorType(father, t2);
+		}
 	}
 	
-	if(t1 == "int" || isType<EnumType>(t1)) {
-		RangeType *range = new RangeType(new std::string(label), t1);
-		addSymbol(label, range);
-	} else {
-		yyerrorInvalidType(t1);
+	if(t2 == "") {
+		Type *type = dynamic_cast<Type*>(searchElementInTableByLabel(t1));
+		if(type == nullptr) 
+			yyerrorUnknownLabel(t1);
+		addUserType(label, t1);
+		return;
 	}
+	
+	yyerrorUnknownLabel(t1);	
 }
 
 /*Adiciona tipo de usuário na tabela de símbolos*/
@@ -295,6 +330,11 @@ std::string getTypeByPath(std::vector<std::string> path) {
 		return getTypeByPath(type, 1, path);
 	}
 	
+	if(isType<RangeType>(sym->getType())) {
+		Symbol *type = searchElementInTableByLabel(sym->getType());
+		return getTypeByPath(type, 1, path);
+	}
+	
 	std::cout << "Ops... Esse caso não foi tratado (ver table_manage.h linha 304)" << std::endl;	
 	yyerrorUnknownLabel(path[0]);
 }
@@ -313,9 +353,9 @@ std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::str
 	/*First try if the current step is a field in user type */
 	UserType *userType = dynamic_cast<UserType*>(searchElementInTableByLabel(currentSymbol->getType()));
 	if(userType != nullptr) {
-		if(userType->isVec()) {
-			Symbol *vec = searchElementInTableByLabel(userType->getFieldType());
-			return getTypeByPath(vec, index, path);
+		if(userType->isRename()) {
+			Symbol *re = searchElementInTableByLabel(userType->getFieldType());
+			return getTypeByPath(re, index, path);
 		}
 		std::string fieldType = userType->getFieldType(path[index]);
 		if(fieldType != "") {
@@ -375,6 +415,11 @@ std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::str
 		} else {
 		   yyerrorInvalidArgs(path[index-1]);
 		}
+	}
+	
+	RangeType *rangeType = dynamic_cast<RangeType*>(currentSymbol);
+	if(rangeType != nullptr) {
+		
 	}
 	
 	std::cout << "Ops... Esse caso não foi tratado (ver table_manage.h linha 388)" << std::endl;	

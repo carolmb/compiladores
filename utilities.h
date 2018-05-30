@@ -187,8 +187,8 @@ class UserType : public Type {
 			return ""; 
 		}
 		
-		bool isVec() { return vec; }
-		std::string getFieldType() { if(isVec()) { return fields[0].getTypeField(); } return ""; }
+		bool isRename() { return vec; }
+		std::string getFieldType() { if(isRename()) { return fields[0].getTypeField(); } return ""; }
 };
 
 class EnumType : public Type {
@@ -206,16 +206,51 @@ class EnumType : public Type {
 			}
 			return "";
 		}
+		
+		bool isField(std::string label) {
+			for(auto it = fieldNames.begin(); it != fieldNames.end(); it++) {
+				if(*it == label) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		std::vector<std::string> getFields() { return fieldNames; }
 };
 
 class RangeType : public Type {
 	private:
 		std::string father; // inteiro ou EnumType
-		// std::string begin;
-		// std::string end;
+		std::vector<std::string> fields;
 		
 	public:
-		RangeType(std::string *n, std::string f) : Type(n), father(f) {}
+		RangeType(std::string *n, std::string f, std::vector<std::string> fs) : Type(n), father(f), fields(fs) {}
+		std::string getFather() { return father; }
+		
+		bool compare(Symbol *sym) {
+			EnumType *type = dynamic_cast<EnumType*>(sym);
+			if (type != nullptr)
+				return compareType(type);
+			return Type::compare(sym);
+		}
+		
+		bool compareType(Type *o) {
+			EnumType *enumType = dynamic_cast<EnumType*>(o);
+			if(enumType != nullptr) {
+				return enumType->getType() == father;
+			}
+			return Type::compareType(o);
+		}
+		
+		bool isField(std::string label) {
+			for(auto it = fields.begin(); it != fields.end(); it++) {
+				if(*it == label) {
+					std::cout << "não entrou aqui";
+					return true;
+				}
+			}
+			return false;
+		}
 };
-
 #endif
