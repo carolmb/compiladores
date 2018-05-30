@@ -403,7 +403,7 @@ void initTable(){
 	table["real"] = new PrimitiveType(new std::string("real"));
 	table["texto"] = new PrimitiveType(new std::string("texto"));
 	table["bool"] = new PrimitiveType(new std::string("bool"));
-	table["rotulo"] = new PrimitiveType(new std::string("label"));
+	table["rotulo"] = new PrimitiveType(new std::string("rotulo"));
 	table[""] = new PrimitiveType(new std::string(""));
 	
 	std::vector<Field> paramsEscreva;
