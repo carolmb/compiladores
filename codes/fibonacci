@@ -4,11 +4,11 @@ func fibonacciPos( n: inteiro): inteiro
 inicio
 
 	se (n > 1) entao inicio
-		fibonacciPos = (fibonacciPos(n-1) + fibonacciPos(n-2))
+		retorne (fibonacciPos(n-1) + fibonacciPos(n-2))
 	fim senao se (n == 0) entao inicio
-		fibonacciPos = 0
+		retorne 0
 	fim senao inicio
-		fibonacciPos = 1
+		retorne 1
 	fim
 	
 fim;

@@ -284,11 +284,11 @@ void addUserType(std::string label, std::vector<std::string> idlist) {
 }
 
 std::string getTypeByPath(std::vector<std::string> path) {
-	// std::cout << "path: ";
-	// for(auto it = path.begin(); it != path.end(); it++) {
-	// 	std::cout << *it << " ";
-	// } 
-	// std::cout << std::endl;
+	std::cout << "path: ";
+	for(auto it = path.begin(); it != path.end(); it++) {
+		std::cout << *it << " ";
+	} 
+	std::cout << std::endl;
 	
 	Symbol *sym = searchElementInTableByLabel(path[0]);
 	if(sym == nullptr) {
@@ -304,6 +304,8 @@ std::string getTypeByPath(std::vector<std::string> path) {
 	AbstractionSymbol *abs = dynamic_cast<AbstractionSymbol*>(sym);
 	if(abs != nullptr) {
 		int index = 1;
+		if(index >= path.size())
+			yyerrorInvalidArgs("abstraction called with no args");
 		int step = std::stoi(path[index]);
 		std::vector<std::string> args;
 		for(int i = index+1; i < index + 1 + step; i++) {
@@ -341,7 +343,7 @@ std::string getTypeByPath(std::vector<std::string> path) {
 
 std::string getTypeByPath(Symbol *currentSymbol, int index, std::vector<std::string> path) {
 	/* TODO: when it is a vector acess or abstraction call */
-	// std::cout << "index: " << index << " " << *currentSymbol << " size: " << path.size() << std::endl;
+	std::cout << "index: " << index << " " << *currentSymbol << " size: " << path.size() << std::endl;
 	
 	if(index >= path.size()) {
 		if (currentSymbol == nullptr) {

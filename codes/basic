@@ -151,7 +151,7 @@ inicio
     
     ** WHILE TEST
     enquanto (1 == 0) faca inicio
-    	escreva('teste')
+    	escreva('teste' + 'teste')
     fim;
     
     ** DO TEST
